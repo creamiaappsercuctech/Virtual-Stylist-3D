@@ -88,6 +88,10 @@
       background:rgba(255,213,106,.14);
       border-color:rgba(255,213,106,.25);
     }
+    .btn.danger{
+      background:rgba(255,110,110,.10);
+      border-color:rgba(255,110,110,.25);
+    }
 
     #threeWrap{
       height:520px;
@@ -147,8 +151,61 @@
       line-height:1.4;
     }
 
-    /* Fullscreen modal */
+    .hr{ height:1px; background:rgba(255,255,255,.06); margin:12px 0; }
+
+    /* Photo modal (viewer) */
     #photoModal{ touch-action:none; }
+
+    /* Picker modal */
+    #pickModal{
+      position:fixed; inset:0; z-index:10000;
+      background:rgba(0,0,0,.92);
+      display:none;
+      flex-direction:column;
+    }
+    #pickTop{
+      padding:12px; display:flex; gap:10px; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+    }
+    #pickTitle{ font-weight:900; }
+    #pickHelp{ color:var(--muted); font-size:12px; line-height:1.3; }
+    #pickCanvasWrap{
+      flex:1 1 auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:10px;
+    }
+    #pickCanvas{
+      width:min(100%, 980px);
+      height:auto;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#0b0b12;
+      touch-action: none;
+    }
+    #pickBottom{
+      padding:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      border-top:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+    }
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      color:var(--txt);
+    }
+    td,th{
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:8px 6px;
+      text-align:left;
+    }
+    th{ color:var(--muted); font-weight:700; }
   </style>
 </head>
 
@@ -160,7 +217,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 3D</div>
-          <div class="sub">Home unica (Studio / Guardaroba / Business) • No-404</div>
+          <div class="sub">Home unica (Studio / Guardaroba / Business) • Misure reali da 2 foto (carta)</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">Avvio…</b></span>
@@ -180,6 +237,7 @@
   <!-- STUDIO -->
   <section id="studio" class="section active">
     <div class="grid">
+      <!-- LEFT: 3D + tools -->
       <div class="card">
         <h2><span>Avatar 3D + prova outfit</span><span class="sub">drag = ruota</span></h2>
         <div class="body">
@@ -209,12 +267,12 @@
             <button class="btn" id="btnReset">↩️ Reset</button>
           </div>
 
-          <div style="height:12px"></div>
+          <div class="hr"></div>
 
-          <!-- Upload foto persona + preview + fullscreen -->
+          <!-- FOTO PERSONA (preview + fullscreen) -->
           <div class="row">
-            <button class="btn primary" id="btnUploadPhoto">📷 Carica foto persona</button>
-            <button class="btn" id="btnClearPhoto">🗑️ Rimuovi foto</button>
+            <button class="btn primary" id="btnUploadPhoto">📷 Carica foto persona (singola)</button>
+            <button class="btn" id="btnClearPhoto">🗑️ Rimuovi</button>
             <span class="pill">Foto: <b id="photoStatus">Nessuna</b></span>
           </div>
 
@@ -231,42 +289,122 @@
             </div>
           </div>
 
-          <div style="height:10px"></div>
-          <div class="note">
-            🔜 Clone “da foto” (viso + misure) è possibile ma richiede modelli ML (più pesanti) e buona luce/foto frontale.
-            Intanto: scegli profilo (Uomo / Donna / Bambino / Bambina) e l’avatar cambia proporzioni.
-          </div>
         </div>
       </div>
 
-      <div class="card">
-        <h2><span>Taglia stimata</span><span class="sub">adulto + bimbo</span></h2>
-        <div class="body">
-          <label>Profilo (proporzioni avatar + taglie)</label>
-          <select id="profile">
-            <option value="uomo">Uomo</option>
-            <option value="donna">Donna</option>
-            <option value="bambino">Bambino</option>
-            <option value="bambina">Bambina</option>
-          </select>
+      <!-- RIGHT: sizes + real measurements -->
+      <div>
+        <div class="card">
+          <h2><span>Taglia stimata</span><span class="sub">adulto + bimbo</span></h2>
+          <div class="body">
+            <label>Profilo (proporzioni avatar + taglie)</label>
+            <select id="profile">
+              <option value="uomo">Uomo</option>
+              <option value="donna">Donna</option>
+              <option value="bambino">Bambino</option>
+              <option value="bambina">Bambina</option>
+            </select>
 
-          <div class="row" style="margin-top:10px">
-            <span class="pill">Top: <b id="sizeTop">M</b></span>
-            <span class="pill">Pants: <b id="sizePants">48</b></span>
-            <span class="pill">EU Shoe: <b id="sizeShoe">42</b></span>
-          </div>
+            <div class="row" style="margin-top:10px">
+              <span class="pill">Top: <b id="sizeTop">M</b></span>
+              <span class="pill">Pants: <b id="sizePants">48</b></span>
+              <span class="pill">EU Shoe: <b id="sizeShoe">42</b></span>
+            </div>
 
-          <label>Altezza (cm)</label>
-          <input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
+            <label>Altezza (cm)</label>
+            <input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
 
-          <div style="height:10px"></div>
-          <button class="btn primary" id="btnRecalc">Ricalcola taglie</button>
+            <div style="height:10px"></div>
+            <button class="btn primary" id="btnRecalc">Ricalcola taglie</button>
 
-          <div style="height:10px"></div>
-          <div class="sub">
-            Prossimo step: “2 foto → misure reali” (serve calibrazione e/o librerie ML).
+            <div style="height:10px"></div>
+            <div class="sub">
+              Suggerimento: dopo che “misure reali” calcola spalle/vita, questi slider si aggiornano automaticamente.
+            </div>
           </div>
         </div>
+
+        <div style="height:14px"></div>
+
+        <div class="card">
+          <h2><span>Misure reali ricavate (2 foto + carta)</span><span class="sub">precisione buona con foto dritte</span></h2>
+          <div class="body">
+            <div class="note">
+              ✅ Ti serve: <b>foto frontale</b> + <b>foto laterale</b> e una <b>carta di credito</b> visibile nella foto frontale (vicina al corpo).<br>
+              Regole: luce buona, telefono dritto, distanza 2–3m, corpo intero in foto.
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="row">
+              <button class="btn primary" id="btnUpFront">⬆️ Carica FRONTALE</button>
+              <button class="btn primary" id="btnUpSide">⬆️ Carica LATERALE</button>
+              <span class="pill">Front: <b id="frontOk">NO</b></span>
+              <span class="pill">Side: <b id="sideOk">NO</b></span>
+            </div>
+            <input id="fileFront" type="file" accept="image/*" style="display:none" />
+            <input id="fileSide" type="file" accept="image/*" style="display:none" />
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <button class="btn" id="btnCalibrate">🎯 Calibra carta (4 angoli)</button>
+              <span class="pill">Scala: <b id="scaleTxt">non calibrata</b></span>
+            </div>
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <button class="btn" id="btnMShoulders">📏 Spalle (front 2 click)</button>
+              <button class="btn" id="btnMChestW">📏 Torace larghezza (front)</button>
+              <button class="btn" id="btnMWaistW">📏 Vita larghezza (front)</button>
+              <button class="btn" id="btnMHipsW">📏 Fianchi larghezza (front)</button>
+            </div>
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <button class="btn" id="btnMChestD">📐 Torace profondità (side)</button>
+              <button class="btn" id="btnMWaistD">📐 Vita profondità (side)</button>
+              <button class="btn" id="btnMHipsD">📐 Fianchi profondità (side)</button>
+              <button class="btn danger" id="btnClearMeasures">🧹 Reset misure</button>
+            </div>
+
+            <div class="hr"></div>
+
+            <div class="row">
+              <button class="btn primary" id="btnCompute">✅ Calcola misure reali</button>
+              <span class="pill">Risultato: <b id="calcStatus">—</b></span>
+            </div>
+
+            <div style="height:10px"></div>
+
+            <div class="card" style="border-radius:16px">
+              <h2><span>Risultati (cm)</span><span class="sub">circonferenza stimata = ellisse</span></h2>
+              <div class="body" style="overflow:auto">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Parte</th>
+                      <th>Larghezza</th>
+                      <th>Profondità</th>
+                      <th>Circonferenza stimata</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbl">
+                    <tr><td colspan="4" class="sub">Carica foto, calibra carta, fai le misure, poi “Calcola”.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div style="height:10px"></div>
+            <div class="sub">
+              Nota: la circonferenza è stima “realistica” usando larghezza + profondità. Se fai bene la foto laterale, migliora molto.
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
@@ -287,7 +425,7 @@
 
         <div style="height:12px"></div>
         <div class="sub">
-          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. Le immagini sono placeholder (poi mettiamo upload immagini per ogni card).
+          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. (Upgrade: upload immagini per card + categorie + filtri)
         </div>
       </div>
     </div>
@@ -340,13 +478,13 @@
   <!-- GUIDA -->
   <section id="guida" class="section">
     <div class="card">
-      <h2><span>Guida rapida</span><span class="sub">come usarla</span></h2>
+      <h2><span>Guida rapida</span><span class="sub">misure reali con carta</span></h2>
       <div class="body">
         <div class="sub">
-          <b>Studio</b>: ruoti l’avatar, scegli profilo (Uomo/Donna/Bambino/Bambina), carichi la foto (preview + schermo intero).<br/>
-          <b>Guardaroba</b>: card prodotti (link Awin o Amazon).<br/>
-          <b>Business</b>: imposti tag Amazon e generi link affiliati.<br/><br/>
-          Upgrade possibili: upload immagini per card, filtri per store/categoria, e “misure da foto”.
+          <b>Step 1</b>: Carica FRONTALE + LATERALE (corpo intero).<br>
+          <b>Step 2</b>: Nella foto frontale deve vedersi la <b>carta di credito</b> (vicina al corpo). Premi <b>Calibra carta</b> e clicca i 4 angoli.<br>
+          <b>Step 3</b>: Premi i bottoni misura e fai 2 click (sinistra/destra oppure davanti/dietro).<br>
+          <b>Step 4</b>: Premi <b>Calcola</b>. Le misure (cm) vengono salvate e spalle/vita aggiornano l’avatar.
         </div>
       </div>
     </div>
@@ -354,7 +492,7 @@
 
 </main>
 
-<!-- Fullscreen viewer -->
+<!-- Fullscreen viewer (single photo) -->
 <div id="photoModal" style="
   position:fixed; inset:0; z-index:9999;
   background:rgba(0,0,0,.92);
@@ -366,6 +504,33 @@
   </div>
   <img id="photoFull" alt="Foto schermo intero"
        style="width:100%; height:100%; object-fit:contain; border-radius:16px;" />
+</div>
+
+<!-- Picker modal (for calibration + measures) -->
+<div id="pickModal">
+  <div id="pickTop">
+    <div style="min-width:0">
+      <div id="pickTitle">Selezione punti</div>
+      <div id="pickHelp">—</div>
+    </div>
+    <div class="row" style="justify-content:flex-end">
+      <button class="btn" id="btnPickUndo">↩️ Undo</button>
+      <button class="btn danger" id="btnPickCancel">✖ Chiudi</button>
+    </div>
+  </div>
+
+  <div id="pickCanvasWrap">
+    <canvas id="pickCanvas"></canvas>
+  </div>
+
+  <div id="pickBottom">
+    <div class="kpi">
+      <span class="pill">Punti: <b id="pickCount">0</b></span>
+      <span class="pill">Target: <b id="pickTarget">—</b></span>
+      <span class="pill">Fonte: <b id="pickSource">—</b></span>
+    </div>
+    <button class="btn primary" id="btnPickDone">✅ Fatto</button>
+  </div>
 </div>
 
 <div id="errBox"></div>
@@ -399,7 +564,7 @@
   setTab(localStorage.getItem("vs3d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs3d_state_v3";
+  const KEY = "sercuctech_vs3d_state_v4_measures_card";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.affiliate ??= { awinId:"", amazonTag:"" };
   state.wardrobe ??= [];
@@ -407,13 +572,42 @@
   state.heightCm ??= "178";
   state.shoulders ??= 44;
   state.waist ??= 86;
-  state.photoDataUrl ??= ""; // base64
 
-  function save(){
-    localStorage.setItem(KEY, JSON.stringify(state));
+  // photos for measurement (front/side)
+  state.meas ??= {
+    frontDataUrl: "",
+    sideDataUrl: "",
+    // calibration
+    pxPerCm: 0,
+    cardPts: [], // 4 points
+    // body points (each: [p1,p2])
+    front: { shoulders:null, chestW:null, waistW:null, hipsW:null },
+    side:  { chestD:null,  waistD:null,  hipsD:null  },
+    results: null
+  };
+
+  // single photo viewer
+  state.photoDataUrl ??= "";
+
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  // ---------- helpers ----------
+  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
+  function round1(x){ return Math.round(x*10)/10; }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+  // Ramanujan ellipse circumference
+  function ellipseCircumference(widthCm, depthCm){
+    if(!(widthCm>0) || !(depthCm>0)) return 0;
+    const a = widthCm/2;
+    const b = depthCm/2;
+    const h = Math.pow((a-b),2)/Math.pow((a+b),2);
+    // Ramanujan approximation 2:
+    const c = Math.PI*(a+b)*(1 + (3*h)/(10+Math.sqrt(4-3*h)));
+    return c;
   }
 
-  // Business inputs
+  // ---------- BUSINESS ----------
   const awinId = document.getElementById("awinId");
   const amazonTag = document.getElementById("amazonTag");
   awinId.value = state.affiliate.awinId || "";
@@ -421,7 +615,6 @@
   awinId.addEventListener("input", ()=>{ state.affiliate.awinId = awinId.value.trim(); save(); });
   amazonTag.addEventListener("input", ()=>{ state.affiliate.amazonTag = amazonTag.value.trim(); save(); });
 
-  // Amazon tag helper
   function addAmazonTag(url, tag){
     try{
       const u = new URL(url);
@@ -435,7 +628,6 @@
     }
   }
 
-  // Amazon generator
   const amazonIn = document.getElementById("amazonIn");
   const amazonOut = document.getElementById("amazonOut");
   document.getElementById("btnAmazonMake").addEventListener("click", ()=>{
@@ -451,7 +643,7 @@
     if(u) window.open(u, "_blank");
   });
 
-  // Wardrobe UI
+  // ---------- WARDROBE ----------
   const wardrobeEl = document.getElementById("wardrobe");
   const wardCount = document.getElementById("wardCount");
 
@@ -523,16 +715,14 @@
     renderWardrobe();
     setTab("guardaroba");
   });
-
   document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
     state.wardrobe = [];
     save();
     renderWardrobe();
   });
-
   renderWardrobe();
 
-  // Controls (size + profile)
+  // ---------- SIZES + PROFILE ----------
   const slShoulders = document.getElementById("slShoulders");
   const slWaist = document.getElementById("slWaist");
   const vShoulders = document.getElementById("vShoulders");
@@ -543,7 +733,6 @@
   const sizePants = document.getElementById("sizePants");
   const sizeShoe = document.getElementById("sizeShoe");
 
-  // restore saved
   profile.value = state.profile || "uomo";
   heightCm.value = state.heightCm || "178";
   slShoulders.value = state.shoulders ?? 44;
@@ -620,7 +809,7 @@
     sizeShoe.textContent = String(shoe);
   }
 
-  document.getElementById("btnRecalc").addEventListener("click", ()=>{ calcSizes(); });
+  document.getElementById("btnRecalc").addEventListener("click", ()=> calcSizes());
 
   slShoulders.addEventListener("input", ()=>{
     state.shoulders = Number(slShoulders.value); save();
@@ -642,7 +831,7 @@
     applyFromUI(); calcSizes();
   });
 
-  // ===== FOTO PERSONA (upload + preview + fullscreen + localStorage) =====
+  // ---------- SINGLE PHOTO UPLOAD + VIEWER ----------
   const btnUploadPhoto = document.getElementById("btnUploadPhoto");
   const btnClearPhoto  = document.getElementById("btnClearPhoto");
   const photoInput     = document.getElementById("photoInput");
@@ -652,6 +841,15 @@
   const btnCloseModal  = document.getElementById("btnCloseModal");
   const photoStatus    = document.getElementById("photoStatus");
   const photoHint      = document.getElementById("photoHint");
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(String(r.result || ""));
+      r.onerror = ()=> reject(new Error("Impossibile leggere il file"));
+      r.readAsDataURL(file);
+    });
+  }
 
   function setPhotoUI(dataUrl){
     const has = !!dataUrl;
@@ -667,17 +865,7 @@
     }
   }
 
-  function readFileAsDataURL(file){
-    return new Promise((resolve, reject)=>{
-      const r = new FileReader();
-      r.onload = ()=> resolve(String(r.result || ""));
-      r.onerror = ()=> reject(new Error("Impossibile leggere il file"));
-      r.readAsDataURL(file);
-    });
-  }
-
   btnUploadPhoto.addEventListener("click", ()=> photoInput.click());
-
   photoInput.addEventListener("change", async ()=>{
     const file = photoInput.files && photoInput.files[0];
     if(!file) return;
@@ -692,29 +880,504 @@
       photoInput.value = "";
     }
   });
-
   btnClearPhoto.addEventListener("click", ()=>{
     state.photoDataUrl = "";
     save();
     setPhotoUI("");
   });
-
   photoPreview.addEventListener("click", ()=>{
     if(!state.photoDataUrl) return;
     photoModal.style.display = "flex";
   });
-
-  btnCloseModal.addEventListener("click", ()=>{
-    photoModal.style.display = "none";
-  });
-
-  photoModal.addEventListener("click", (e)=>{
-    if(e.target === photoModal) photoModal.style.display = "none";
-  });
-
+  btnCloseModal.addEventListener("click", ()=> photoModal.style.display = "none");
+  photoModal.addEventListener("click", (e)=>{ if(e.target === photoModal) photoModal.style.display = "none"; });
   setPhotoUI(state.photoDataUrl || "");
 
-  // ===== THREE.JS Avatar =====
+  // ---------- REAL MEASUREMENTS (2 photos + credit card) ----------
+  const CARD_W_CM = 8.56;   // 85.60 mm
+  const CARD_H_CM = 5.398;  // 53.98 mm
+
+  const btnUpFront = document.getElementById("btnUpFront");
+  const btnUpSide  = document.getElementById("btnUpSide");
+  const fileFront  = document.getElementById("fileFront");
+  const fileSide   = document.getElementById("fileSide");
+  const frontOk    = document.getElementById("frontOk");
+  const sideOk     = document.getElementById("sideOk");
+  const btnCalibrate = document.getElementById("btnCalibrate");
+  const scaleTxt   = document.getElementById("scaleTxt");
+
+  const btnMShoulders = document.getElementById("btnMShoulders");
+  const btnMChestW = document.getElementById("btnMChestW");
+  const btnMWaistW = document.getElementById("btnMWaistW");
+  const btnMHipsW  = document.getElementById("btnMHipsW");
+
+  const btnMChestD = document.getElementById("btnMChestD");
+  const btnMWaistD = document.getElementById("btnMWaistD");
+  const btnMHipsD  = document.getElementById("btnMHipsD");
+
+  const btnClearMeasures = document.getElementById("btnClearMeasures");
+  const btnCompute = document.getElementById("btnCompute");
+  const calcStatus = document.getElementById("calcStatus");
+  const tbl = document.getElementById("tbl");
+
+  function refreshMeasBadges(){
+    frontOk.textContent = state.meas.frontDataUrl ? "OK" : "NO";
+    sideOk.textContent  = state.meas.sideDataUrl ? "OK" : "NO";
+    if(state.meas.pxPerCm > 0) scaleTxt.textContent = `${round1(state.meas.pxPerCm)} px/cm`;
+    else scaleTxt.textContent = "non calibrata";
+  }
+  refreshMeasBadges();
+
+  btnUpFront.addEventListener("click", ()=> fileFront.click());
+  btnUpSide.addEventListener("click", ()=> fileSide.click());
+
+  fileFront.addEventListener("change", async ()=>{
+    const f = fileFront.files && fileFront.files[0];
+    if(!f) return;
+    try{
+      state.meas.frontDataUrl = await readFileAsDataURL(f);
+      // reset calibration & front points
+      state.meas.pxPerCm = 0;
+      state.meas.cardPts = [];
+      state.meas.front.shoulders = null;
+      state.meas.front.chestW = null;
+      state.meas.front.waistW = null;
+      state.meas.front.hipsW = null;
+      state.meas.results = null;
+      save();
+      refreshMeasBadges();
+      calcStatus.textContent = "Foto frontale caricata";
+      renderResultsTable();
+    }catch(e){ showErr(e.message || String(e)); }
+    finally{ fileFront.value = ""; }
+  });
+
+  fileSide.addEventListener("change", async ()=>{
+    const f = fileSide.files && fileSide.files[0];
+    if(!f) return;
+    try{
+      state.meas.sideDataUrl = await readFileAsDataURL(f);
+      // reset side points
+      state.meas.side.chestD = null;
+      state.meas.side.waistD = null;
+      state.meas.side.hipsD = null;
+      state.meas.results = null;
+      save();
+      refreshMeasBadges();
+      calcStatus.textContent = "Foto laterale caricata";
+      renderResultsTable();
+    }catch(e){ showErr(e.message || String(e)); }
+    finally{ fileSide.value = ""; }
+  });
+
+  // -------- picker modal logic --------
+  const pickModal = document.getElementById("pickModal");
+  const pickCanvas = document.getElementById("pickCanvas");
+  const pickTitle = document.getElementById("pickTitle");
+  const pickHelp = document.getElementById("pickHelp");
+  const pickCount = document.getElementById("pickCount");
+  const pickTarget = document.getElementById("pickTarget");
+  const pickSource = document.getElementById("pickSource");
+  const btnPickUndo = document.getElementById("btnPickUndo");
+  const btnPickCancel = document.getElementById("btnPickCancel");
+  const btnPickDone = document.getElementById("btnPickDone");
+
+  const pctx = pickCanvas.getContext("2d", { willReadFrequently:false });
+
+  let pick = {
+    mode: null,          // "card" | "measure"
+    source: null,        // "front" | "side"
+    targetKey: null,     // e.g. "shoulders" or "chestD"
+    need: 0,
+    pts: [],
+    img: null,
+    imgW: 0,
+    imgH: 0,
+    scale: 1,            // canvas px / image px
+    offsetX: 0,
+    offsetY: 0
+  };
+
+  function openPicker({ mode, source, title, help, targetKey, need }){
+    const dataUrl = source === "front" ? state.meas.frontDataUrl : state.meas.sideDataUrl;
+    if(!dataUrl){
+      showErr("Manca la foto " + (source==="front" ? "FRONTALE" : "LATERALE"));
+      return;
+    }
+    pick.mode = mode;
+    pick.source = source;
+    pick.targetKey = targetKey;
+    pick.need = need;
+    pick.pts = [];
+
+    pickTitle.textContent = title;
+    pickHelp.textContent = help;
+    pickTarget.textContent = targetKey;
+    pickSource.textContent = source.toUpperCase();
+    pickCount.textContent = "0";
+
+    const img = new Image();
+    img.onload = ()=>{
+      pick.img = img;
+      pick.imgW = img.naturalWidth;
+      pick.imgH = img.naturalHeight;
+
+      // fit image to canvas element width
+      const maxW = Math.min(window.innerWidth - 20, 980);
+      const scale = maxW / pick.imgW;
+      const canvasW = Math.round(pick.imgW * scale);
+      const canvasH = Math.round(pick.imgH * scale);
+
+      pickCanvas.width = canvasW;
+      pickCanvas.height = canvasH;
+      pick.scale = scale;
+      pick.offsetX = 0;
+      pick.offsetY = 0;
+
+      drawPicker();
+      pickModal.style.display = "flex";
+    };
+    img.src = dataUrl;
+  }
+
+  function closePicker(){
+    pickModal.style.display = "none";
+    pick.img = null;
+    pick.pts = [];
+  }
+
+  function canvasToImagePoint(clientX, clientY){
+    const r = pickCanvas.getBoundingClientRect();
+    const x = (clientX - r.left) * (pickCanvas.width / r.width);
+    const y = (clientY - r.top) * (pickCanvas.height / r.height);
+    // convert canvas px to image px
+    return { x: x / pick.scale, y: y / pick.scale };
+  }
+
+  function drawPicker(){
+    if(!pick.img) return;
+    pctx.clearRect(0,0,pickCanvas.width, pickCanvas.height);
+    pctx.drawImage(pick.img, 0,0, pickCanvas.width, pickCanvas.height);
+
+    // draw points
+    for(let i=0;i<pick.pts.length;i++){
+      const pt = pick.pts[i];
+      const cx = pt.x * pick.scale;
+      const cy = pt.y * pick.scale;
+
+      // point
+      pctx.beginPath();
+      pctx.arc(cx, cy, 7, 0, Math.PI*2);
+      pctx.fillStyle = "rgba(255,213,106,.95)";
+      pctx.fill();
+      pctx.lineWidth = 2;
+      pctx.strokeStyle = "rgba(0,0,0,.7)";
+      pctx.stroke();
+
+      // number
+      pctx.font = "12px system-ui";
+      pctx.fillStyle = "rgba(0,0,0,.85)";
+      pctx.fillText(String(i+1), cx+10, cy-10);
+    }
+
+    // draw line if 2 points for measure
+    if(pick.mode === "measure" && pick.pts.length === 2){
+      const a = pick.pts[0], b = pick.pts[1];
+      pctx.lineWidth = 3;
+      pctx.strokeStyle = "rgba(110,255,168,.85)";
+      pctx.beginPath();
+      pctx.moveTo(a.x*pick.scale, a.y*pick.scale);
+      pctx.lineTo(b.x*pick.scale, b.y*pick.scale);
+      pctx.stroke();
+    }
+
+    // draw rectangle edges if 4 points for card
+    if(pick.mode === "card" && pick.pts.length >= 2){
+      pctx.lineWidth = 3;
+      pctx.strokeStyle = "rgba(110,255,168,.85)";
+      pctx.beginPath();
+      pctx.moveTo(pick.pts[0].x*pick.scale, pick.pts[0].y*pick.scale);
+      for(let i=1;i<pick.pts.length;i++){
+        pctx.lineTo(pick.pts[i].x*pick.scale, pick.pts[i].y*pick.scale);
+      }
+      if(pick.pts.length === 4){
+        pctx.lineTo(pick.pts[0].x*pick.scale, pick.pts[0].y*pick.scale);
+      }
+      pctx.stroke();
+    }
+  }
+
+  pickCanvas.addEventListener("pointerdown", (e)=>{
+    if(!pick.img) return;
+    const pt = canvasToImagePoint(e.clientX, e.clientY);
+    if(pick.pts.length < pick.need){
+      pick.pts.push(pt);
+      pickCount.textContent = String(pick.pts.length);
+      drawPicker();
+    }
+  });
+
+  btnPickUndo.addEventListener("click", ()=>{
+    if(pick.pts.length>0){
+      pick.pts.pop();
+      pickCount.textContent = String(pick.pts.length);
+      drawPicker();
+    }
+  });
+
+  btnPickCancel.addEventListener("click", closePicker);
+
+  btnPickDone.addEventListener("click", ()=>{
+    if(pick.pts.length !== pick.need){
+      showErr(`Servono ${pick.need} punti. Ora: ${pick.pts.length}`);
+      return;
+    }
+
+    if(pick.mode === "card"){
+      // expected 4 points: user clicks corners in order any; we use distances of adjacent edges:
+      const pts = pick.pts.slice();
+      state.meas.cardPts = pts;
+
+      // Use edges: (1-2) and (3-4) for width, (2-3) and (4-1) for height (assuming user clicks around the card)
+      const w1 = dist(pts[0], pts[1]);
+      const w2 = dist(pts[2], pts[3]);
+      const h1 = dist(pts[1], pts[2]);
+      const h2 = dist(pts[3], pts[0]);
+
+      const pxPerCmW = ((w1 + w2)/2) / CARD_W_CM;
+      const pxPerCmH = ((h1 + h2)/2) / CARD_H_CM;
+
+      // average
+      state.meas.pxPerCm = (pxPerCmW + pxPerCmH)/2;
+
+      save();
+      refreshMeasBadges();
+      calcStatus.textContent = "Carta calibrata ✅";
+      closePicker();
+      return;
+    }
+
+    if(pick.mode === "measure"){
+      const pts = pick.pts.slice();
+      if(pick.source === "front"){
+        state.meas.front[pick.targetKey] = pts;
+      }else{
+        state.meas.side[pick.targetKey] = pts;
+      }
+      state.meas.results = null;
+      save();
+      calcStatus.textContent = `Misura salvata: ${pick.targetKey} ✅`;
+      closePicker();
+      renderResultsTable();
+      return;
+    }
+  });
+
+  // open pickers
+  btnCalibrate.addEventListener("click", ()=>{
+    openPicker({
+      mode:"card",
+      source:"front",
+      title:"Calibrazione CARTA (4 angoli)",
+      help:"Clicca 4 angoli della carta in ordine (giro completo). Poi premi “Fatto”.",
+      targetKey:"card",
+      need:4
+    });
+  });
+
+  function requireScale(){
+    if(!(state.meas.pxPerCm>0)){
+      showErr("Prima devi calibrare la carta (Calibra carta).");
+      return false;
+    }
+    return true;
+  }
+
+  // front width measures
+  btnMShoulders.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"front",
+      title:"Spalle (FRONTALE)",
+      help:"Clicca punto spalla SINISTRA e poi spalla DESTRA (2 click).",
+      targetKey:"shoulders",
+      need:2
+    });
+  });
+  btnMChestW.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"front",
+      title:"Torace LARGHEZZA (FRONTALE)",
+      help:"Clicca lato SINISTRO torace e lato DESTRO torace (2 click).",
+      targetKey:"chestW",
+      need:2
+    });
+  });
+  btnMWaistW.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"front",
+      title:"Vita LARGHEZZA (FRONTALE)",
+      help:"Clicca lato SINISTRO vita e lato DESTRO vita (2 click).",
+      targetKey:"waistW",
+      need:2
+    });
+  });
+  btnMHipsW.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"front",
+      title:"Fianchi LARGHEZZA (FRONTALE)",
+      help:"Clicca lato SINISTRO fianchi e lato DESTRO fianchi (2 click).",
+      targetKey:"hipsW",
+      need:2
+    });
+  });
+
+  // side depth measures
+  btnMChestD.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"side",
+      title:"Torace PROFONDITÀ (LATERALE)",
+      help:"Clicca punto DAVANTI torace e punto DIETRO torace (2 click).",
+      targetKey:"chestD",
+      need:2
+    });
+  });
+  btnMWaistD.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"side",
+      title:"Vita PROFONDITÀ (LATERALE)",
+      help:"Clicca punto DAVANTI vita e punto DIETRO vita (2 click).",
+      targetKey:"waistD",
+      need:2
+    });
+  });
+  btnMHipsD.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+    openPicker({
+      mode:"measure",
+      source:"side",
+      title:"Fianchi PROFONDITÀ (LATERALE)",
+      help:"Clicca punto DAVANTI fianchi e punto DIETRO fianchi (2 click).",
+      targetKey:"hipsD",
+      need:2
+    });
+  });
+
+  btnClearMeasures.addEventListener("click", ()=>{
+    state.meas.pxPerCm = 0;
+    state.meas.cardPts = [];
+    state.meas.front.shoulders = null;
+    state.meas.front.chestW = null;
+    state.meas.front.waistW = null;
+    state.meas.front.hipsW = null;
+    state.meas.side.chestD = null;
+    state.meas.side.waistD = null;
+    state.meas.side.hipsD = null;
+    state.meas.results = null;
+    save();
+    refreshMeasBadges();
+    calcStatus.textContent = "Reset fatto";
+    renderResultsTable();
+  });
+
+  function measureCm(pair){
+    if(!pair || pair.length!==2) return 0;
+    if(!(state.meas.pxPerCm>0)) return 0;
+    const px = dist(pair[0], pair[1]);
+    return px / state.meas.pxPerCm;
+  }
+
+  function renderResultsTable(){
+    const r = state.meas.results;
+    if(!r){
+      tbl.innerHTML = `<tr><td colspan="4" class="sub">Carica foto, calibra carta, fai le misure, poi “Calcola”.</td></tr>`;
+      return;
+    }
+    tbl.innerHTML = `
+      <tr>
+        <td><b>Spalle</b></td>
+        <td>${r.shouldersW>0 ? `${round1(r.shouldersW)} cm` : "—"}</td>
+        <td>—</td>
+        <td>—</td>
+      </tr>
+      <tr>
+        <td><b>Torace</b></td>
+        <td>${r.chestW>0 ? `${round1(r.chestW)} cm` : "—"}</td>
+        <td>${r.chestD>0 ? `${round1(r.chestD)} cm` : "—"}</td>
+        <td>${r.chestC>0 ? `${round1(r.chestC)} cm` : "—"}</td>
+      </tr>
+      <tr>
+        <td><b>Vita</b></td>
+        <td>${r.waistW>0 ? `${round1(r.waistW)} cm` : "—"}</td>
+        <td>${r.waistD>0 ? `${round1(r.waistD)} cm` : "—"}</td>
+        <td>${r.waistC>0 ? `${round1(r.waistC)} cm` : "—"}</td>
+      </tr>
+      <tr>
+        <td><b>Fianchi</b></td>
+        <td>${r.hipsW>0 ? `${round1(r.hipsW)} cm` : "—"}</td>
+        <td>${r.hipsD>0 ? `${round1(r.hipsD)} cm` : "—"}</td>
+        <td>${r.hipsC>0 ? `${round1(r.hipsC)} cm` : "—"}</td>
+      </tr>
+    `;
+  }
+
+  btnCompute.addEventListener("click", ()=>{
+    if(!requireScale()) return;
+
+    const shouldersW = measureCm(state.meas.front.shoulders);
+    const chestW = measureCm(state.meas.front.chestW);
+    const waistW = measureCm(state.meas.front.waistW);
+    const hipsW  = measureCm(state.meas.front.hipsW);
+
+    const chestD = measureCm(state.meas.side.chestD);
+    const waistD = measureCm(state.meas.side.waistD);
+    const hipsD  = measureCm(state.meas.side.hipsD);
+
+    const chestC = (chestW>0 && chestD>0) ? ellipseCircumference(chestW, chestD) : 0;
+    const waistC = (waistW>0 && waistD>0) ? ellipseCircumference(waistW, waistD) : 0;
+    const hipsC  = (hipsW>0  && hipsD>0)  ? ellipseCircumference(hipsW,  hipsD)  : 0;
+
+    state.meas.results = { shouldersW, chestW, waistW, hipsW, chestD, waistD, hipsD, chestC, waistC, hipsC };
+    save();
+    renderResultsTable();
+
+    // update avatar sliders if available
+    if(shouldersW>0){
+      const sh = clamp(Math.round(shouldersW), 30, 56);
+      slShoulders.value = sh;
+      state.shoulders = sh;
+    }
+    if(waistW>0){
+      // waistW is width, not circumference -> approximate a bit. We'll map width to slider (reasonable):
+      // slider expects waist cm (circumference). If we have waistC use it, else guess from width.
+      let waistVal = 0;
+      if(waistC>0) waistVal = waistC;
+      else waistVal = waistW * 2.8; // rough fallback
+      waistVal = clamp(Math.round(waistVal), 45, 120);
+      slWaist.value = waistVal;
+      state.waist = waistVal;
+    }
+    save();
+    applyFromUI();
+    calcSizes();
+
+    calcStatus.textContent = "Calcolato ✅";
+  });
+
+  renderResultsTable();
+
+  // ---------- THREE.JS Avatar ----------
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
   const threeWrap = document.getElementById("threeWrap");
@@ -833,7 +1496,7 @@
   }
   window.addEventListener("resize", resize);
 
-  // Rebuild avatar from sliders (basic) + profile proportions
+  // Rebuild avatar from sliders + profile proportions
   function rebuild(shouldersCm, waistCm){
     const p = (profile?.value || "uomo");
 
@@ -841,9 +1504,7 @@
     let headScale = 1.0;
     let armScale = 1.0;
 
-    if(p === "donna"){
-      headScale = 1.02;
-    }
+    if(p === "donna"){ headScale = 1.02; }
     if(p === "bambino" || p === "bambina"){
       scaleY = 0.82;
       headScale = 1.18;
@@ -935,4 +1596,3 @@
 </script>
 </body>
 </html>
-```0
