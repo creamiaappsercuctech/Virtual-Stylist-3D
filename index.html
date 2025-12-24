@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 3D (v2 + Admin)</title>
+  <title>SerCucTech • Virtual Stylist 3D (v2.1 Multi-Store + Cards + Admin)</title>
   <meta name="theme-color" content="#111111" />
   <style>
     :root{
@@ -46,6 +46,7 @@
       user-select:none;
     }
     .tab.active{ background: rgba(255,213,106,.12); border-color: rgba(255,213,106,.25); }
+
     .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:14px 0; }
     @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
 
@@ -115,8 +116,8 @@
     .pill b{ color:var(--txt); }
     .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
     .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
-    .ok{ color:var(--ok); }
-    .bad{ color:var(--bad); }
+    .foot{ padding: 10px 14px 18px; border-top: 1px solid rgba(255,255,255,.06); color: var(--muted); font-size: 12px; }
+    .hide{ display:none !important; }
 
     .canvasWrap{
       background: #0a0a10;
@@ -125,22 +126,15 @@
       overflow:hidden;
       position:relative;
     }
-    canvas.photo{
-      width:100%;
-      height:auto;
-      display:block;
-      touch-action: none;
-    }
-    .overlayTop{
-      position:absolute; left:10px; top:10px; right:10px;
+    canvas.photo{ width:100%; height:auto; display:block; touch-action:none; }
+
+    .overlayTop, .overlayBottom{
+      position:absolute; left:10px; right:10px;
       display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;
       pointer-events:none;
     }
-    .overlayBottom{
-      position:absolute; left:10px; bottom:10px; right:10px;
-      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;
-      pointer-events:none;
-    }
+    .overlayTop{ top:10px; }
+    .overlayBottom{ bottom:10px; }
 
     #threeWrap{ height:520px; }
     @media (max-width: 980px){ #threeWrap{ height:420px; } }
@@ -155,10 +149,7 @@
     .dot{ width:10px; height:10px; border-radius:50%; background: rgba(255,255,255,.25); }
     .switch.on .dot{ background: rgba(255,213,106,.9); }
 
-    .kpi{
-      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
-      margin-top:10px;
-    }
+    .kpi{ display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; margin-top:10px; }
     @media (max-width: 520px){ .kpi{ grid-template-columns: 1fr; } }
     .kpi .box{
       border:1px solid rgba(255,255,255,.07);
@@ -168,24 +159,61 @@
     }
     .kpi .box b{ display:block; font-size:14px; }
     .kpi .box span{ color:var(--muted); font-size:12px; }
-    .foot{ padding: 10px 14px 18px; border-top: 1px solid rgba(255,255,255,.06); color: var(--muted); font-size: 12px; }
 
-    table{ width:100%; border-collapse:collapse; }
-    th, td{ border-bottom:1px solid rgba(255,255,255,.06); padding:10px 6px; text-align:left; font-size:12px; }
-    th{ color:var(--muted); font-weight:600; }
-    .tag{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color:var(--muted); font-size:11px; }
+    .tag{
+      display:inline-block; padding:4px 8px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color:var(--muted); font-size:11px;
+    }
 
-    .hide{ display:none !important; }
+    /* Cards guardaroba */
+    #wardCards{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    @media (max-width: 980px){ #wardCards{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 520px){ #wardCards{ grid-template-columns: 1fr; } }
+
+    .cardItem{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.02);
+      border-radius: 16px;
+      overflow:hidden;
+    }
+    .cardItem img{
+      width:100%;
+      height:180px;
+      object-fit:cover;
+      display:block;
+      background:#0a0a10;
+    }
+    .cardItem .p{ padding:10px 10px; }
+    .cardItem .p b{ display:block; font-size:13px; margin-bottom:6px; }
+    .cardItem .meta{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:8px; }
+    .cardItem .actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .cardItem .actions .btn{
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:12px;
+    }
+    .aBtn{
+      text-decoration:none;
+      display:inline-flex; align-items:center; gap:6px;
+    }
   </style>
 </head>
+
 <body>
 <header>
   <div class="wrap topbar">
     <div class="brand">
       <div class="logo">SC</div>
       <div class="title">
-        <b>SerCucTech • <span id="secretTap" style="cursor:pointer">Virtual</span> Stylist 3D <span style="opacity:.75">(v2)</span></b>
-        <span>2 foto → misure più precise → taglia → avatar → guardaroba</span>
+        <b>SerCucTech • <span id="secretTap" style="cursor:pointer">Virtual</span> Stylist 3D <span style="opacity:.75">(v2.1)</span></b>
+        <span>2 foto → misure → taglia → avatar → guardaroba multi-store (cards)</span>
       </div>
     </div>
     <div class="tabs" id="tabs">
@@ -199,6 +227,7 @@
 </header>
 
 <main class="wrap">
+
   <!-- VIEW: STUDIO -->
   <section id="view-studio">
     <div class="grid">
@@ -232,7 +261,7 @@
 
           <div class="row">
             <div class="pill">Step: <b id="stepLabel">Carica/Scatta FRONTE</b></div>
-            <div class="pill">Punti richiesti: <b class="mono">TESTA, PIEDI, SPALLA SX, SPALLA DX, VITA SX, VITA DX</b></div>
+            <div class="pill">Punti: <b class="mono">TESTA, PIEDI, SPALLA SX, SPALLA DX, VITA SX, VITA DX</b></div>
           </div>
 
           <div style="height:10px"></div>
@@ -297,13 +326,11 @@
 
           <div style="height:10px"></div>
           <div class="hint">
-            <b>Consiglio pratico:</b> foto intera, piedi visibili, luce buona, telefono dritto.
-            Più la foto è “pulita”, più la stima è stabile.
+            <b>Consiglio:</b> foto intera, piedi visibili, luce buona, telefono dritto.
           </div>
         </div>
         <div class="foot">
-          Questa v2 migliora tanto perché la <b>vita</b> usa due punti (sinistra/destra).
-          Prossimo step: MediaPipe Pose per mettere i punti in automatico.
+          v2.1: guardaroba multi-store con card e foto caricabili (sempre visibili anche offline).
         </div>
       </div>
 
@@ -345,12 +372,11 @@
 
           <div style="height:10px"></div>
           <div class="hint">
-            L’avatar è “parametrico”: cambia spalle e vita e i vestiti seguono.
-            Versione 3: vestiti reali 3D (.glb) + texture + catalogo brand.
+            Avatar “parametrico”: spalle/vita cambiano e i vestiti seguono.
           </div>
         </div>
         <div class="foot">
-          SerCucTech PRO: profilo cliente + guardaroba + QR per negozio.
+          SerCucTech: in PRO mettiamo vestiti 3D reali (.glb) e AR.
         </div>
       </div>
     </div>
@@ -360,16 +386,47 @@
   <section id="view-wardrobe" class="hide">
     <div class="grid">
       <div class="card">
-        <h2>Guardaroba (salvato sul telefono)</h2>
+        <h2>Guardaroba (multi-store • cards • offline)</h2>
         <div class="body">
           <div class="row">
             <div class="pill">Cliente: <b id="wardClient">—</b></div>
             <div class="pill">Taglia stimata: <b id="wardSize">—</b></div>
+            <div class="pill">Vista: <b>Card immagini</b></div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <div class="col">
+              <label>Filtra per Store</label>
+              <select id="storeFilter">
+                <option value="ALL">Tutti</option>
+                <option value="Zalando">Zalando</option>
+                <option value="Amazon">Amazon</option>
+                <option value="Shein">Shein</option>
+                <option value="Temu">Temu</option>
+                <option value="AliExpress">AliExpress</option>
+                <option value="Decathlon">Decathlon</option>
+                <option value="Nike">Nike</option>
+                <option value="Adidas">Adidas</option>
+                <option value="Altro">Altro</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Filtra per Categoria</label>
+              <select id="catFilter">
+                <option value="ALL">Tutte</option>
+                <option value="top">Top</option>
+                <option value="bottom">Bottom</option>
+                <option value="outer">Outer</option>
+                <option value="dress">Abiti interi</option>
+                <option value="shoes">Scarpe</option>
+              </select>
+            </div>
           </div>
 
           <div style="height:12px"></div>
 
           <h3 style="margin:0 0 6px; font-size:13px">Aggiungi capo</h3>
+
           <div class="row">
             <div class="col">
               <label>Nome capo</label>
@@ -390,28 +447,54 @@
               <input id="wSize" type="text" placeholder="Es. EU 50 / M / 42" />
             </div>
           </div>
-          <label>Note (marca, modello, link, ecc.)</label>
-          <textarea id="wNote" placeholder="Es. Marca X, modello Y, link…"></textarea>
+
+          <div class="row">
+            <div class="col">
+              <label>Store</label>
+              <select id="wStore">
+                <option value="Zalando">Zalando</option>
+                <option value="Amazon">Amazon</option>
+                <option value="Shein">Shein</option>
+                <option value="Temu">Temu</option>
+                <option value="AliExpress">AliExpress</option>
+                <option value="Decathlon">Decathlon</option>
+                <option value="Nike">Nike</option>
+                <option value="Adidas">Adidas</option>
+                <option value="Altro">Altro</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Link prodotto (opzionale)</label>
+              <input id="wLink" type="text" placeholder="https://..." />
+            </div>
+            <div class="col">
+              <label>URL immagine (opzionale)</label>
+              <input id="wImgUrl" type="text" placeholder="https://...jpg (può non funzionare su alcuni store)" />
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              <label>Carica foto capo (consigliato • offline)</label>
+              <input id="wImgFile" type="file" accept="image/*" />
+              <div class="hint">Se carichi la foto, la card la mostra sempre (anche senza internet).</div>
+            </div>
+            <div class="col">
+              <label>Note (marca, modello, colore...)</label>
+              <textarea id="wNote" placeholder="Es. Marca X, modello Y, link…"></textarea>
+            </div>
+          </div>
 
           <div class="row" style="margin-top:10px">
             <button class="btn good" id="btnAddItem">➕ Aggiungi</button>
-            <button class="btn" id="btnLoadDemo">✨ Carica capi demo</button>
+            <button class="btn" id="btnLoadDemo">✨ Carica demo</button>
             <button class="btn bad" id="btnClearWard">🗑️ Svuota guardaroba</button>
           </div>
 
-          <div style="height:12px"></div>
-          <h3 style="margin:0 0 6px; font-size:13px">Elenco capi</h3>
-          <div style="overflow:auto">
-            <table>
-              <thead>
-                <tr><th>Capo</th><th>Categoria</th><th>Taglia</th><th>Azioni</th></tr>
-              </thead>
-              <tbody id="wardTable"></tbody>
-            </table>
-          </div>
+          <div id="wardCards"></div>
         </div>
         <div class="foot">
-          Versione 3: aggiunta foto capo + texture + prova su avatar.
+          Nota: se inserisci solo URL immagine, alcuni store la bloccano. Meglio “Carica foto capo”.
         </div>
       </div>
 
@@ -421,7 +504,7 @@
           Se calcoli le misure, qui apparirà un consiglio in base a spalle/vita e vestibilità.
         </div>
         <div class="foot">
-          In PRO: “Stylist AI” che suggerisce outfit completi.
+          In PRO: suggerimenti outfit completi + preferenze colori/stile.
         </div>
       </div>
     </div>
@@ -440,27 +523,21 @@
 
           <h3 style="margin:14px 0 6px; font-size:13px">Offerte</h3>
           <div class="kpi">
-            <div class="box"><b>FREE</b><span>Try-on base + demo + affiliate</span></div>
-            <div class="box"><b>PRO 9€/mese</b><span>Catalogo + profili + salvataggi</span></div>
+            <div class="box"><b>FREE</b><span>Try-on base + demo + guardaroba</span></div>
+            <div class="box"><b>PRO 9€/mese</b><span>Profili multipli + export + filtri</span></div>
             <div class="box"><b>STORE 49€/mese</b><span>Widget + QR + analytics</span></div>
-          </div>
-
-          <h3 style="margin:14px 0 6px; font-size:13px">Pitch 30 secondi</h3>
-          <div class="hint" style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(255,255,255,.02)">
-            “SerCucTech Virtual Stylist 3D fa provare i capi su un avatar simile al cliente, consiglia la taglia giusta e aumenta la sicurezza d’acquisto.
-            Risultato: meno resi, più conversioni e un’esperienza premium sia in negozio che online.”
           </div>
         </div>
         <div class="foot">
-          Step commerciale: 3 negozi pilota sul Garda + QR in camerino digitale.
+          Step: 3 negozi pilota sul Garda + QR in camerino digitale.
         </div>
       </div>
 
       <div class="card">
         <h2>Roadmap</h2>
         <div class="body hint">
-          <b>v2 (oggi)</b>: 2 foto + punti manuali + avatar + guardaroba ✅<br/><br/>
-          <b>v3</b>: punti automatici (MediaPipe Pose) + profili multipli + export PDF misure<br/><br/>
+          <b>v2.1</b>: 2 foto + punti manuali + avatar + guardaroba multi-store ✅<br/><br/>
+          <b>v3</b>: punti automatici (MediaPipe Pose) + undo punto + profili multipli<br/><br/>
           <b>v4</b>: vestiti 3D reali (.glb) + AR (WebXR) + catalogo brand
         </div>
         <div class="foot">
@@ -478,14 +555,13 @@
         <div class="body hint">
           <b>1)</b> Scrivi nome e altezza.<br/>
           <b>2)</b> Carica o scatta la foto <b>FRONTE</b> e la foto <b>LATO</b>.<br/>
-          <b>3)</b> Sulla foto FRONTE tocca 6 punti: <br/>
-          TESTA → PIEDI → SPALLA SX → SPALLA DX → VITA SX → VITA DX.<br/>
+          <b>3)</b> Sulla foto FRONTE tocca 6 punti: TESTA → PIEDI → SPALLA SX → SPALLA DX → VITA SX → VITA DX.<br/>
           <b>4)</b> Premi “Calcola misure & taglia”.<br/>
-          <b>5)</b> A destra prova l’avatar e i vestiti.<br/>
-          <b>6)</b> Vai su “Guardaroba” per salvare i capi.
+          <b>5)</b> Vai su “Guardaroba” e aggiungi capi (anche di altri store).<br/>
+          <b>6)</b> Per le immagini: meglio <b>Carica foto capo</b>.
         </div>
         <div class="foot">
-          Se sbagli un punto: Reset tutto e rifai (v3 avrà “undo punto”).
+          Se sbagli un punto: Reset tutto e rifai.
         </div>
       </div>
 
@@ -495,7 +571,7 @@
           Apri il link GitHub Pages → menu ⋮ → <b>“Aggiungi a schermata Home”</b>.
         </div>
         <div class="foot">
-          SerCucTech: stessa logica delle tue vetrine → pubblico + admin (in futuro).
+          SerCucTech: come le tue vetrine, ma per fashion + avatar.
         </div>
       </div>
     </div>
@@ -539,12 +615,11 @@
           </div>
 
           <div class="hint" style="margin-top:10px">
-            Admin è nascosto: solo chi conosce il tap segreto lo vede.  
-            Puoi fare export, import e backup dei clienti.
+            Admin è nascosto: solo chi conosce il tap segreto lo vede.
           </div>
         </div>
         <div class="foot">
-          SerCucTech: pannello admin “invisibile” per gestire dati senza mostrarlo al pubblico.
+          SerCucTech: pannello admin “invisibile”.
         </div>
       </div>
 
@@ -556,7 +631,7 @@
           Se vuoi bloccarlo, premi <b>Blocca Admin</b>.
         </div>
         <div class="foot">
-          In v3 possiamo fare “2 parole in sequenza” ancora più invisibile.
+          In v3 possiamo fare “2 parole in sequenza”.
         </div>
       </div>
     </div>
@@ -615,7 +690,7 @@
 
   if ("serviceWorker" in navigator){
     const swCode = `
-      const CACHE = "sercuctech-stylist-v2-admin";
+      const CACHE = "sercuctech-stylist-v2-1";
       self.addEventListener("install", (e) => {
         e.waitUntil((async () => {
           const cache = await caches.open(CACHE);
@@ -678,6 +753,7 @@ tabs.addEventListener("click", (e) => {
    State + Storage
 -------------------------- */
 const LS_KEY = "sercuctech_stylist_v2_state";
+
 const clientName = document.getElementById("clientName");
 const gender = document.getElementById("gender");
 const realHeight = document.getElementById("realHeight");
@@ -710,10 +786,18 @@ const kpiNote = document.getElementById("kpiNote");
 
 const wardClient = document.getElementById("wardClient");
 const wardSize = document.getElementById("wardSize");
-const wardTable = document.getElementById("wardTable");
+const wardCards = document.getElementById("wardCards");
+
+const storeFilter = document.getElementById("storeFilter");
+const catFilter = document.getElementById("catFilter");
+
 const wName = document.getElementById("wName");
 const wCat = document.getElementById("wCat");
 const wSize = document.getElementById("wSize");
+const wStore = document.getElementById("wStore");
+const wLink = document.getElementById("wLink");
+const wImgUrl = document.getElementById("wImgUrl");
+const wImgFile = document.getElementById("wImgFile");
 const wNote = document.getElementById("wNote");
 const btnAddItem = document.getElementById("btnAddItem");
 const btnLoadDemo = document.getElementById("btnLoadDemo");
@@ -730,9 +814,7 @@ let state = {
   wardrobe: []
 };
 
-function save(){
-  localStorage.setItem(LS_KEY, JSON.stringify(state));
-}
+function save(){ localStorage.setItem(LS_KEY, JSON.stringify(state)); }
 function load(){
   try{
     const raw = localStorage.getItem(LS_KEY);
@@ -740,6 +822,7 @@ function load(){
     state = JSON.parse(raw);
   }catch{}
 }
+
 function resetAll(){
   if(!confirm("Reset tutto? (foto, punti, misure, guardaroba)")) return;
   localStorage.removeItem(LS_KEY);
@@ -762,6 +845,7 @@ function syncStateFromUI(){
   state.profile.gender = gender.value;
   state.profile.heightCm = Number(realHeight.value)||175;
 }
+
 function syncUIFromState(){
   clientName.value = state.profile.name || "";
   gender.value = state.profile.gender || "m";
@@ -790,6 +874,9 @@ clientName.addEventListener("input", ()=>{ syncStateFromUI(); save(); syncUIFrom
 gender.addEventListener("change", ()=>{ syncStateFromUI(); save(); syncUIFromState(); refreshWardrobeUI(); });
 realHeight.addEventListener("input", ()=>{ syncStateFromUI(); save(); syncUIFromState(); });
 
+storeFilter?.addEventListener("change", refreshWardrobeUI);
+catFilter?.addEventListener("change", refreshWardrobeUI);
+
 /* --------------------------
    Helpers
 -------------------------- */
@@ -804,6 +891,7 @@ async function fileToDataURL(file){
     r.readAsDataURL(file);
   });
 }
+
 function fitImageToCanvas(img, canvas){
   const cw=canvas.width, ch=canvas.height;
   const ir=img.width/img.height, cr=cw/ch;
@@ -812,11 +900,16 @@ function fitImageToCanvas(img, canvas){
   const x=(cw-w)/2, y=(ch-h)/2;
   return {x,y,w,h};
 }
+
 function canvasPointFromEvent(e, canvas){
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   return { x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY };
+}
+
+function escapeHTML(s){
+  return String(s ?? "").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
 }
 
 /* --------------------------
@@ -895,7 +988,7 @@ function redrawSide(){
     cxS.fillStyle="rgba(255,255,255,.16)";
     cxS.font="18px system-ui";
     cxS.fillText("Carica o scatta LATO (corpo intero).", 24, 64);
-    cxS.fillText("Serve per versione 3 (punti automatici lato).", 24, 92);
+    cxS.fillText("Serve come riferimento (v3: punti anche lato).", 24, 92);
     return;
   }
   const img = new Image();
@@ -1021,7 +1114,7 @@ btnCompute.addEventListener("click", ()=>{
   if(!state.front.dataUrl){ alert("Manca la foto FRONTE."); return; }
   if(!state.side.dataUrl){ alert("Manca la foto LATO."); return; }
   if(state.front.points.length < FRONT_LABELS.length){
-    alert("Segna tutti i 6 punti sulla foto FRONTE: TESTA, PIEDI, SPALLA SX, SPALLA DX, VITA SX, VITA DX.");
+    alert("Segna tutti i 6 punti sulla foto FRONTE.");
     return;
   }
 
@@ -1054,86 +1147,12 @@ btnCompute.addEventListener("click", ()=>{
 });
 
 /* --------------------------
-   Wardrobe
+   Wardrobe (Cards + Multi-store)
 -------------------------- */
-function refreshWardrobeUI(){
-  wardClient.textContent = state.profile.name ? state.profile.name : "—";
-  wardSize.textContent = state.measures.sizeEU ? state.measures.sizeEU : "—";
-
-  wardTable.innerHTML = "";
-  state.wardrobe.forEach((it, idx)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td><b>${escapeHTML(it.name)}</b><div class="mono" style="opacity:.7">${escapeHTML(it.note||"")}</div></td>
-      <td><span class="tag">${escapeHTML(it.cat)}</span></td>
-      <td>${escapeHTML(it.size)}</td>
-      <td>
-        <button class="btn" data-try="${idx}">Prova</button>
-        <button class="btn bad" data-del="${idx}">Elimina</button>
-      </td>
-    `;
-    wardTable.appendChild(tr);
-  });
-
-  wardTable.querySelectorAll("[data-del]").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const i = Number(b.dataset.del);
-      state.wardrobe.splice(i,1);
-      save(); refreshWardrobeUI();
-      if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
-    });
-  });
-
-  wardTable.querySelectorAll("[data-try]").forEach(b=>{
-    b.addEventListener("click", ()=>{
-      const i = Number(b.dataset.try);
-      const it = state.wardrobe[i];
-      setSwitch(swJacket, it.cat==="outer");
-      setSwitch(swShirt, it.cat==="top" || it.cat==="dress");
-      setSwitch(swPants, it.cat==="bottom" || it.cat==="dress");
-      syncClothes();
-      document.querySelector('.tab[data-view="studio"]').click();
-    });
-  });
-
-  updateStyleTip();
+function normalizeStore(s){
+  const v = String(s||"Altro").trim();
+  return v ? v : "Altro";
 }
-
-function escapeHTML(s){
-  return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
-}
-
-btnAddItem.addEventListener("click", ()=>{
-  const name = wName.value.trim();
-  if(!name){ alert("Scrivi il nome del capo."); return; }
-  const cat = wCat.value;
-  const size = (wSize.value.trim() || state.measures.sizeEU || "—");
-  const note = wNote.value.trim();
-
-  state.wardrobe.push({ name, cat, size, note, ts: Date.now() });
-  wName.value=""; wNote.value="";
-  save(); refreshWardrobeUI();
-  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
-});
-
-btnLoadDemo.addEventListener("click", ()=>{
-  const baseSize = state.measures.sizeEU || (gender.value==="f" ? "EU 40" : "EU 50");
-  const demo = [
-    { name:"T-shirt basic premium", cat:"top", size: baseSize, note:"Cotone • Regular" },
-    { name:"Jeans slim dark", cat:"bottom", size: baseSize, note:"Denim • Slim" },
-    { name:"Giacca invernale", cat:"outer", size: baseSize, note:"Calda • Comfort" },
-  ];
-  state.wardrobe = [...demo, ...state.wardrobe];
-  save(); refreshWardrobeUI();
-  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
-});
-
-btnClearWard.addEventListener("click", ()=>{
-  if(!confirm("Svuotare il guardaroba?")) return;
-  state.wardrobe = [];
-  save(); refreshWardrobeUI();
-  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
-});
 
 function updateStyleTip(){
   const s = state.measures.shouldersCm;
@@ -1149,6 +1168,132 @@ function updateStyleTip(){
   else tip = "Consiglio: profilo equilibrato. Vai su 'regular' e scegli in base al comfort che vuoi.";
   styleTip.textContent = tip;
 }
+
+function refreshWardrobeUI(){
+  wardClient.textContent = state.profile.name ? state.profile.name : "—";
+  wardSize.textContent = state.measures.sizeEU ? state.measures.sizeEU : "—";
+
+  if(!wardCards) return;
+
+  const sf = storeFilter?.value || "ALL";
+  const cf = catFilter?.value || "ALL";
+
+  const items = state.wardrobe.filter(it=>{
+    const storeOk = (sf==="ALL") ? true : normalizeStore(it.store) === sf;
+    const catOk = (cf==="ALL") ? true : String(it.cat||"") === cf;
+    return storeOk && catOk;
+  });
+
+  wardCards.innerHTML = "";
+
+  items.forEach((it)=>{
+    const realIndex = state.wardrobe.indexOf(it);
+
+    const div = document.createElement("div");
+    div.className = "cardItem";
+
+    // Priority: imgDataUrl (uploaded) > imgUrl (external)
+    const imgSrc = (it.imgDataUrl && it.imgDataUrl.startsWith("data:image/"))
+      ? it.imgDataUrl
+      : (it.imgUrl && it.imgUrl.startsWith("http") ? it.imgUrl : "");
+
+    const imgHTML = imgSrc
+      ? `<img src="${escapeHTML(imgSrc)}" alt="img" loading="lazy" referrerpolicy="no-referrer" />`
+      : `<div style="height:180px; display:grid; place-items:center; color:rgba(255,255,255,.35); font-size:12px">Nessuna immagine</div>`;
+
+    const linkBtn = (it.link && it.link.startsWith("http"))
+      ? `<a class="btn primary aBtn" target="_blank" rel="noopener" href="${escapeHTML(it.link)}">🛒 Apri store</a>`
+      : "";
+
+    div.innerHTML = `
+      ${imgHTML}
+      <div class="p">
+        <b>${escapeHTML(it.name)}</b>
+        <div class="meta">
+          <span class="tag">${escapeHTML(normalizeStore(it.store))}</span>
+          <span class="tag">${escapeHTML(it.cat)}</span>
+          <span class="tag">Taglia: ${escapeHTML(it.size||"—")}</span>
+        </div>
+        <div class="hint" style="margin-bottom:8px">${escapeHTML(it.note||"")}</div>
+        <div class="actions">
+          <button class="btn" data-try="${realIndex}">👕 Prova</button>
+          ${linkBtn}
+          <button class="btn bad" data-del="${realIndex}">🗑️ Elimina</button>
+        </div>
+      </div>
+    `;
+    wardCards.appendChild(div);
+  });
+
+  wardCards.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.del);
+      state.wardrobe.splice(i,1);
+      save(); refreshWardrobeUI();
+      if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
+    });
+  });
+
+  wardCards.querySelectorAll("[data-try]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.try);
+      const it = state.wardrobe[i];
+      if(!it) return;
+      setSwitch(swJacket, it.cat==="outer");
+      setSwitch(swShirt, it.cat==="top" || it.cat==="dress");
+      setSwitch(swPants, it.cat==="bottom" || it.cat==="dress");
+      syncClothes();
+      document.querySelector('.tab[data-view="studio"]').click();
+    });
+  });
+
+  updateStyleTip();
+}
+
+btnAddItem.addEventListener("click", async ()=>{
+  const name = wName.value.trim();
+  if(!name){ alert("Scrivi il nome del capo."); return; }
+
+  const cat = wCat.value;
+  const size = (wSize.value.trim() || state.measures.sizeEU || "—");
+  const store = normalizeStore(wStore?.value || "Altro");
+  const link = wLink.value.trim();
+  const imgUrl = wImgUrl.value.trim();
+  const note = wNote.value.trim();
+
+  let imgDataUrl = "";
+  const f = wImgFile.files?.[0];
+  if(f){
+    try{ imgDataUrl = await fileToDataURL(f); }
+    catch{ imgDataUrl = ""; }
+  }
+
+  state.wardrobe.unshift({ name, cat, size, store, link, imgUrl, imgDataUrl, note, ts: Date.now() });
+
+  wName.value=""; wNote.value=""; wLink.value=""; wImgUrl.value="";
+  if(wImgFile) wImgFile.value = "";
+  save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
+});
+
+btnLoadDemo.addEventListener("click", async ()=>{
+  const baseSize = state.measures.sizeEU || (gender.value==="f" ? "EU 40" : "EU 50");
+  const demo = [
+    { name:"T-shirt basic premium", cat:"top", size: baseSize, store:"Zalando", link:"", imgUrl:"", imgDataUrl:"", note:"Cotone • Regular", ts: Date.now() },
+    { name:"Jeans slim dark", cat:"bottom", size: baseSize, store:"Amazon", link:"", imgUrl:"", imgDataUrl:"", note:"Denim • Slim", ts: Date.now() },
+    { name:"Giacca invernale", cat:"outer", size: baseSize, store:"Decathlon", link:"", imgUrl:"", imgDataUrl:"", note:"Calda • Comfort", ts: Date.now() },
+  ];
+  state.wardrobe = [...demo, ...state.wardrobe];
+  save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
+});
+
+btnClearWard.addEventListener("click", ()=>{
+  if(!confirm("Svuotare il guardaroba?")) return;
+  state.wardrobe = [];
+  save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
+});
 
 /* --------------------------
    THREE Avatar
@@ -1202,7 +1347,7 @@ const footR = footL.clone(); footR.position.x = 0.17;
 
 avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR);
 
-// clothes
+// clothes textures
 function makeClothTexture(type){
   const c = document.createElement("canvas");
   c.width = 512; c.height = 512;
@@ -1291,7 +1436,6 @@ function syncClothes(){
   jacket.visible = swJacket.classList.contains("on");
   save();
 }
-
 [swShirt,swPants,swJacket].forEach(sw=> sw.addEventListener("click", ()=>{ toggleSwitch(sw); syncClothes(); }));
 
 const slShoulders = document.getElementById("slShoulders");
@@ -1378,7 +1522,7 @@ btnResetAvatar.addEventListener("click", ()=>{
 });
 
 /* --------------------------
-   Admin invisible unlock (SerCucTech style)
+   Admin invisible unlock
 -------------------------- */
 const secretTap = document.getElementById("secretTap");
 const tabAdmin = document.getElementById("tabAdmin");
@@ -1402,22 +1546,15 @@ function setAdmin(on){
   localStorage.setItem(ADMIN_KEY, on ? "1" : "0");
   tabAdmin.classList.toggle("hide", !on);
   adminState.textContent = on ? "ON" : "OFF";
-  if(on){
-    adminJson.value = JSON.stringify(state, null, 2);
-  }
+  if(on) adminJson.value = JSON.stringify(state, null, 2);
 }
-function isAdmin(){
-  return localStorage.getItem(ADMIN_KEY) === "1";
-}
+function isAdmin(){ return localStorage.getItem(ADMIN_KEY) === "1"; }
 
 if(secretTap){
   secretTap.addEventListener("click", ()=>{
     tapCount++;
     if(!tapTimer){
-      tapTimer = setTimeout(()=>{
-        tapCount = 0;
-        tapTimer = null;
-      }, 4000);
+      tapTimer = setTimeout(()=>{ tapCount = 0; tapTimer = null; }, 4000);
     }
     if(tapCount >= 5){
       clearTimeout(tapTimer);
@@ -1493,7 +1630,7 @@ btnResetProfile?.addEventListener("click", ()=>{
   save();
   syncUIFromState();
   refreshWardrobeUI();
-  adminJson.value = JSON.stringify(state, null, 2);
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
   alert("Profilo resettato ✅");
 });
 
@@ -1502,7 +1639,7 @@ btnResetWardrobe?.addEventListener("click", ()=>{
   state.wardrobe = [];
   save();
   refreshWardrobeUI();
-  adminJson.value = JSON.stringify(state, null, 2);
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
   alert("Guardaroba svuotato ✅");
 });
 
@@ -1514,7 +1651,7 @@ btnReload?.addEventListener("click", ()=>{
   updateSliderLabels();
   syncClothes();
   applyAvatarFromSliders();
-  adminJson.value = JSON.stringify(state, null, 2);
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
   alert("UI ricaricata ✅");
 });
 
@@ -1533,3 +1670,4 @@ setAdmin(isAdmin());
 </script>
 </body>
 </html>
+```0
