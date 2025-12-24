@@ -3,19 +3,17 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 3D</title>
+  <title>SerCucTech • Virtual Stylist 2D</title>
   <meta name="theme-color" content="#0b0b12" />
-  <link rel="manifest" href="./manifest.json" />
   <style>
     :root{
       --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.10);
       --card:rgba(255,255,255,.03); --card2:rgba(255,255,255,.02);
-      --acc:#ffd56a;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
     body{ margin:0; background:var(--bg); color:var(--txt); }
     header{
-      position:sticky; top:0; z-index:10;
+      position:sticky; top:0; z-index:50;
       background:rgba(11,11,18,.86); backdrop-filter:blur(10px);
       border-bottom:1px solid rgba(255,255,255,.06);
     }
@@ -41,10 +39,8 @@
       background:rgba(255,213,106,.12);
       border-color:rgba(255,213,106,.25);
     }
-
-    .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
+    .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:14px; }
     @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
-
     .card{
       border:1px solid var(--line);
       background:var(--card2);
@@ -55,17 +51,15 @@
       margin:0; font-size:14px;
       padding:12px 14px;
       border-bottom:1px solid rgba(255,255,255,.06);
-      display:flex; justify-content:space-between; align-items:center;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
     }
     .card .body{ padding:12px 14px; }
-
     .pill{
       display:inline-flex; gap:8px; align-items:center; padding:6px 10px;
       border-radius:999px; border:1px solid var(--line);
       background:var(--card); color:var(--muted); font-size:12px;
     }
     .pill b{ color:var(--txt); }
-
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
     input[type="range"], input[type="text"], select{
       width:100%; box-sizing:border-box;
@@ -76,7 +70,6 @@
       outline:none;
     }
     input[type="file"]{ width:100%; }
-
     .btn{
       border:1px solid rgba(255,255,255,.12);
       background:rgba(255,255,255,.04);
@@ -94,65 +87,25 @@
       border-color:rgba(255,120,120,.25);
     }
 
-    #threeWrap{
-      height:420px;
+    /* Stage */
+    #stageWrap{
+      border:1px solid rgba(255,255,255,.08);
       background:#090912;
       border-radius:16px;
-      border:1px solid rgba(255,255,255,.06);
       overflow:hidden;
       position:relative;
+      min-height:520px;
     }
-
-    .section{ display:none; }
-    .section.active{ display:block; }
-
-    .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-    @media(max-width:680px){ .cards{ grid-template-columns:1fr; } }
-    .item{
-      border:1px solid var(--line);
-      background:var(--card2);
-      border-radius:16px;
-      overflow:hidden;
-      display:flex; gap:12px;
-      padding:12px;
-    }
-    .thumb{
-      width:84px; height:84px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03);
-      display:grid; place-items:center;
-      flex:0 0 auto;
-      font-size:12px; color:var(--muted);
-    }
-    .meta{ flex:1 1 auto; min-width:0; }
-    .meta .t{ font-weight:800; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
-    .meta .p{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
-
-    /* Photo canvases */
-    .photoGrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    @media(max-width:980px){ .photoGrid{ grid-template-columns:1fr; } }
-    .photoBox{
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.20);
-      border-radius:16px;
-      overflow:hidden;
-      position:relative;
-    }
-    .photoTop{
-      padding:10px 12px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      display:flex; justify-content:space-between; align-items:center; gap:10px;
-    }
-    canvas{
+    @media(max-width:980px){ #stageWrap{ min-height:440px; } }
+    #stage{
       width:100%;
       height:auto;
       display:block;
-      touch-action:none; /* IMPORTANT: per click/touch preciso */
+      background:#090912;
+      touch-action:none; /* drag */
     }
     .hint{
-      position:absolute;
-      left:10px; right:10px; bottom:10px;
+      position:absolute; left:10px; right:10px; bottom:10px;
       background:rgba(0,0,0,.45);
       border:1px solid rgba(255,255,255,.10);
       color:rgba(255,255,255,.92);
@@ -162,11 +115,37 @@
       pointer-events:none;
     }
 
-    /* Error box */
+    /* Wardrobe cards */
+    .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    @media(max-width:680px){ .cards{ grid-template-columns:1fr; } }
+    .item{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:16px;
+      overflow:hidden;
+      padding:12px;
+      display:flex; gap:12px;
+      align-items:flex-start;
+    }
+    .thumb{
+      width:84px;height:84px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.03);
+      display:grid; place-items:center;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .thumb img{ width:100%; height:100%; object-fit:contain; display:block; }
+    .meta{ flex:1 1 auto; min-width:0; }
+    .meta .t{ font-weight:900; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .meta .p{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+
+    /* error box */
     #errBox{
-      position:fixed; left:10px; right:10px; top:86px; z-index:9998;
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
       border:1px solid rgba(255,110,110,.35);
-      background:rgba(255,110,110,.10);
+      background:rgba(255,110,110,.08);
       color:rgba(255,255,255,.95);
       border-radius:14px;
       padding:10px 12px;
@@ -174,30 +153,8 @@
       white-space:pre-wrap;
       font-size:12px;
     }
-
-    /* Calib bar: SEMPRE VISIBILE IN BASSO */
-    #calibBar{
-      position:fixed; left:12px; right:12px; bottom:12px; z-index:9999;
-      display:none; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(10,10,18,.92); backdrop-filter:blur(10px);
-    }
-    #calibBar .small{ font-size:12px; color:rgba(255,255,255,.85); }
-    #calibBar .right{ display:flex; gap:8px; }
-
-    /* Measure bar: barra sotto (se misuri) */
-    #measureBar{
-      position:fixed; left:12px; right:12px; bottom:66px; z-index:9999;
-      display:none; gap:10px; align-items:center; justify-content:space-between;
-      padding:10px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background:rgba(10,10,18,.92); backdrop-filter:blur(10px);
-    }
-
   </style>
 </head>
-
 <body>
 <header>
   <div class="wrap">
@@ -205,237 +162,157 @@
       <div class="row">
         <div class="brand">SC</div>
         <div>
-          <div style="font-weight:900">SerCucTech • Virtual Stylist 3D</div>
-          <div class="sub">Home unica • Foto FRONTALE/LATERALE + calibrazione carta (no tasto “Fatto” che sparisce)</div>
+          <div style="font-weight:900">SerCucTech • Virtual Stylist 2D</div>
+          <div class="sub">Avatar = la tua foto (realistico) + outfit overlay PNG trasparenti</div>
         </div>
       </div>
-      <span class="pill">Stato: <b id="status">Avvio…</b></span>
+      <span class="pill">Stato: <b id="status">OK</b></span>
     </div>
-
-    <div class="tabs" role="tablist" aria-label="Sezioni app">
+    <div class="tabs">
       <div class="tab active" data-tab="studio">Studio</div>
       <div class="tab" data-tab="guardaroba">Guardaroba</div>
-      <div class="tab" data-tab="business">Business</div>
       <div class="tab" data-tab="guida">Guida</div>
     </div>
   </div>
 </header>
 
-<div id="errBox"></div>
-
 <main class="wrap">
-
   <!-- STUDIO -->
-  <section id="studio" class="section active">
-
+  <section id="studio" class="section" style="display:block">
     <div class="grid">
-
-      <!-- Avatar -->
       <div class="card">
-        <h2><span>Avatar 3D + prova outfit</span><span class="sub">drag = ruota</span></h2>
+        <h2><span>Preview (tu + vestito)</span><span class="sub">trascina per spostare</span></h2>
         <div class="body">
-          <div id="threeWrap"></div>
-
-          <div style="height:10px"></div>
-
-          <div class="row">
-            <div style="flex:1 1 240px; min-width:220px">
-              <label>Spalle (cm) — slider</label>
-              <input id="slShoulders" type="range" min="34" max="56" value="44" />
-              <span class="pill">Spalle: <b id="vShoulders">44</b> cm</span>
-            </div>
-            <div style="flex:1 1 240px; min-width:220px">
-              <label>Vita (cm) — slider</label>
-              <input id="slWaist" type="range" min="60" max="120" value="86" />
-              <span class="pill">Vita: <b id="vWaist">86</b> cm</span>
+          <div id="stageWrap">
+            <canvas id="stage"></canvas>
+            <div class="hint" id="hint">
+              1) Carica foto persona. 2) Carica un vestito PNG (trasparente). 3) Regola scala/posizione.
             </div>
           </div>
 
           <div style="height:10px"></div>
 
           <div class="row">
-            <button class="btn primary" id="btnOutfitBase">Solo base</button>
-            <button class="btn" id="btnOutfitCasual">Casual</button>
-            <button class="btn" id="btnOutfitJacket">Con giacca</button>
-            <button class="btn" id="btnReset">↩️ Reset</button>
+            <button class="btn primary" id="btnExport">📸 Scatta look (PNG)</button>
+            <button class="btn" id="btnResetPose">↩️ Reset posizione</button>
+            <button class="btn danger" id="btnClearAll">🧹 Svuota tutto</button>
           </div>
         </div>
       </div>
 
-      <!-- Foto + calibrazione + misure -->
       <div class="card">
-        <h2><span>Misure reali da 2 foto (con carta)</span><span class="sub">demo reale: click 2 punti → cm</span></h2>
+        <h2><span>Foto persona + regolazione</span><span class="sub">zoom e posizione</span></h2>
         <div class="body">
-
-          <div class="sub">
-            Regole: luce buona, telefono dritto, distanza 2–3m, <b>corpo intero</b> in foto.
-            Metti una <b>carta</b> visibile in foto (A4 o carta credito) per la scala.
-          </div>
-
-          <div style="height:10px"></div>
-
-          <label>Tipo carta per calibrazione</label>
-          <select id="paperType">
-            <option value="A4" selected>A4 (210×297 mm)</option>
-            <option value="CC">Carta di credito (85.60×53.98 mm)</option>
+          <label>Profilo</label>
+          <select id="profile">
+            <option value="uomo">Uomo</option>
+            <option value="donna">Donna</option>
+            <option value="bambino">Bambino</option>
+            <option value="bambina">Bambina</option>
           </select>
 
-          <div style="height:10px"></div>
+          <label>Carica foto persona (frontale)</label>
+          <input id="personFile" type="file" accept="image/*" />
 
-          <div class="row">
-            <div style="flex:1 1 260px; min-width:240px">
-              <label>Carica FRONTALE (jpg/png)</label>
-              <input id="frontFile" type="file" accept="image/*" />
-              <span class="pill">Front: <b id="frontOk">NO</b></span>
-            </div>
-            <div style="flex:1 1 260px; min-width:240px">
-              <label>Carica LATERALE (jpg/png)</label>
-              <input id="sideFile" type="file" accept="image/*" />
-              <span class="pill">Side: <b id="sideOk">NO</b></span>
-            </div>
+          <div class="row" style="margin-top:10px">
+            <span class="pill">Persona: <b id="personOk">NO</b></span>
+            <span class="pill">Vestito: <b id="clothOk">NO</b></span>
           </div>
 
-          <div style="height:10px"></div>
+          <label>Zoom persona</label>
+          <input id="personScale" type="range" min="0.5" max="2.2" step="0.01" value="1.0"/>
 
-          <div class="row">
-            <button class="btn primary" id="btnCalib">🎯 Calibra carta (4 angoli)</button>
-            <button class="btn" id="btnMeasureShoulders">📏 Misura SPALLE (2 punti)</button>
-            <button class="btn" id="btnMeasureWaist">📏 Misura VITA (2 punti)</button>
-            <button class="btn" id="btnMeasureHeight">📏 Altezza CORPO (2 punti)</button>
-            <button class="btn danger" id="btnClearPhotos">Svuota foto</button>
+          <label>Sposta persona (X)</label>
+          <input id="personX" type="range" min="-250" max="250" step="1" value="0"/>
+
+          <label>Sposta persona (Y)</label>
+          <input id="personY" type="range" min="-300" max="300" step="1" value="0"/>
+
+          <div style="height:12px"></div>
+
+          <div class="sub">
+            Suggerimento: scegli una foto con <b>corpo intero</b> e sfondo semplice.
           </div>
-
-          <div style="height:10px"></div>
-
-          <div class="photoGrid">
-            <div class="photoBox">
-              <div class="photoTop">
-                <b>FRONTALE</b>
-                <span class="pill">Scala: <b id="scaleTxt">non calibrata</b></span>
-              </div>
-              <canvas id="frontCanvas"></canvas>
-              <div class="hint" id="frontHint">Carica una foto frontale. Poi “Calibra carta” → tocca 4 angoli della carta.</div>
-            </div>
-
-            <div class="photoBox">
-              <div class="photoTop">
-                <b>LATERALE</b>
-                <span class="pill">Misure: <b id="measuresTxt">—</b></span>
-              </div>
-              <canvas id="sideCanvas"></canvas>
-              <div class="hint" id="sideHint">Carica la laterale (opzionale). Le misure si fanno sul canvas.</div>
-            </div>
-          </div>
-
-          <div style="height:10px"></div>
-
-          <div class="row">
-            <span class="pill">Spalle reali: <b id="realShoulders">—</b></span>
-            <span class="pill">Vita reale: <b id="realWaist">—</b></span>
-            <span class="pill">Altezza corpo: <b id="realHeight">—</b></span>
-          </div>
-
         </div>
       </div>
+    </div>
 
+    <div style="height:14px"></div>
+
+    <div class="card">
+      <h2><span>Controlli vestito (overlay)</span><span class="sub">PNG trasparente</span></h2>
+      <div class="body">
+        <label>Carica vestito (PNG trasparente)</label>
+        <input id="clothFile" type="file" accept="image/*" />
+
+        <label>Scala vestito</label>
+        <input id="clothScale" type="range" min="0.4" max="2.8" step="0.01" value="1.0"/>
+
+        <label>Sposta vestito (X)</label>
+        <input id="clothX" type="range" min="-250" max="250" step="1" value="0"/>
+
+        <label>Sposta vestito (Y)</label>
+        <input id="clothY" type="range" min="-300" max="300" step="1" value="0"/>
+
+        <label>Opacità vestito</label>
+        <input id="clothAlpha" type="range" min="0.15" max="1.0" step="0.01" value="1.0"/>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnBringFront">Vestito sopra</button>
+          <button class="btn" id="btnBringBack">Vestito sotto</button>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="sub">
+          Per un effetto realistico: PNG con trasparenza e vestito “frontale” (tipo catalogo).
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- GUARDAROBA -->
-  <section id="guardaroba" class="section">
+  <section id="guardaroba" class="section" style="display:none">
     <div class="card">
-      <h2><span>Guardaroba multi-store (cards)</span><span class="sub">Acquista = link affiliato</span></h2>
+      <h2><span>Guardaroba (card)</span><span class="sub">carichi PNG outfit e li provi</span></h2>
       <div class="body">
         <div class="row">
-          <button class="btn primary" id="btnAddDemo">Carica demo</button>
-          <button class="btn" id="btnClearWardrobe">Svuota</button>
-          <span class="pill">Elementi: <b id="wardCount">0</b></span>
+          <button class="btn primary" id="btnAddItem">➕ Aggiungi capo (PNG)</button>
+          <button class="btn" id="btnClearWardrobe">Svuota guardaroba</button>
+          <span class="pill">Capi: <b id="wardCount">0</b></span>
         </div>
+        <input id="wardFile" type="file" accept="image/*" style="display:none" />
 
         <div style="height:12px"></div>
         <div class="cards" id="wardrobe"></div>
 
-        <div style="height:12px"></div>
+        <div style="height:10px"></div>
         <div class="sub">
-          Qui puoi incollare link Awin (deeplink) oppure Amazon con tag.
-          Le immagini prodotto le aggiungiamo dopo (API o upload).
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- BUSINESS -->
-  <section id="business" class="section">
-    <div class="grid">
-      <div class="card">
-        <h2><span>Affiliate settings</span><span class="sub">Awin + Amazon</span></h2>
-        <div class="body">
-          <label>Amazon Tag IT</label>
-          <input id="amazonTag" type="text" placeholder="es. sercuctech-21" />
-          <div style="height:10px"></div>
-          <span class="pill">Salvato in: <b>localStorage</b></span>
-          <div style="height:12px"></div>
-          <div class="sub">
-            Amazon: se metti un link prodotto Amazon, qui aggiunge automaticamente <b>?tag=</b>.
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2><span>Generatore link Amazon</span><span class="sub">aggiunge il tag</span></h2>
-        <div class="body">
-          <label>Incolla link Amazon</label>
-          <input id="amazonIn" type="text" placeholder="https://www.amazon.it/..." />
-          <div style="height:10px"></div>
-          <button class="btn primary" id="btnAmazonMake">Crea link affiliato</button>
-          <label>Link affiliato generato</label>
-          <input id="amazonOut" type="text" readonly />
-          <div class="row" style="margin-top:10px">
-            <button class="btn" id="btnCopy">Copia</button>
-            <button class="btn" id="btnOpen">Apri</button>
-          </div>
+          Nota: qui salviamo solo “miniatura” e dati leggeri. Se carichi immagini enormi, il telefono può soffrire.
         </div>
       </div>
     </div>
   </section>
 
   <!-- GUIDA -->
-  <section id="guida" class="section">
+  <section id="guida" class="section" style="display:none">
     <div class="card">
-      <h2><span>Guida rapida</span><span class="sub">passi semplici</span></h2>
+      <h2><span>Guida</span><span class="sub">come farlo in 30 secondi</span></h2>
       <div class="body">
         <div class="sub">
-          <b>1) Studio</b>: carica foto frontale + (facoltativa) laterale.<br>
-          <b>2) Calibra</b>: premi “Calibra carta” e tocca i 4 angoli della carta nella foto.<br>
-          <b>3) Misura</b>: premi “Misura SPALLE/VITA/ALTEZZA” e tocca 2 punti (sx e dx).<br>
-          <b>4) Avatar</b>: i valori reali aggiornano gli slider (se vuoi lo faccio automatico).<br><br>
-          Nota: per “avatar clone dalla foto” serve ML/3D più pesante. Qui intanto hai misure reali e base avatar.
+          <b>1)</b> Vai su “Studio” e carica la foto della persona (corpo intero).<br>
+          <b>2)</b> Carica un vestito <b>PNG trasparente</b> (fronte).<br>
+          <b>3)</b> Regola scala e posizione del vestito finché cade bene.<br>
+          <b>4)</b> Premi “Scatta look” per salvare un PNG finale.<br><br>
+          Se vuoi, nella prossima versione aggiungo: <b>ritaglio automatico persona</b> (AI segmentazione) e vestiti “ancorati” alle spalle.
         </div>
       </div>
     </div>
   </section>
-
 </main>
 
-<!-- Barra calibrazione (SEMPRE VISIBILE) -->
-<div id="calibBar">
-  <div class="small">Calibrazione: <b id="calibCount">0</b>/4 punti • Tocca i 4 angoli della carta (ordine libero)</div>
-  <div class="right">
-    <button id="btnCalibReset" class="btn">Reset</button>
-    <button id="btnCalibDone" class="btn primary" disabled>Fatto</button>
-  </div>
-</div>
+<div id="errBox"></div>
 
-<!-- Barra misure (SEMPRE VISIBILE) -->
-<div id="measureBar">
-  <div class="small" id="measureHint">Misura: —</div>
-  <div class="right">
-    <button id="btnMeasureReset" class="btn">Reset</button>
-    <button id="btnMeasureDone" class="btn primary" disabled>Fatto</button>
-  </div>
-</div>
-
-<script type="module">
+<script>
   const status = document.getElementById("status");
   const errBox = document.getElementById("errBox");
 
@@ -452,681 +329,413 @@
   const sections = {
     studio: document.getElementById("studio"),
     guardaroba: document.getElementById("guardaroba"),
-    business: document.getElementById("business"),
     guida: document.getElementById("guida"),
   };
   function setTab(name){
     tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
-    Object.entries(sections).forEach(([k, el]) => el.classList.toggle("active", k === name));
-    localStorage.setItem("vs3d_tab", name);
+    Object.entries(sections).forEach(([k, el]) => el.style.display = (k===name ? "block":"none"));
+    localStorage.setItem("vs2d_tab", name);
   }
   tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
-  setTab(localStorage.getItem("vs3d_tab") || "studio");
+  setTab(localStorage.getItem("vs2d_tab") || "studio");
 
-  // ===== Storage =====
-  const KEY = "sercuctech_vs3d_state_v2";
+  // State
+  const KEY="sercuctech_vs2d_v1";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
-  state.affiliate ??= { amazonTag:"" };
-  state.wardrobe ??= [];
-  state.scale ??= { mmPerPx: null, paper: "A4" }; // mm per pixel
-  state.real ??= { shouldersCm:null, waistCm:null, heightCm:null };
-  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  state.profile ??= "uomo";
+  state.person = state.person || { scale:1, x:0, y:0 };
+  state.cloth  = state.cloth  || { scale:1, x:0, y:0, alpha:1, onTop:true };
+  state.wardrobe ??= []; // {id,title,thumbDataUrl,fullDataUrl? (non salvo full per non pesare)}
 
-  // ===== Business =====
-  const amazonTag = document.getElementById("amazonTag");
-  amazonTag.value = state.affiliate.amazonTag || "";
-  amazonTag.addEventListener("input", ()=>{ state.affiliate.amazonTag = amazonTag.value.trim(); save(); });
-
-  function addAmazonTag(url, tag){
-    try{
-      const u = new URL(url);
-      const host = u.hostname.toLowerCase();
-      const isAmazon = host.includes("amazon.") || host.includes("amzn.");
-      if(!isAmazon) return url;
-      if(tag && !u.searchParams.get("tag")) u.searchParams.set("tag", tag);
-      return u.toString();
-    }catch{ return url; }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch(e){ showErr("Memoria piena. Svuota cache o riduci immagini."); }
   }
 
-  // Amazon generator
-  const amazonIn = document.getElementById("amazonIn");
-  const amazonOut = document.getElementById("amazonOut");
-  document.getElementById("btnAmazonMake").addEventListener("click", ()=>{
-    const tag = (state.affiliate.amazonTag || "").trim();
-    amazonOut.value = addAmazonTag(amazonIn.value.trim(), tag);
-  });
-  document.getElementById("btnCopy").addEventListener("click", async ()=>{
-    try{ await navigator.clipboard.writeText(amazonOut.value.trim()); }catch{}
-  });
-  document.getElementById("btnOpen").addEventListener("click", ()=>{
-    const u = amazonOut.value.trim();
-    if(u) window.open(u, "_blank");
+  // DOM
+  const profile = document.getElementById("profile");
+  const personFile = document.getElementById("personFile");
+  const clothFile = document.getElementById("clothFile");
+  const personOk = document.getElementById("personOk");
+  const clothOk = document.getElementById("clothOk");
+
+  const personScale = document.getElementById("personScale");
+  const personX = document.getElementById("personX");
+  const personY = document.getElementById("personY");
+
+  const clothScale = document.getElementById("clothScale");
+  const clothX = document.getElementById("clothX");
+  const clothY = document.getElementById("clothY");
+  const clothAlpha = document.getElementById("clothAlpha");
+
+  const hint = document.getElementById("hint");
+
+  // Canvas stage
+  const stage = document.getElementById("stage");
+  const ctx = stage.getContext("2d");
+
+  // Images in memory
+  let personImg = null;
+  let clothImg = null;
+
+  // Helpers
+  function clamp(n,a,b){ return Math.max(a, Math.min(b,n)); }
+
+  async function fileToDataURL(file, maxSide=1600, quality=0.85){
+    // compress for Android stability
+    const raw = await new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = ()=> res(String(r.result||""));
+      r.onerror = ()=> rej(new Error("Impossibile leggere file"));
+      r.readAsDataURL(file);
+    });
+
+    const img = await new Promise((res, rej)=>{
+      const im = new Image();
+      im.onload = ()=> res(im);
+      im.onerror = ()=> rej(new Error("Immagine non caricabile"));
+      im.src = raw;
+    });
+
+    const w = img.naturalWidth || 1;
+    const h = img.naturalHeight || 1;
+    const s = Math.min(1, maxSide / Math.max(w,h));
+    const nw = Math.round(w*s);
+    const nh = Math.round(h*s);
+
+    const c = document.createElement("canvas");
+    c.width=nw; c.height=nh;
+    const cctx = c.getContext("2d");
+    cctx.drawImage(img,0,0,nw,nh);
+
+    // if png maybe keep png; for photos use jpeg
+    const isPng = (file.type||"").includes("png");
+    return isPng ? c.toDataURL("image/png") : c.toDataURL("image/jpeg", quality);
+  }
+
+  async function dataURLToImage(dataUrl){
+    return new Promise((res, rej)=>{
+      const im = new Image();
+      im.onload = ()=> res(im);
+      im.onerror = ()=> rej(new Error("Immagine non caricabile"));
+      im.src = dataUrl;
+    });
+  }
+
+  function fitStage(){
+    // responsive stage size
+    const wrap = document.getElementById("stageWrap");
+    const w = wrap.clientWidth;
+    const h = Math.round(w * 1.25); // portrait ratio
+    stage.width = Math.max(320, Math.min(980, Math.round(w)));
+    stage.height = Math.max(420, Math.min(980, h));
+  }
+  window.addEventListener("resize", ()=>{ fitStage(); draw(); });
+
+  function draw(){
+    fitStage();
+
+    ctx.clearRect(0,0,stage.width, stage.height);
+    ctx.fillStyle = "#090912";
+    ctx.fillRect(0,0,stage.width, stage.height);
+
+    // guidelines
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = "rgba(255,255,255,.06)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(12, 12, stage.width-24, stage.height-24);
+
+    const centerX = stage.width/2;
+    const centerY = stage.height/2;
+
+    // compute person transform
+    const ps = Number(personScale.value);
+    const px = Number(personX.value);
+    const py = Number(personY.value);
+
+    // compute cloth transform
+    const cs = Number(clothScale.value);
+    const cx = Number(clothX.value);
+    const cy = Number(clothY.value);
+    const ca = Number(clothAlpha.value);
+
+    function drawImageCentered(img, scale, offX, offY){
+      if(!img) return;
+      const iw = img.naturalWidth || img.width;
+      const ih = img.naturalHeight || img.height;
+
+      const base = Math.min(stage.width*0.92/iw, stage.height*0.92/ih);
+      const s = base * scale;
+
+      const dw = iw * s;
+      const dh = ih * s;
+
+      const x = centerX - dw/2 + offX;
+      const y = centerY - dh/2 + offY;
+
+      ctx.drawImage(img, x, y, dw, dh);
+    }
+
+    // order: cloth under or above
+    if(state.cloth.onTop === false){
+      ctx.globalAlpha = ca;
+      drawImageCentered(clothImg, cs, cx, cy);
+      ctx.globalAlpha = 1;
+      drawImageCentered(personImg, ps, px, py);
+    } else {
+      ctx.globalAlpha = 1;
+      drawImageCentered(personImg, ps, px, py);
+      ctx.globalAlpha = ca;
+      drawImageCentered(clothImg, cs, cx, cy);
+      ctx.globalAlpha = 1;
+    }
+
+    // hint
+    const okP = !!personImg;
+    const okC = !!clothImg;
+    hint.style.display = (okP && okC) ? "none" : "block";
+  }
+
+  // init controls
+  profile.value = state.profile;
+  personScale.value = state.person.scale;
+  personX.value = state.person.x;
+  personY.value = state.person.y;
+
+  clothScale.value = state.cloth.scale;
+  clothX.value = state.cloth.x;
+  clothY.value = state.cloth.y;
+  clothAlpha.value = state.cloth.alpha;
+
+  function syncToState(){
+    state.profile = profile.value;
+    state.person.scale = Number(personScale.value);
+    state.person.x = Number(personX.value);
+    state.person.y = Number(personY.value);
+
+    state.cloth.scale = Number(clothScale.value);
+    state.cloth.x = Number(clothX.value);
+    state.cloth.y = Number(clothY.value);
+    state.cloth.alpha = Number(clothAlpha.value);
+
+    save();
+    draw();
+  }
+
+  [profile, personScale, personX, personY, clothScale, clothX, clothY, clothAlpha].forEach(el=>{
+    el.addEventListener("input", syncToState);
+    el.addEventListener("change", syncToState);
   });
 
-  // ===== Wardrobe =====
+  document.getElementById("btnBringFront").addEventListener("click", ()=>{
+    state.cloth.onTop = true; save(); draw();
+  });
+  document.getElementById("btnBringBack").addEventListener("click", ()=>{
+    state.cloth.onTop = false; save(); draw();
+  });
+
+  // Dragging (move cloth by default; if holding 2 fingers => move person)
+  let dragging = false;
+  let last = {x:0,y:0};
+  let dragTarget = "cloth"; // cloth/person
+
+  stage.addEventListener("pointerdown", (e)=>{
+    dragging = true;
+    last = {x:e.clientX, y:e.clientY};
+    dragTarget = e.shiftKey ? "person" : "cloth"; // desktop: shift to move person
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointerup", ()=> dragging=false);
+  stage.addEventListener("pointercancel", ()=> dragging=false);
+  stage.addEventListener("pointermove", (e)=>{
+    if(!dragging) return;
+    const dx = e.clientX - last.x;
+    const dy = e.clientY - last.y;
+    last = {x:e.clientX, y:e.clientY};
+
+    // scale movement a bit
+    const mx = dx * 1.2;
+    const my = dy * 1.2;
+
+    if(dragTarget === "person"){
+      personX.value = clamp(Number(personX.value) + mx, -250, 250);
+      personY.value = clamp(Number(personY.value) + my, -300, 300);
+    } else {
+      clothX.value = clamp(Number(clothX.value) + mx, -250, 250);
+      clothY.value = clamp(Number(clothY.value) + my, -300, 300);
+    }
+    syncToState();
+  });
+
+  // Upload person
+  personFile.addEventListener("change", async ()=>{
+    try{
+      const f = personFile.files && personFile.files[0];
+      if(!f) return;
+      const dataUrl = await fileToDataURL(f, 1600, 0.85);
+      personImg = await dataURLToImage(dataUrl);
+      personOk.textContent = "OK";
+      // reset a bit for best view
+      personScale.value = 1.0;
+      personX.value = 0;
+      personY.value = 0;
+      syncToState();
+    }catch(e){ showErr(e.message || String(e)); }
+    finally{ personFile.value = ""; }
+  });
+
+  // Upload cloth
+  clothFile.addEventListener("change", async ()=>{
+    try{
+      const f = clothFile.files && clothFile.files[0];
+      if(!f) return;
+      const dataUrl = await fileToDataURL(f, 1400, 0.92);
+      clothImg = await dataURLToImage(dataUrl);
+      clothOk.textContent = "OK";
+      clothScale.value = 1.0;
+      clothX.value = 0;
+      clothY.value = 0;
+      clothAlpha.value = 1.0;
+      state.cloth.onTop = true;
+      syncToState();
+    }catch(e){ showErr(e.message || String(e)); }
+    finally{ clothFile.value = ""; }
+  });
+
+  // Export
+  document.getElementById("btnExport").addEventListener("click", ()=>{
+    try{
+      // render once
+      draw();
+      const url = stage.toDataURL("image/png");
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "SerCucTech-Look.png";
+      a.click();
+    }catch(e){ showErr("Export fallito: " + (e.message||String(e))); }
+  });
+
+  // Reset position
+  document.getElementById("btnResetPose").addEventListener("click", ()=>{
+    personScale.value = 1.0; personX.value = 0; personY.value = 0;
+    clothScale.value = 1.0; clothX.value = 0; clothY.value = 0; clothAlpha.value = 1.0;
+    state.cloth.onTop = true;
+    syncToState();
+  });
+
+  // Clear all
+  document.getElementById("btnClearAll").addEventListener("click", ()=>{
+    personImg = null; clothImg = null;
+    personOk.textContent = "NO";
+    clothOk.textContent = "NO";
+    state.wardrobe = [];
+    save();
+    renderWardrobe();
+    draw();
+  });
+
+  // Wardrobe
   const wardrobeEl = document.getElementById("wardrobe");
   const wardCount = document.getElementById("wardCount");
+  const btnAddItem = document.getElementById("btnAddItem");
+  const wardFile = document.getElementById("wardFile");
+  const btnClearWardrobe = document.getElementById("btnClearWardrobe");
+
+  function makeId(){ return "i"+Math.random().toString(16).slice(2)+Date.now().toString(16); }
+
   function renderWardrobe(){
     wardrobeEl.innerHTML = "";
     wardCount.textContent = String(state.wardrobe.length);
+
     state.wardrobe.forEach((it, idx)=>{
       const card = document.createElement("div");
       card.className = "item";
 
-      const thumb = document.createElement("div");
-      thumb.className = "thumb";
-      thumb.textContent = it.store || "Store";
+      const th = document.createElement("div");
+      th.className = "thumb";
+      const im = document.createElement("img");
+      im.src = it.thumb;
+      th.appendChild(im);
 
       const meta = document.createElement("div");
       meta.className = "meta";
 
       const t = document.createElement("div");
       t.className = "t";
-      t.textContent = it.title || "Prodotto";
+      t.textContent = it.title || "Capo";
 
       const s = document.createElement("div");
       s.className = "s";
-      s.textContent = `${it.store || "Store"} • ${it.type || "capo"}`;
+      s.textContent = "PNG • overlay";
 
       const p = document.createElement("div");
       p.className = "p";
 
-      const buy = document.createElement("button");
-      buy.className = "btn primary";
-      buy.textContent = "Acquista";
-      buy.addEventListener("click", ()=>{
-        let link = (it.link || "").trim();
-        link = addAmazonTag(link, state.affiliate.amazonTag || "");
-        if(link) window.open(link, "_blank");
+      const use = document.createElement("button");
+      use.className = "btn primary";
+      use.textContent = "Prova";
+      use.addEventListener("click", async ()=>{
+        try{
+          // carico full se presente, altrimenti thumb (va bene)
+          const dataUrl = it.full || it.thumb;
+          clothImg = await dataURLToImage(dataUrl);
+          clothOk.textContent = "OK";
+          setTab("studio");
+          clothScale.value = 1.0; clothX.value = 0; clothY.value = 0; clothAlpha.value = 1.0;
+          state.cloth.onTop = true;
+          syncToState();
+        }catch(e){ showErr(e.message||String(e)); }
       });
 
       const del = document.createElement("button");
       del.className = "btn";
       del.textContent = "Elimina";
       del.addEventListener("click", ()=>{
-        state.wardrobe.splice(idx, 1);
-        save(); renderWardrobe();
+        state.wardrobe.splice(idx,1);
+        save();
+        renderWardrobe();
       });
 
-      p.appendChild(buy); p.appendChild(del);
-      meta.appendChild(t); meta.appendChild(s); meta.appendChild(p);
-      card.appendChild(thumb); card.appendChild(meta);
+      p.appendChild(use);
+      p.appendChild(del);
+
+      meta.appendChild(t);
+      meta.appendChild(s);
+      meta.appendChild(p);
+
+      card.appendChild(th);
+      card.appendChild(meta);
       wardrobeEl.appendChild(card);
     });
   }
 
-  document.getElementById("btnAddDemo").addEventListener("click", ()=>{
-    state.wardrobe = [
-      { title:"T-shirt basic", store:"Amazon", type:"top", link:"https://www.amazon.it/" },
-      { title:"Jeans slim", store:"Zalando", type:"pants", link:"https://www.zalando.it/" },
-      { title:"Sneakers", store:"Decathlon", type:"shoes", link:"https://www.decathlon.it/" },
-      { title:"Giacca leggera", store:"Amazon", type:"jacket", link:"https://www.amazon.it/" }
-    ];
-    save(); renderWardrobe(); setTab("guardaroba");
+  btnAddItem.addEventListener("click", ()=> wardFile.click());
+
+  wardFile.addEventListener("change", async ()=>{
+    try{
+      const f = wardFile.files && wardFile.files[0];
+      if(!f) return;
+      // thumb piccola
+      const thumb = await fileToDataURL(f, 420, 0.9);
+      // full (non enorme)
+      const full = await fileToDataURL(f, 1200, 0.92);
+      const item = { id: makeId(), title: f.name, thumb, full };
+      state.wardrobe.unshift(item);
+      save();
+      renderWardrobe();
+    }catch(e){ showErr(e.message||String(e)); }
+    finally{ wardFile.value = ""; }
   });
-  document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
-    state.wardrobe = []; save(); renderWardrobe();
+
+  btnClearWardrobe.addEventListener("click", ()=>{
+    state.wardrobe = [];
+    save();
+    renderWardrobe();
   });
+
+  // init
   renderWardrobe();
-
-  // ===== UI: scale/misure testo =====
-  const scaleTxt = document.getElementById("scaleTxt");
-  const measuresTxt = document.getElementById("measuresTxt");
-  const realShoulders = document.getElementById("realShoulders");
-  const realWaist = document.getElementById("realWaist");
-  const realHeight = document.getElementById("realHeight");
-
-  function refreshRealUI(){
-    if(state.scale.mmPerPx){
-      const cmPerPx = (state.scale.mmPerPx / 10);
-      scaleTxt.textContent = `${cmPerPx.toFixed(4)} cm/px`;
-    } else {
-      scaleTxt.textContent = "non calibrata";
-    }
-    realShoulders.textContent = state.real.shouldersCm ? (state.real.shouldersCm.toFixed(1)+" cm") : "—";
-    realWaist.textContent = state.real.waistCm ? (state.real.waistCm.toFixed(1)+" cm") : "—";
-    realHeight.textContent = state.real.heightCm ? (state.real.heightCm.toFixed(1)+" cm") : "—";
-
-    const parts = [];
-    if(state.real.shouldersCm) parts.push("Spalle OK");
-    if(state.real.waistCm) parts.push("Vita OK");
-    if(state.real.heightCm) parts.push("Altezza OK");
-    measuresTxt.textContent = parts.length ? parts.join(" • ") : "—";
-  }
-
-  // ===== Photo + Canvas =====
-  const frontCanvas = document.getElementById("frontCanvas");
-  const sideCanvas = document.getElementById("sideCanvas");
-  const frontOk = document.getElementById("frontOk");
-  const sideOk = document.getElementById("sideOk");
-  const frontHint = document.getElementById("frontHint");
-  const sideHint = document.getElementById("sideHint");
-  const paperType = document.getElementById("paperType");
-  paperType.value = state.scale.paper || "A4";
-  paperType.addEventListener("change", ()=>{
-    state.scale.paper = paperType.value;
-    save();
-  });
-
-  const frontCtx = frontCanvas.getContext("2d");
-  const sideCtx = sideCanvas.getContext("2d");
-
-  let frontImg = null;
-  let sideImg = null;
-
-  function fitCanvasToImage(canvas, img){
-    const maxW = 1100; // sicurezza
-    const w = Math.min(img.naturalWidth || img.width, maxW);
-    const scale = w / (img.naturalWidth || img.width);
-    const h = (img.naturalHeight || img.height) * scale;
-    canvas.width = Math.round(w);
-    canvas.height = Math.round(h);
-  }
-
-  function drawBase(ctx, canvas, img){
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    if(!img){
-      ctx.fillStyle = "#090912";
-      ctx.fillRect(0,0,canvas.width, canvas.height);
-      return;
-    }
-    ctx.drawImage(img, 0,0, canvas.width, canvas.height);
-  }
-
-  // ===== Calibrazione: 4 punti carta =====
-  const calibBar = document.getElementById("calibBar");
-  const calibCount = document.getElementById("calibCount");
-  const btnCalibReset = document.getElementById("btnCalibReset");
-  const btnCalibDone = document.getElementById("btnCalibDone");
-
-  let calibActive = false;
-  let calibPoints = []; // in px su frontCanvas [{x,y}...]
-
-  function openCalib(){
-    if(!frontImg){
-      showErr("Carica prima la foto FRONTALE.");
-      return;
-    }
-    errBox.style.display = "none";
-    calibActive = true;
-    calibPoints = [];
-    calibBar.style.display = "flex";
-    btnCalibDone.disabled = true;
-    updateCalibUI();
-    redraw();
-  }
-
-  function closeCalib(){
-    calibActive = false;
-    calibBar.style.display = "none";
-    redraw();
-  }
-
-  function updateCalibUI(){
-    calibCount.textContent = String(calibPoints.length);
-    btnCalibDone.disabled = (calibPoints.length !== 4);
-  }
-
-  btnCalibReset.addEventListener("click", ()=>{
-    calibPoints = [];
-    updateCalibUI();
-    redraw();
-  });
-
-  function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
-
-  function computeScaleMmPerPx(points4, paper){
-    // calcolo semplice: ordino punti in senso orario (centroide) e faccio media lati
-    const cx = points4.reduce((s,p)=>s+p.x,0)/4;
-    const cy = points4.reduce((s,p)=>s+p.y,0)/4;
-    const pts = [...points4].sort((p1,p2)=>Math.atan2(p1.y-cy,p1.x-cx)-Math.atan2(p2.y-cy,p2.x-cx));
-
-    // lati consecutivi (0-1,1-2,2-3,3-0)
-    const d01 = dist(pts[0], pts[1]);
-    const d12 = dist(pts[1], pts[2]);
-    const d23 = dist(pts[2], pts[3]);
-    const d30 = dist(pts[3], pts[0]);
-
-    const sideA = (d01 + d23)/2;
-    const sideB = (d12 + d30)/2;
-
-    let mmW = 210, mmH = 297;
-    if(paper === "CC"){ mmW = 85.60; mmH = 53.98; }
-
-    // Il lato maggiore in px corrisponde al lato maggiore in mm (robusto)
-    const pxLong = Math.max(sideA, sideB);
-    const pxShort = Math.min(sideA, sideB);
-    const mmLong = Math.max(mmW, mmH);
-    const mmShort = Math.min(mmW, mmH);
-
-    const mmPerPxLong = mmLong / pxLong;
-    const mmPerPxShort = mmShort / pxShort;
-
-    return (mmPerPxLong + mmPerPxShort) / 2;
-  }
-
-  btnCalibDone.addEventListener("click", ()=>{
-    if(calibPoints.length !== 4) return;
-    const paper = paperType.value;
-    const mmPerPx = computeScaleMmPerPx(calibPoints, paper);
-    state.scale.mmPerPx = mmPerPx;
-    state.scale.paper = paper;
-    save();
-    closeCalib();
-    refreshRealUI();
-  });
-
-  // ===== Misura: 2 punti =====
-  const measureBar = document.getElementById("measureBar");
-  const measureHint = document.getElementById("measureHint");
-  const btnMeasureReset = document.getElementById("btnMeasureReset");
-  const btnMeasureDone = document.getElementById("btnMeasureDone");
-
-  let measureActive = false;
-  let measureLabel = ""; // "shoulders" | "waist" | "height"
-  let measurePoints = []; // 2 punti su frontCanvas
-
-  function openMeasure(label){
-    if(!frontImg){
-      showErr("Carica prima la foto FRONTALE.");
-      return;
-    }
-    if(!state.scale.mmPerPx){
-      showErr("Prima calibra la carta: premi “Calibra carta (4 angoli)”.");
-      return;
-    }
-    errBox.style.display = "none";
-    measureActive = true;
-    measureLabel = label;
-    measurePoints = [];
-    measureBar.style.display = "flex";
-    btnMeasureDone.disabled = true;
-
-    const name = label==="shoulders" ? "SPALLE" : (label==="waist" ? "VITA" : "ALTEZZA CORPO");
-    measureHint.textContent = `Misura ${name}: tocca 2 punti sul FRONTALE (sx e dx).`;
-    redraw();
-  }
-
-  function closeMeasure(){
-    measureActive = false;
-    measureLabel = "";
-    measurePoints = [];
-    measureBar.style.display = "none";
-    redraw();
-  }
-
-  btnMeasureReset.addEventListener("click", ()=>{
-    measurePoints = [];
-    btnMeasureDone.disabled = true;
-    redraw();
-  });
-
-  btnMeasureDone.addEventListener("click", ()=>{
-    if(measurePoints.length !== 2) return;
-    const px = dist(measurePoints[0], measurePoints[1]);
-    const mm = px * state.scale.mmPerPx;
-    const cm = mm / 10;
-
-    if(measureLabel === "shoulders") state.real.shouldersCm = cm;
-    if(measureLabel === "waist") state.real.waistCm = cm;
-    if(measureLabel === "height") state.real.heightCm = cm;
-
-    save();
-    refreshRealUI();
-    closeMeasure();
-
-    // opzionale: aggiorna slider avatar in automatico (spalle/vita)
-    if(measureLabel === "shoulders"){
-      slShoulders.value = Math.max(34, Math.min(56, Math.round(cm)));
-      applyFromUI();
-      calcSizes();
-    }
-    if(measureLabel === "waist"){
-      slWaist.value = Math.max(60, Math.min(120, Math.round(cm)));
-      applyFromUI();
-      calcSizes();
-    }
-  });
-
-  // ===== Click sul canvas (front) =====
-  function getCanvasXY(canvas, e){
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    return { x, y };
-  }
-
-  frontCanvas.addEventListener("pointerdown", (e)=>{
-    if(!frontImg) return;
-
-    // calibrazione
-    if(calibActive){
-      const p = getCanvasXY(frontCanvas, e);
-      calibPoints.push(p);
-      if(calibPoints.length > 4) calibPoints = calibPoints.slice(0,4);
-      updateCalibUI();
-      redraw();
-      return;
-    }
-
-    // misura
-    if(measureActive){
-      const p = getCanvasXY(frontCanvas, e);
-      measurePoints.push(p);
-      if(measurePoints.length > 2) measurePoints = measurePoints.slice(0,2);
-      btnMeasureDone.disabled = (measurePoints.length !== 2);
-      redraw();
-      return;
-    }
-  });
-
-  // ===== Redraw canvases =====
-  function drawPoints(ctx, pts, color){
-    ctx.save();
-    ctx.fillStyle = color;
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    pts.forEach((p, i)=>{
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 6, 0, Math.PI*2);
-      ctx.fill();
-      ctx.font = "12px system-ui";
-      ctx.fillText(String(i+1), p.x+8, p.y-8);
-    });
-    ctx.restore();
-  }
-
-  function drawLine2(ctx, pts, color){
-    if(pts.length !== 2) return;
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(pts[0].x, pts[0].y);
-    ctx.lineTo(pts[1].x, pts[1].y);
-    ctx.stroke();
-
-    // label cm
-    const px = dist(pts[0], pts[1]);
-    if(state.scale.mmPerPx){
-      const cm = (px * state.scale.mmPerPx) / 10;
-      const mx = (pts[0].x + pts[1].x)/2;
-      const my = (pts[0].y + pts[1].y)/2;
-      ctx.fillStyle = "rgba(255,213,106,.95)";
-      ctx.font = "14px system-ui";
-      ctx.fillText(cm.toFixed(1) + " cm", mx+8, my-8);
-    }
-    ctx.restore();
-  }
-
-  function redraw(){
-    // front
-    if(frontCanvas.width === 0 || frontCanvas.height === 0){
-      frontCanvas.width = 800; frontCanvas.height = 600;
-    }
-    drawBase(frontCtx, frontCanvas, frontImg);
-
-    if(calibActive){
-      drawPoints(frontCtx, calibPoints, "rgba(255,213,106,.95)");
-    }
-    if(measureActive){
-      drawPoints(frontCtx, measurePoints, "rgba(110,255,168,.95)");
-      drawLine2(frontCtx, measurePoints, "rgba(110,255,168,.95)");
-    }
-
-    // side
-    if(sideCanvas.width === 0 || sideCanvas.height === 0){
-      sideCanvas.width = 800; sideCanvas.height = 600;
-    }
-    drawBase(sideCtx, sideCanvas, sideImg);
-  }
-
-  // ===== Upload files =====
-  async function fileToImage(file){
-    return new Promise((resolve, reject)=>{
-      const url = URL.createObjectURL(file);
-      const img = new Image();
-      img.onload = ()=>{ URL.revokeObjectURL(url); resolve(img); };
-      img.onerror = (e)=>{ URL.revokeObjectURL(url); reject(e); };
-      img.src = url;
-    });
-  }
-
-  const frontFile = document.getElementById("frontFile");
-  const sideFile = document.getElementById("sideFile");
-
-  frontFile.addEventListener("change", async ()=>{
-    try{
-      const f = frontFile.files?.[0];
-      if(!f) return;
-      frontImg = await fileToImage(f);
-      fitCanvasToImage(frontCanvas, frontImg);
-      frontOk.textContent = "OK";
-      frontHint.style.display = "none";
-      redraw();
-    }catch(e){ showErr("Upload frontale fallito."); }
-  });
-
-  sideFile.addEventListener("change", async ()=>{
-    try{
-      const f = sideFile.files?.[0];
-      if(!f) return;
-      sideImg = await fileToImage(f);
-      fitCanvasToImage(sideCanvas, sideImg);
-      sideOk.textContent = "OK";
-      sideHint.style.display = "none";
-      redraw();
-    }catch(e){ showErr("Upload laterale fallito."); }
-  });
-
-  document.getElementById("btnClearPhotos").addEventListener("click", ()=>{
-    frontImg = null; sideImg = null;
-    frontOk.textContent = "NO"; sideOk.textContent = "NO";
-    frontHint.style.display = "block"; sideHint.style.display = "block";
-    state.scale.mmPerPx = null;
-    state.real = { shouldersCm:null, waistCm:null, heightCm:null };
-    save();
-    closeCalib();
-    closeMeasure();
-    redraw();
-    refreshRealUI();
-  });
-
-  // ===== Buttons =====
-  document.getElementById("btnCalib").addEventListener("click", openCalib);
-  document.getElementById("btnMeasureShoulders").addEventListener("click", ()=> openMeasure("shoulders"));
-  document.getElementById("btnMeasureWaist").addEventListener("click", ()=> openMeasure("waist"));
-  document.getElementById("btnMeasureHeight").addEventListener("click", ()=> openMeasure("height"));
-
-  // ===== Taglia stimata (demo) =====
-  const slShoulders = document.getElementById("slShoulders");
-  const slWaist = document.getElementById("slWaist");
-  const vShoulders = document.getElementById("vShoulders");
-  const vWaist = document.getElementById("vWaist");
-
-  function calcSizes(){ /* qui lasciamo demo minima */ }
-
-  // ===== 3D (No-404) =====
-  import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
-
-  const threeWrap = document.getElementById("threeWrap");
-  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
-  renderer.setSize(threeWrap.clientWidth, threeWrap.clientHeight);
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
-  threeWrap.appendChild(renderer.domElement);
-
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b0b12);
-
-  const camera = new THREE.PerspectiveCamera(45, threeWrap.clientWidth / threeWrap.clientHeight, 0.1, 100);
-  camera.position.set(0, 1.55, 4.2);
-
-  const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(2,3,2);
-  scene.add(dir);
-  scene.add(new THREE.AmbientLight(0xffffff, 0.35));
-
-  const floor = new THREE.Mesh(
-    new THREE.CircleGeometry(2.0, 64),
-    new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9, metalness: 0.1 })
-  );
-  floor.rotation.x = -Math.PI / 2;
-  scene.add(floor);
-
-  function mat(hex, rough=0.8, metal=0.05){
-    return new THREE.MeshStandardMaterial({ color: hex, roughness: rough, metalness: metal });
-  }
-
-  const avatar = new THREE.Group();
-  scene.add(avatar);
-
-  const skinMat   = mat(0xf0c8a8, 0.9, 0.0);
-  const baseMat   = mat(0x2a2a3a, 0.85, 0.05);
-  const shirtMat  = mat(0x1c2233, 0.9, 0.02);
-  const pantsMat  = mat(0x141a2b, 0.92, 0.02);
-  const jacketMat = mat(0x2b2320, 0.8, 0.05);
-
-  const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 32), skinMat); head.position.y = 1.78;
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.12, 20), skinMat); neck.position.y = 1.6;
-  const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.60, 24), baseMat); torso.position.y = 1.25;
-  const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.30, 0.22, 24), baseMat); pelvis.position.y = 0.92;
-
-  const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.56, 20), skinMat);
-  armL.position.set(-0.46, 1.28, 0); armL.rotation.z = 0.15;
-  const armR = armL.clone(); armR.position.x = 0.46; armR.rotation.z = -0.15;
-
-  const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.78, 20), skinMat); legL.position.set(-0.17, 0.46, 0);
-  const legR = legL.clone(); legR.position.x = 0.17;
-
-  const footL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.34), mat(0x191922, 0.9, 0.05)); footL.position.set(-0.17, 0.06, 0.07);
-  const footR = footL.clone(); footR.position.x = 0.17;
-
-  const shirt = new THREE.Mesh(new THREE.CylinderGeometry(0.305, 0.365, 0.62, 24), shirtMat);
-  shirt.position.copy(torso.position); shirt.scale.set(1.02,1.02,1.02);
-
-  const pants = new THREE.Mesh(new THREE.CylinderGeometry(0.275, 0.315, 0.28, 24), pantsMat);
-  pants.position.copy(pelvis.position); pants.position.y += 0.01; pants.scale.set(1.03,1.03,1.03);
-
-  const jacket = new THREE.Group();
-  const jacketBody = new THREE.Mesh(new THREE.CylinderGeometry(0.325, 0.385, 0.66, 24), jacketMat);
-  jacketBody.position.copy(torso.position); jacketBody.scale.set(1.03,1.03,1.03);
-  const sleeveL = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.12, 0.58, 20), jacketMat);
-  sleeveL.position.copy(armL.position); sleeveL.rotation.copy(armL.rotation);
-  const sleeveR = sleeveL.clone(); sleeveR.position.x *= -1; sleeveR.rotation.z *= -1;
-  jacket.add(jacketBody, sleeveL, sleeveR);
-
-  avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR, shirt, pants, jacket);
-
-  // Outfit
-  const btnOutfitBase = document.getElementById("btnOutfitBase");
-  const btnOutfitCasual = document.getElementById("btnOutfitCasual");
-  const btnOutfitJacket = document.getElementById("btnOutfitJacket");
-  const btnReset = document.getElementById("btnReset");
-
-  function setOutfit(mode){
-    if(mode === "base"){ shirt.visible=false; pants.visible=false; jacket.visible=false; }
-    else if(mode === "casual"){ shirt.visible=true; pants.visible=true; jacket.visible=false; }
-    else { shirt.visible=true; pants.visible=true; jacket.visible=true; }
-  }
-  btnOutfitBase.addEventListener("click", ()=> setOutfit("base"));
-  btnOutfitCasual.addEventListener("click", ()=> setOutfit("casual"));
-  btnOutfitJacket.addEventListener("click", ()=> setOutfit("jacket"));
-
-  // Drag rotate
-  let isDown = false, lastX = 0, vel = 0;
-  renderer.domElement.addEventListener("pointerdown", (e)=>{
-    isDown = true; lastX = e.clientX;
-    renderer.domElement.setPointerCapture(e.pointerId);
-  });
-  renderer.domElement.addEventListener("pointerup", ()=>{ isDown = false; });
-  renderer.domElement.addEventListener("pointermove", (e)=>{
-    if(!isDown) return;
-    const dx = e.clientX - lastX; lastX = e.clientX;
-    vel = dx * 0.003;
-    avatar.rotation.y += vel;
-  });
-
-  function resize(){
-    const w = threeWrap.clientWidth, h = threeWrap.clientHeight;
-    camera.aspect = w / h; camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
-  }
-  window.addEventListener("resize", resize);
-
-  // Rebuild avatar from sliders
-  function rebuild(shouldersCm, waistCm){
-    vShoulders.textContent = shouldersCm;
-    vWaist.textContent = waistCm;
-
-    const s = (shouldersCm - 44) / 20;
-    const w = (waistCm - 86) / 40;
-
-    const torsoTop = 0.34 * (1 + s*0.55);
-    const torsoBot = 0.28 * (1 + w*0.35);
-
-    torso.geometry.dispose();
-    torso.geometry = new THREE.CylinderGeometry(torsoBot, torsoTop, 0.60, 24);
-
-    shirt.geometry.dispose();
-    shirt.geometry = new THREE.CylinderGeometry(torsoBot*1.08, torsoTop*1.08, 0.62, 24);
-
-    jacketBody.geometry.dispose();
-    jacketBody.geometry = new THREE.CylinderGeometry(torsoBot*1.14, torsoTop*1.14, 0.66, 24);
-
-    const pelvisTop = 0.30 * (1 + w*0.35);
-    const pelvisBot = 0.26 * (1 + w*0.25);
-
-    pelvis.geometry.dispose();
-    pelvis.geometry = new THREE.CylinderGeometry(pelvisBot, pelvisTop, 0.22, 24);
-
-    pants.geometry.dispose();
-    pants.geometry = new THREE.CylinderGeometry(pelvisBot*1.06, pelvisTop*1.06, 0.28, 24);
-
-    const armX = 0.46 * (1 + s*0.55);
-    armL.position.x = -armX; armR.position.x = armX;
-    sleeveL.position.x = armL.position.x;
-    sleeveR.position.x = armR.position.x;
-  }
-
-  function applyFromUI(){
-    rebuild(Number(slShoulders.value), Number(slWaist.value));
-  }
-
-  slShoulders.addEventListener("input", ()=>{ applyFromUI(); });
-  slWaist.addEventListener("input", ()=>{ applyFromUI(); });
-
-  btnReset.addEventListener("click", ()=>{
-    slShoulders.value = 44;
-    slWaist.value = 86;
-    applyFromUI();
-    setOutfit("casual");
-  });
-
-  // Init
-  applyFromUI();
-  setOutfit("casual");
-  status.textContent = "OK";
-
-  function animate(){
-    requestAnimationFrame(animate);
-    avatar.rotation.y += vel * 0.15;
-    vel *= 0.88;
-    renderer.render(scene, camera);
-  }
-  animate();
-
-  // Init canvases
-  redraw();
-  refreshRealUI();
-</script>
-
-<!-- PWA register service worker -->
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(console.error);
-    });
-  }
+  draw();
 </script>
 </body>
 </html>
