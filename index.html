@@ -1,0 +1,1338 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SerCucTech • Virtual Stylist 3D (v2)</title>
+  <meta name="theme-color" content="#111111" />
+  <style>
+    :root{
+      --bg:#0b0b0e; --card:#12121a; --txt:#f2f2f5; --muted:#a9a9b6;
+      --acc:#ffd56a; --line:#2a2a3a; --ok:#6effa8; --bad:#ff6e6e;
+      --radius:18px; --shadow: 0 12px 40px rgba(0,0,0,.35);
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    body{ margin:0; background: radial-gradient(1200px 700px at 20% 0%, rgba(255,213,106,.08), transparent 60%), var(--bg); color:var(--txt); }
+    header{
+      position: sticky; top:0; z-index:10;
+      backdrop-filter: blur(10px);
+      background: rgba(11,11,14,.75);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .wrap{ max-width:1180px; margin:0 auto; padding:14px 14px; }
+    .topbar{ display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    .brand{ display:flex; gap:12px; align-items:center; }
+    .logo{
+      width:38px; height:38px; border-radius:14px;
+      background: linear-gradient(135deg, rgba(255,213,106,.95), rgba(110,255,168,.35));
+      box-shadow: var(--shadow);
+      display:grid; place-items:center;
+      color:#111; font-weight:900; letter-spacing:-.5px;
+    }
+    .title{ display:flex; flex-direction:column; line-height:1.1; }
+    .title b{ font-size:14px; }
+    .title span{ font-size:12px; color:var(--muted); }
+
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
+    .tab{
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color:var(--txt);
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      font-size:12px;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .tab.active{ background: rgba(255,213,106,.12); border-color: rgba(255,213,106,.25); }
+    .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; padding:14px 0; }
+    @media (max-width: 980px){ .grid{ grid-template-columns: 1fr; } }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid rgba(255,255,255,.07);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      font-size:14px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+    }
+    .card h2 small{ color:var(--muted); font-weight:500; font-size:12px; }
+    .card .body{ padding:12px 14px; }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .col{ flex:1 1 230px; min-width:220px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
+    input[type="number"], input[type="text"], select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color: var(--txt);
+      outline:none;
+      box-sizing:border-box;
+    }
+    textarea{ min-height:72px; resize:vertical; }
+    input[type="range"]{ width:100%; }
+    .btn{
+      border:1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+      transition:.15s ease;
+      user-select:none;
+    }
+    .btn:hover{ transform: translateY(-1px); }
+    .btn.primary{
+      background: rgba(255,213,106,.14);
+      border-color: rgba(255,213,106,.25);
+    }
+    .btn.good{
+      background: rgba(110,255,168,.12);
+      border-color: rgba(110,255,168,.2);
+    }
+    .btn.bad{
+      background: rgba(255,110,110,.12);
+      border-color: rgba(255,110,110,.2);
+    }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      color:var(--muted); font-size:12px;
+    }
+    .pill b{ color:var(--txt); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
+    .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
+    .ok{ color:var(--ok); }
+    .bad{ color:var(--bad); }
+
+    .canvasWrap{
+      background: #0a0a10;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius: 16px;
+      overflow:hidden;
+      position:relative;
+    }
+    canvas.photo{
+      width:100%;
+      height:auto;
+      display:block;
+      touch-action: none;
+    }
+    .overlayTop{
+      position:absolute; left:10px; top:10px; right:10px;
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      pointer-events:none;
+    }
+    .overlayBottom{
+      position:absolute; left:10px; bottom:10px; right:10px;
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:space-between;
+      pointer-events:none;
+    }
+
+    #threeWrap{ height:520px; }
+    @media (max-width: 980px){ #threeWrap{ height:420px; } }
+
+    .switch{
+      display:flex; gap:8px; align-items:center;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      padding:6px 10px; border-radius:999px;
+      cursor:pointer; user-select:none;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background: rgba(255,255,255,.25); }
+    .switch.on .dot{ background: rgba(255,213,106,.9); }
+
+    .kpi{
+      display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px;
+      margin-top:10px;
+    }
+    @media (max-width: 520px){ .kpi{ grid-template-columns: 1fr; } }
+    .kpi .box{
+      border:1px solid rgba(255,255,255,.07);
+      background: rgba(255,255,255,.02);
+      border-radius: 14px;
+      padding:10px 10px;
+    }
+    .kpi .box b{ display:block; font-size:14px; }
+    .kpi .box span{ color:var(--muted); font-size:12px; }
+    .foot{ padding: 10px 14px 18px; border-top: 1px solid rgba(255,255,255,.06); color: var(--muted); font-size: 12px; }
+
+    table{ width:100%; border-collapse:collapse; }
+    th, td{ border-bottom:1px solid rgba(255,255,255,.06); padding:10px 6px; text-align:left; font-size:12px; }
+    th{ color:var(--muted); font-weight:600; }
+    .tag{ display:inline-block; padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.03); color:var(--muted); font-size:11px; }
+
+    .hide{ display:none !important; }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap topbar">
+    <div class="brand">
+      <div class="logo">SC</div>
+      <div class="title">
+        <b>SerCucTech • Virtual Stylist 3D <span style="opacity:.75">(v2)</span></b>
+        <span>2 foto → misure più precise → taglia → avatar → guardaroba</span>
+      </div>
+    </div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-view="studio">Studio</div>
+      <div class="tab" data-view="wardrobe">Guardaroba</div>
+      <div class="tab" data-view="business">Business</div>
+      <div class="tab" data-view="help">Guida</div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- VIEW: STUDIO -->
+  <section id="view-studio">
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card">
+        <h2>
+          <span>1) Profilo + Foto (Fronte & Lato) + Punti</span>
+          <small class="mono" id="statusTop">Pronto</small>
+        </h2>
+        <div class="body">
+          <div class="row">
+            <div class="col">
+              <label>Nome cliente</label>
+              <input id="clientName" type="text" placeholder="Es. Mario Rossi" />
+            </div>
+            <div class="col">
+              <label>Sesso</label>
+              <select id="gender">
+                <option value="m">Uomo</option>
+                <option value="f">Donna</option>
+                <option value="x">Altro / non specifico</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Altezza reale (cm) — calibrazione</label>
+              <input id="realHeight" type="number" min="120" max="220" value="175" />
+            </div>
+          </div>
+
+          <div style="height:8px"></div>
+
+          <div class="row">
+            <div class="pill">Step: <b id="stepLabel">Carica/Scatta FRONTE</b></div>
+            <div class="pill">Punti richiesti: <b class="mono">TESTA, PIEDI, SPALLA SX, SPALLA DX, VITA SX, VITA DX</b></div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <button class="btn primary" id="btnCamFront">📸 FRONTE (camera)</button>
+            <input class="btn" style="padding:8px 10px; width:auto" type="file" accept="image/*" id="fileFront" />
+            <button class="btn primary" id="btnCamSide">📸 LATO (camera)</button>
+            <input class="btn" style="padding:8px 10px; width:auto" type="file" accept="image/*" id="fileSide" />
+            <button class="btn" id="btnResetAll">🧹 Reset tutto</button>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <div class="col">
+              <div class="canvasWrap">
+                <canvas id="cvFront" class="photo" width="1200" height="900"></canvas>
+                <div class="overlayTop">
+                  <div class="pill">FRONTE • Punti: <b id="frontCount">0/6</b></div>
+                  <div class="pill">Prossimo: <b id="frontNext">TESTA</b></div>
+                </div>
+                <div class="overlayBottom">
+                  <div class="pill">Tocca la foto per segnare i punti</div>
+                  <div class="pill mono" id="frontLast">—</div>
+                </div>
+              </div>
+            </div>
+            <div class="col">
+              <div class="canvasWrap">
+                <canvas id="cvSide" class="photo" width="1200" height="900"></canvas>
+                <div class="overlayTop">
+                  <div class="pill">LATO • (solo riferimento)</div>
+                  <div class="pill"><b id="sideStatus">Nessuna foto</b></div>
+                </div>
+                <div class="overlayBottom">
+                  <div class="pill">Versione 3: punti anche sul lato</div>
+                  <div class="pill mono" id="sideLast">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <button class="btn good" id="btnCompute">📏 Calcola misure & taglia</button>
+            <div class="pill">Privacy: <b>tutto resta sul dispositivo</b></div>
+            <div class="pill">Salvataggio: <b>automatico</b></div>
+          </div>
+
+          <div class="kpi">
+            <div class="box"><b id="kpiHeight">—</b><span>Altezza</span></div>
+            <div class="box"><b id="kpiShoulders">—</b><span>Spalle</span></div>
+            <div class="box"><b id="kpiWaist">—</b><span>Vita (larghezza)</span></div>
+          </div>
+          <div class="kpi">
+            <div class="box"><b id="kpiSize">—</b><span>Taglia EU stimata</span></div>
+            <div class="box"><b id="kpiChest">—</b><span>Torace stimato</span></div>
+            <div class="box"><b id="kpiNote">—</b><span>Vestibilità</span></div>
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="hint">
+            <b>Consiglio pratico:</b> foto intera, piedi visibili, luce buona, telefono dritto.
+            Più la foto è “pulita”, più la stima è stabile.
+          </div>
+        </div>
+        <div class="foot">
+          Questa v2 migliora tanto perché la <b>vita</b> usa due punti (sinistra/destra) e non un rapporto “a caso”.
+          Prossimo step: MediaPipe Pose per mettere i punti in automatico.
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="card">
+        <h2>
+          <span>2) Avatar 3D + prova outfit</span>
+          <small class="pill">drag = ruota</small>
+        </h2>
+        <div class="body">
+          <div id="threeWrap" class="canvasWrap"></div>
+
+          <div style="height:10px"></div>
+          <div class="row">
+            <div class="switch on" id="swShirt"><div class="dot"></div><div>Maglietta</div></div>
+            <div class="switch on" id="swPants"><div class="dot"></div><div>Jeans</div></div>
+            <div class="switch" id="swJacket"><div class="dot"></div><div>Giacca</div></div>
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="row">
+            <div class="col">
+              <label>Spalle (cm)</label>
+              <input type="range" id="slShoulders" min="34" max="56" value="44" />
+              <div class="pill">Spalle: <b id="slShouldersVal">44</b> cm</div>
+            </div>
+            <div class="col">
+              <label>Vita (cm)</label>
+              <input type="range" id="slWaist" min="60" max="120" value="86" />
+              <div class="pill">Vita: <b id="slWaistVal">86</b> cm</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" id="btnApplyFromCalc">🔄 Applica misure calcolate</button>
+            <button class="btn" id="btnApplySliders">✅ Applica sliders</button>
+            <button class="btn" id="btnResetAvatar">↩️ Default</button>
+          </div>
+
+          <div style="height:10px"></div>
+          <div class="hint">
+            L’avatar è “parametrico”: cambia larghezza spalle e vita e i vestiti seguono.
+            Versione 3: vestiti reali 3D (.glb) + texture + catalogo brand.
+          </div>
+        </div>
+        <div class="foot">
+          SerCucTech PRO: profilo cliente + guardaroba + QR per negozio.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: WARDROBE -->
+  <section id="view-wardrobe" class="hide">
+    <div class="grid">
+      <div class="card">
+        <h2>Guardaroba (salvato sul telefono)</h2>
+        <div class="body">
+          <div class="row">
+            <div class="pill">Cliente: <b id="wardClient">—</b></div>
+            <div class="pill">Taglia stimata: <b id="wardSize">—</b></div>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <h3 style="margin:0 0 6px; font-size:13px">Aggiungi capo</h3>
+          <div class="row">
+            <div class="col">
+              <label>Nome capo</label>
+              <input id="wName" type="text" placeholder="Es. Giacca invernale nera" />
+            </div>
+            <div class="col">
+              <label>Categoria</label>
+              <select id="wCat">
+                <option value="top">Top (maglie/camicie)</option>
+                <option value="bottom">Bottom (pantaloni/gonne)</option>
+                <option value="outer">Outer (giacche/cappotti)</option>
+                <option value="dress">Abiti interi</option>
+                <option value="shoes">Scarpe</option>
+              </select>
+            </div>
+            <div class="col">
+              <label>Taglia</label>
+              <input id="wSize" type="text" placeholder="Es. EU 50 / M / 42" />
+            </div>
+          </div>
+          <label>Note (marca, modello, link, ecc.)</label>
+          <textarea id="wNote" placeholder="Es. Marca X, modello Y, link…"></textarea>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn good" id="btnAddItem">➕ Aggiungi</button>
+            <button class="btn" id="btnLoadDemo">✨ Carica capi demo</button>
+            <button class="btn bad" id="btnClearWard">🗑️ Svuota guardaroba</button>
+          </div>
+
+          <div style="height:12px"></div>
+          <h3 style="margin:0 0 6px; font-size:13px">Elenco capi</h3>
+          <div style="overflow:auto">
+            <table>
+              <thead>
+                <tr><th>Capo</th><th>Categoria</th><th>Taglia</th><th>Azioni</th></tr>
+              </thead>
+              <tbody id="wardTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="foot">
+          Versione 3: aggiunta foto capo + texture + prova su avatar.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Consiglio rapido (stile)</h2>
+        <div class="body hint" id="styleTip">
+          Se calcoli le misure, qui apparirà un consiglio in base a spalle/vita e vestibilità.
+        </div>
+        <div class="foot">
+          In PRO: “Stylist AI” che suggerisce outfit completi.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: BUSINESS -->
+  <section id="view-business" class="hide">
+    <div class="grid">
+      <div class="card">
+        <h2>Business (SerCucTech)</h2>
+        <div class="body">
+          <div class="row">
+            <div class="pill"><b>Obiettivo</b>: meno resi • più vendite • esperienza premium</div>
+            <div class="pill"><b>Clienti</b>: negozi • sarti • e-commerce • brand</div>
+          </div>
+
+          <h3 style="margin:14px 0 6px; font-size:13px">Offerte</h3>
+          <div class="kpi">
+            <div class="box"><b>FREE</b><span>Try-on base + demo + affiliate</span></div>
+            <div class="box"><b>PRO 9€/mese</b><span>Catalogo + profili + salvataggi</span></div>
+            <div class="box"><b>STORE 49€/mese</b><span>Widget + QR + analytics</span></div>
+          </div>
+
+          <h3 style="margin:14px 0 6px; font-size:13px">Pitch 30 secondi</h3>
+          <div class="hint" style="border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:10px; background: rgba(255,255,255,.02)">
+            “SerCucTech Virtual Stylist 3D fa provare i capi su un avatar simile al cliente, consiglia la taglia giusta e aumenta la sicurezza d’acquisto.
+            Risultato: meno resi, più conversioni e un’esperienza premium sia in negozio che online.”
+          </div>
+        </div>
+        <div class="foot">
+          Step commerciale: 3 negozi pilota sul Garda + QR in camerino digitale.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Roadmap</h2>
+        <div class="body hint">
+          <b>v2 (oggi)</b>: 2 foto + punti manuali + avatar + guardaroba ✅<br/><br/>
+          <b>v3</b>: punti automatici (MediaPipe Pose) + profili multipli + export PDF misure<br/><br/>
+          <b>v4</b>: vestiti 3D reali (.glb) + AR (WebXR) + catalogo brand
+        </div>
+        <div class="foot">
+          Strategia: partire funzionante e vendibile, poi potenziare con AI.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEW: HELP -->
+  <section id="view-help" class="hide">
+    <div class="grid">
+      <div class="card">
+        <h2>Guida (come un bimbo di 10 anni)</h2>
+        <div class="body hint">
+          <b>1)</b> Scrivi nome e altezza.<br/>
+          <b>2)</b> Carica o scatta la foto <b>FRONTE</b> e la foto <b>LATO</b>.<br/>
+          <b>3)</b> Sulla foto FRONTE tocca 6 punti: <br/>
+          TESTA → PIEDI → SPALLA SX → SPALLA DX → VITA SX → VITA DX.<br/>
+          <b>4)</b> Premi “Calcola misure & taglia”.<br/>
+          <b>5)</b> A destra prova l’avatar e i vestiti.<br/>
+          <b>6)</b> Vai su “Guardaroba” per salvare i capi.
+        </div>
+        <div class="foot">
+          Se sbagli un punto: Reset tutto e rifai (v3 avrà “undo punto”).
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Installazione PWA su Android</h2>
+        <div class="body hint">
+          Apri il link GitHub Pages → menu ⋮ → <b>“Aggiungi a schermata Home”</b>.
+        </div>
+        <div class="foot">
+          SerCucTech: stessa logica delle tue vetrine → pubblico + admin (in futuro).
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Camera modal -->
+<dialog id="dlgCam" style="border:none; border-radius:18px; padding:0; width:min(92vw,720px); background:#0d0d14; color:var(--txt); box-shadow:var(--shadow)">
+  <div style="padding:12px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,.06)">
+    <b id="camTitle">📸 Camera</b>
+    <button class="btn" id="btnCloseCam">Chiudi</button>
+  </div>
+  <div style="padding:12px 14px">
+    <video id="camVideo" autoplay playsinline style="width:100%; border-radius:16px; background:#000"></video>
+    <div class="row" style="margin-top:10px">
+      <button class="btn primary" id="btnSnap">Scatta</button>
+      <button class="btn" id="btnFlip">Cambia camera</button>
+      <span class="pill">Suggerimento: corpo intero</span>
+    </div>
+  </div>
+</dialog>
+
+<script type="module">
+/* --------------------------
+   PWA: Manifest + SW inline
+-------------------------- */
+(function setupPWA(){
+  const iconSvg = encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
+    <defs>
+      <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+        <stop offset="0" stop-color="#ffd56a"/>
+        <stop offset="1" stop-color="#6effa8"/>
+      </linearGradient>
+    </defs>
+    <rect width="512" height="512" rx="120" fill="#0b0b0e"/>
+    <circle cx="176" cy="188" r="66" fill="url(#g)"/>
+    <rect x="118" y="260" width="290" height="160" rx="80" fill="rgba(255,213,106,.18)" stroke="rgba(255,213,106,.45)" stroke-width="10"/>
+    <text x="256" y="456" text-anchor="middle" font-size="72" font-family="Arial" fill="#ffd56a" font-weight="900">SC</text>
+  </svg>`.trim());
+
+  const manifest = {
+    name: "SerCucTech Virtual Stylist 3D",
+    short_name: "SerCucTech",
+    start_url: "./",
+    display: "standalone",
+    background_color: "#0b0b0e",
+    theme_color: "#111111",
+    icons: [{ src: "data:image/svg+xml," + iconSvg, sizes: "512x512", type: "image/svg+xml", purpose: "any maskable" }]
+  };
+  const link = document.createElement("link");
+  link.rel = "manifest";
+  link.href = "data:application/manifest+json," + encodeURIComponent(JSON.stringify(manifest));
+  document.head.appendChild(link);
+
+  if ("serviceWorker" in navigator){
+    const swCode = `
+      const CACHE = "sercuctech-stylist-v2";
+      self.addEventListener("install", (e) => {
+        e.waitUntil((async () => {
+          const cache = await caches.open(CACHE);
+          await cache.addAll(["./"]);
+          self.skipWaiting();
+        })());
+      });
+      self.addEventListener("activate", (e) => {
+        e.waitUntil((async () => {
+          const keys = await caches.keys();
+          await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+          self.clients.claim();
+        })());
+      });
+      self.addEventListener("fetch", (e) => {
+        if (e.request.method !== "GET") return;
+        const url = new URL(e.request.url);
+        if (url.origin === location.origin){
+          e.respondWith((async () => {
+            const cache = await caches.open(CACHE);
+            const cached = await cache.match(e.request);
+            if (cached) return cached;
+            const res = await fetch(e.request);
+            cache.put(e.request, res.clone());
+            return res;
+          })());
+        }
+      });
+    `;
+    const swUrl = URL.createObjectURL(new Blob([swCode], {type:"text/javascript"}));
+    navigator.serviceWorker.register(swUrl).catch(()=>{});
+  }
+})();
+
+/* --------------------------
+   Tabs
+-------------------------- */
+const tabs = document.getElementById("tabs");
+const views = {
+  studio: document.getElementById("view-studio"),
+  wardrobe: document.getElementById("view-wardrobe"),
+  business: document.getElementById("view-business"),
+  help: document.getElementById("view-help"),
+};
+tabs.addEventListener("click", (e) => {
+  const t = e.target.closest(".tab");
+  if(!t) return;
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  Object.values(views).forEach(v=>v.classList.add("hide"));
+  views[t.dataset.view].classList.remove("hide");
+  refreshWardrobeUI();
+});
+
+/* --------------------------
+   State + Storage
+-------------------------- */
+const LS_KEY = "sercuctech_stylist_v2_state";
+const clientName = document.getElementById("clientName");
+const gender = document.getElementById("gender");
+const realHeight = document.getElementById("realHeight");
+const statusTop = document.getElementById("statusTop");
+const stepLabel = document.getElementById("stepLabel");
+
+const cvFront = document.getElementById("cvFront");
+const cvSide = document.getElementById("cvSide");
+const cxF = cvFront.getContext("2d");
+const cxS = cvSide.getContext("2d");
+
+const frontCount = document.getElementById("frontCount");
+const frontNext = document.getElementById("frontNext");
+const frontLast = document.getElementById("frontLast");
+const sideStatus = document.getElementById("sideStatus");
+
+const btnCamFront = document.getElementById("btnCamFront");
+const btnCamSide = document.getElementById("btnCamSide");
+const fileFront = document.getElementById("fileFront");
+const fileSide = document.getElementById("fileSide");
+const btnResetAll = document.getElementById("btnResetAll");
+const btnCompute = document.getElementById("btnCompute");
+
+const kpiHeight = document.getElementById("kpiHeight");
+const kpiShoulders = document.getElementById("kpiShoulders");
+const kpiWaist = document.getElementById("kpiWaist");
+const kpiSize = document.getElementById("kpiSize");
+const kpiChest = document.getElementById("kpiChest");
+const kpiNote = document.getElementById("kpiNote");
+
+const wardClient = document.getElementById("wardClient");
+const wardSize = document.getElementById("wardSize");
+const wardTable = document.getElementById("wardTable");
+const wName = document.getElementById("wName");
+const wCat = document.getElementById("wCat");
+const wSize = document.getElementById("wSize");
+const wNote = document.getElementById("wNote");
+const btnAddItem = document.getElementById("btnAddItem");
+const btnLoadDemo = document.getElementById("btnLoadDemo");
+const btnClearWard = document.getElementById("btnClearWard");
+const styleTip = document.getElementById("styleTip");
+
+const FRONT_LABELS = ["TESTA","PIEDI","SPALLA SX","SPALLA DX","VITA SX","VITA DX"];
+
+let state = {
+  profile: { name:"", gender:"m", heightCm:175 },
+  front: { dataUrl:"", points:[] },
+  side: { dataUrl:"" },
+  measures: { shouldersCm:null, waistCm:null, sizeEU:"", chestCm:null, fitNote:"" },
+  wardrobe: []
+};
+
+function save(){
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(!raw) return;
+    state = JSON.parse(raw);
+  }catch{}
+}
+function resetAll(){
+  if(!confirm("Reset tutto? (foto, punti, misure, guardaroba)")) return;
+  localStorage.removeItem(LS_KEY);
+  state = {
+    profile: { name:"", gender:"m", heightCm:175 },
+    front: { dataUrl:"", points:[] },
+    side: { dataUrl:"" },
+    measures: { shouldersCm:null, waistCm:null, sizeEU:"", chestCm:null, fitNote:"" },
+    wardrobe: []
+  };
+  syncUIFromState();
+  redrawAll();
+  syncClothes();
+  applyAvatarFromSliders();
+  save();
+}
+
+function syncStateFromUI(){
+  state.profile.name = clientName.value.trim();
+  state.profile.gender = gender.value;
+  state.profile.heightCm = Number(realHeight.value)||175;
+}
+function syncUIFromState(){
+  clientName.value = state.profile.name || "";
+  gender.value = state.profile.gender || "m";
+  realHeight.value = state.profile.heightCm || 175;
+
+  // KPI
+  kpiHeight.textContent = state.profile.heightCm ? `${Math.round(state.profile.heightCm)} cm` : "—";
+  kpiShoulders.textContent = state.measures.shouldersCm ? `${Math.round(state.measures.shouldersCm)} cm` : "—";
+  kpiWaist.textContent = state.measures.waistCm ? `${Math.round(state.measures.waistCm)} cm` : "—";
+  kpiSize.textContent = state.measures.sizeEU || "—";
+  kpiChest.textContent = state.measures.chestCm ? `${Math.round(state.measures.chestCm)} cm` : "—";
+  kpiNote.textContent = state.measures.fitNote || "—";
+
+  statusTop.textContent = (state.front.dataUrl ? "FRONTE ok" : "Fronte mancante") + " • " + (state.side.dataUrl ? "LATO ok" : "Lato mancante");
+  sideStatus.textContent = state.side.dataUrl ? "Foto caricata" : "Nessuna foto";
+
+  // wardrobe header
+  wardClient.textContent = state.profile.name ? state.profile.name : "—";
+  wardSize.textContent = state.measures.sizeEU ? state.measures.sizeEU : "—";
+
+  // step label
+  if(!state.front.dataUrl) stepLabel.textContent = "Carica/Scatta FRONTE";
+  else if(!state.side.dataUrl) stepLabel.textContent = "Carica/Scatta LATO";
+  else if(state.front.points.length < FRONT_LABELS.length) stepLabel.textContent = "Metti i punti sulla FRONTE";
+  else stepLabel.textContent = "Pronto: calcola misure";
+}
+
+clientName.addEventListener("input", ()=>{ syncStateFromUI(); save(); syncUIFromState(); refreshWardrobeUI(); });
+gender.addEventListener("change", ()=>{ syncStateFromUI(); save(); syncUIFromState(); refreshWardrobeUI(); });
+realHeight.addEventListener("input", ()=>{ syncStateFromUI(); save(); syncUIFromState(); });
+
+/* --------------------------
+   Helpers
+-------------------------- */
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy); }
+
+async function fileToDataURL(file){
+  return new Promise((res,rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+function fitImageToCanvas(img, canvas){
+  const cw=canvas.width, ch=canvas.height;
+  const ir=img.width/img.height, cr=cw/ch;
+  let w,h;
+  if(ir>cr){ w=cw; h=cw/ir; } else { h=ch; w=ch*ir; }
+  const x=(cw-w)/2, y=(ch-h)/2;
+  return {x,y,w,h};
+}
+function canvasPointFromEvent(e, canvas){
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return { x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY };
+}
+
+/* --------------------------
+   Front photo + point picking
+-------------------------- */
+function setFrontPhoto(dataUrl){
+  state.front.dataUrl = dataUrl;
+  state.front.points = [];
+  save(); syncUIFromState(); redrawFront();
+}
+function setSidePhoto(dataUrl){
+  state.side.dataUrl = dataUrl;
+  save(); syncUIFromState(); redrawSide();
+}
+
+function redrawFront(){
+  cxF.clearRect(0,0,cvFront.width,cvFront.height);
+  cxF.fillStyle="#080810"; cxF.fillRect(0,0,cvFront.width,cvFront.height);
+
+  if(!state.front.dataUrl){
+    cxF.fillStyle="rgba(255,255,255,.16)";
+    cxF.font="18px system-ui";
+    cxF.fillText("Carica o scatta FRONTE (corpo intero).", 24, 64);
+    cxF.fillText("Poi tocca 6 punti: testa, piedi, spalle, vita sx/dx.", 24, 92);
+    frontCount.textContent = "0/6";
+    frontNext.textContent = "TESTA";
+    return;
+  }
+
+  const img = new Image();
+  img.onload = ()=>{
+    const box = fitImageToCanvas(img, cvFront);
+    cxF.drawImage(img, box.x, box.y, box.w, box.h);
+
+    // points
+    state.front.points.forEach((p,i)=>{
+      cxF.beginPath(); cxF.arc(p.x,p.y,10,0,Math.PI*2);
+      cxF.fillStyle="rgba(255,213,106,.95)"; cxF.fill();
+      cxF.lineWidth=3; cxF.strokeStyle="rgba(0,0,0,.65)"; cxF.stroke();
+
+      cxF.font="bold 22px ui-monospace, Menlo, Consolas, monospace";
+      cxF.fillStyle="rgba(0,0,0,.85)";
+      cxF.fillText(String(i+1), p.x-6, p.y+8);
+
+      cxF.fillStyle="rgba(255,255,255,.9)";
+      cxF.font="14px system-ui";
+      cxF.fillText(p.label, p.x+14, p.y+5);
+    });
+
+    // helper lines
+    const pH=state.front.points[0], pF=state.front.points[1], pLS=state.front.points[2], pRS=state.front.points[3], pWL=state.front.points[4], pWR=state.front.points[5];
+    if(pH && pF){
+      cxF.strokeStyle="rgba(110,255,168,.65)"; cxF.lineWidth=4;
+      cxF.beginPath(); cxF.moveTo(pH.x,pH.y); cxF.lineTo(pF.x,pF.y); cxF.stroke();
+    }
+    if(pLS && pRS){
+      cxF.strokeStyle="rgba(255,213,106,.55)"; cxF.lineWidth=4;
+      cxF.beginPath(); cxF.moveTo(pLS.x,pLS.y); cxF.lineTo(pRS.x,pRS.y); cxF.stroke();
+    }
+    if(pWL && pWR){
+      cxF.strokeStyle="rgba(255,255,255,.25)"; cxF.lineWidth=4;
+      cxF.beginPath(); cxF.moveTo(pWL.x,pWL.y); cxF.lineTo(pWR.x,pWR.y); cxF.stroke();
+    }
+
+    const n = state.front.points.length;
+    frontCount.textContent = `${Math.min(n,6)}/6`;
+    frontNext.textContent = n<6 ? FRONT_LABELS[n] : "OK";
+  };
+  img.src = state.front.dataUrl;
+}
+
+function redrawSide(){
+  cxS.clearRect(0,0,cvSide.width,cvSide.height);
+  cxS.fillStyle="#080810"; cxS.fillRect(0,0,cvSide.width,cvSide.height);
+
+  if(!state.side.dataUrl){
+    cxS.fillStyle="rgba(255,255,255,.16)";
+    cxS.font="18px system-ui";
+    cxS.fillText("Carica o scatta LATO (corpo intero).", 24, 64);
+    cxS.fillText("Serve per versione 3 (punti automatici lato).", 24, 92);
+    return;
+  }
+  const img = new Image();
+  img.onload = ()=>{
+    const box = fitImageToCanvas(img, cvSide);
+    cxS.drawImage(img, box.x, box.y, box.w, box.h);
+  };
+  img.src = state.side.dataUrl;
+}
+
+cvFront.addEventListener("pointerdown", (e)=>{
+  if(!state.front.dataUrl) return;
+  if(state.front.points.length >= FRONT_LABELS.length) return;
+  const {x,y} = canvasPointFromEvent(e, cvFront);
+  const label = FRONT_LABELS[state.front.points.length];
+  state.front.points.push({x,y,label});
+  frontLast.textContent = `${label}: ${Math.round(x)},${Math.round(y)}`;
+  save(); syncUIFromState(); redrawFront();
+});
+
+/* --------------------------
+   Camera
+-------------------------- */
+const dlgCam = document.getElementById("dlgCam");
+const camTitle = document.getElementById("camTitle");
+const camVideo = document.getElementById("camVideo");
+const btnCloseCam = document.getElementById("btnCloseCam");
+const btnSnap = document.getElementById("btnSnap");
+const btnFlip = document.getElementById("btnFlip");
+
+let camStream=null;
+let facingMode="environment";
+let camTarget="front"; // "front" or "side"
+
+async function openCamera(target){
+  camTarget = target;
+  camTitle.textContent = target==="front" ? "📸 Camera • FRONTE" : "📸 Camera • LATO";
+  try{
+    if(camStream) stopCamera();
+    camStream = await navigator.mediaDevices.getUserMedia({ video:{ facingMode }, audio:false });
+    camVideo.srcObject = camStream;
+    dlgCam.showModal();
+  }catch{
+    alert("Camera non disponibile. Usa 'Scegli file'.");
+  }
+}
+function stopCamera(){
+  if(camStream){
+    camStream.getTracks().forEach(t=>t.stop());
+    camStream=null;
+  }
+}
+btnCloseCam.addEventListener("click", ()=>{ stopCamera(); dlgCam.close(); });
+btnFlip.addEventListener("click", async ()=>{
+  facingMode = (facingMode==="environment") ? "user" : "environment";
+  await openCamera(camTarget);
+});
+btnSnap.addEventListener("click", ()=>{
+  if(!camVideo.videoWidth) return;
+  const c=document.createElement("canvas");
+  const w=camVideo.videoWidth, h=camVideo.videoHeight;
+  const maxW=1600;
+  const scale=Math.min(1, maxW/w);
+  c.width=Math.round(w*scale);
+  c.height=Math.round(h*scale);
+  const g=c.getContext("2d");
+  g.drawImage(camVideo,0,0,c.width,c.height);
+  const dataUrl=c.toDataURL("image/jpeg",0.9);
+  stopCamera(); dlgCam.close();
+  if(camTarget==="front") setFrontPhoto(dataUrl);
+  else setSidePhoto(dataUrl);
+});
+
+btnCamFront.addEventListener("click", ()=>openCamera("front"));
+btnCamSide.addEventListener("click", ()=>openCamera("side"));
+fileFront.addEventListener("change", async ()=>{
+  const f=fileFront.files?.[0]; if(!f) return;
+  setFrontPhoto(await fileToDataURL(f));
+});
+fileSide.addEventListener("change", async ()=>{
+  const f=fileSide.files?.[0]; if(!f) return;
+  setSidePhoto(await fileToDataURL(f));
+});
+btnResetAll.addEventListener("click", resetAll);
+
+/* --------------------------
+   Measures + Size estimation
+-------------------------- */
+function estimateEUSIze(g, shouldersCm, waistWidthCm){
+  // Heuristics: convert shoulder width to approximate chest circumference; waist width to waist circumference
+  const chest = shouldersCm * 2.25;        // rough
+  const waistCirc = waistWidthCm * 2.15;   // rough (width->circ)
+  let size, fitNote="Regular";
+
+  if(g==="f"){
+    if(chest < 80) size=34;
+    else if(chest < 84) size=36;
+    else if(chest < 88) size=38;
+    else if(chest < 92) size=40;
+    else if(chest < 96) size=42;
+    else if(chest < 100) size=44;
+    else if(chest < 106) size=46;
+    else size=48;
+  } else {
+    if(chest < 88) size=44;
+    else if(chest < 92) size=46;
+    else if(chest < 96) size=48;
+    else if(chest < 100) size=50;
+    else if(chest < 104) size=52;
+    else if(chest < 110) size=54;
+    else size=56;
+  }
+
+  // fit note
+  if(waistCirc > chest*0.98) fitNote="Comfort / morbida";
+  else if(waistCirc < chest*0.78) fitNote="Slim / aderente";
+  else fitNote="Regular";
+
+  return { sizeEU:`EU ${size}`, chestCm:Math.round(chest), waistCircCm:Math.round(waistCirc), fitNote };
+}
+
+btnCompute.addEventListener("click", ()=>{
+  syncStateFromUI();
+
+  if(!state.front.dataUrl){ alert("Manca la foto FRONTE."); return; }
+  if(!state.side.dataUrl){ alert("Manca la foto LATO."); return; }
+  if(state.front.points.length < FRONT_LABELS.length){
+    alert("Segna tutti i 6 punti sulla foto FRONTE: TESTA, PIEDI, SPALLA SX, SPALLA DX, VITA SX, VITA DX.");
+    return;
+  }
+
+  const hReal = state.profile.heightCm || 175;
+  const pH=state.front.points[0], pF=state.front.points[1], pLS=state.front.points[2], pRS=state.front.points[3], pWL=state.front.points[4], pWR=state.front.points[5];
+
+  const pixHeight = dist(pH,pF);
+  if(pixHeight < 80){ alert("Punti TESTA/PIEDI troppo vicini. Rifalli bene."); return; }
+  const cmPerPix = hReal / pixHeight;
+
+  const shouldersCm = dist(pLS,pRS) * cmPerPix;
+  const waistWidthCm = dist(pWL,pWR) * cmPerPix;
+
+  const est = estimateEUSIze(state.profile.gender, shouldersCm, waistWidthCm);
+
+  state.measures = {
+    shouldersCm, waistCm: waistWidthCm,
+    sizeEU: est.sizeEU,
+    chestCm: est.chestCm,
+    fitNote: est.fitNote
+  };
+
+  // update KPI
+  syncUIFromState();
+
+  // feed avatar sliders
+  slShoulders.value = clamp(Math.round(shouldersCm), 34, 56);
+  slWaist.value = clamp(Math.round(waistWidthCm*2.15), 60, 120); // map to circumference-like slider for better feel
+  updateSliderLabels();
+  applyAvatarFromSliders();
+
+  // wardrobe helpers
+  refreshWardrobeUI();
+  updateStyleTip();
+
+  save();
+});
+
+/* --------------------------
+   Wardrobe
+-------------------------- */
+function refreshWardrobeUI(){
+  wardClient.textContent = state.profile.name ? state.profile.name : "—";
+  wardSize.textContent = state.measures.sizeEU ? state.measures.sizeEU : "—";
+
+  wardTable.innerHTML = "";
+  state.wardrobe.forEach((it, idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><b>${escapeHTML(it.name)}</b><div class="mono" style="opacity:.7">${escapeHTML(it.note||"")}</div></td>
+      <td><span class="tag">${escapeHTML(it.cat)}</span></td>
+      <td>${escapeHTML(it.size)}</td>
+      <td>
+        <button class="btn" data-try="${idx}">Prova</button>
+        <button class="btn bad" data-del="${idx}">Elimina</button>
+      </td>
+    `;
+    wardTable.appendChild(tr);
+  });
+
+  wardTable.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.del);
+      state.wardrobe.splice(i,1);
+      save(); refreshWardrobeUI();
+    });
+  });
+
+  wardTable.querySelectorAll("[data-try]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const i = Number(b.dataset.try);
+      const it = state.wardrobe[i];
+      // simple mapping: if outer -> jacket on, if top -> shirt on, if bottom -> pants on
+      setSwitch(swJacket, it.cat==="outer");
+      setSwitch(swShirt, it.cat==="top" || it.cat==="dress");
+      setSwitch(swPants, it.cat==="bottom" || it.cat==="dress");
+      syncClothes();
+      // switch to studio
+      document.querySelector('.tab[data-view="studio"]').click();
+    });
+  });
+
+  updateStyleTip();
+}
+
+function escapeHTML(s){
+  return String(s).replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+
+btnAddItem.addEventListener("click", ()=>{
+  const name = wName.value.trim();
+  if(!name){ alert("Scrivi il nome del capo."); return; }
+  const cat = wCat.value;
+  const size = (wSize.value.trim() || state.measures.sizeEU || "—");
+  const note = wNote.value.trim();
+
+  state.wardrobe.push({ name, cat, size, note, ts: Date.now() });
+  wName.value=""; wNote.value="";
+  save(); refreshWardrobeUI();
+});
+
+btnLoadDemo.addEventListener("click", ()=>{
+  const baseSize = state.measures.sizeEU || (gender.value==="f" ? "EU 40" : "EU 50");
+  const demo = [
+    { name:"T-shirt basic premium", cat:"top", size: baseSize, note:"Cotone • Regular" },
+    { name:"Jeans slim dark", cat:"bottom", size: baseSize, note:"Denim • Slim" },
+    { name:"Giacca invernale", cat:"outer", size: baseSize, note:"Calda • Comfort" },
+  ];
+  state.wardrobe = [...demo, ...state.wardrobe];
+  save(); refreshWardrobeUI();
+});
+
+btnClearWard.addEventListener("click", ()=>{
+  if(!confirm("Svuotare il guardaroba?")) return;
+  state.wardrobe = [];
+  save(); refreshWardrobeUI();
+});
+
+function updateStyleTip(){
+  const s = state.measures.shouldersCm;
+  const w = state.measures.waistCm;
+  if(!s || !w){
+    styleTip.textContent = "Calcola le misure per ricevere un consiglio (vestibilità e suggerimento outfit).";
+    return;
+  }
+  const ratio = w / s; // width ratio
+  let tip = "";
+  if(ratio > 0.95) tip = "Consiglio: scegli capi 'regular/comfort' e giacche leggermente strutturate. Evita slim troppo stretto.";
+  else if(ratio < 0.75) tip = "Consiglio: ottimo per stile 'slim'. Maglie e giacche leggermente aderenti valorizzano la figura.";
+  else tip = "Consiglio: profilo equilibrato. Vai su 'regular' e scegli in base al comfort che vuoi.";
+  styleTip.textContent = tip;
+}
+
+/* --------------------------
+   THREE Avatar
+-------------------------- */
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
+
+const threeWrap = document.getElementById("threeWrap");
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+renderer.setSize(threeWrap.clientWidth, threeWrap.clientHeight);
+threeWrap.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, threeWrap.clientWidth/threeWrap.clientHeight, 0.1, 100);
+camera.position.set(0, 1.55, 4.2);
+
+scene.add(new THREE.DirectionalLight(0xffffff, 1.0)).position.set(2,3,2);
+scene.add(new THREE.AmbientLight(0xffffff, 0.35));
+
+const floor = new THREE.Mesh(
+  new THREE.CircleGeometry(2.0, 64),
+  new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9, metalness: 0.1 })
+);
+floor.rotation.x = -Math.PI/2;
+scene.add(floor);
+
+function makeMat(hex, rough=0.75, metal=0.05){
+  return new THREE.MeshStandardMaterial({ color: hex, roughness: rough, metalness: metal });
+}
+const skinMat = makeMat(0xf0c8a8, 0.9, 0.0);
+const bodyMat = makeMat(0x2a2a3a, 0.85, 0.05);
+
+const avatar = new THREE.Group();
+scene.add(avatar);
+
+const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 32), skinMat); head.position.y = 1.78;
+const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.12, 20), skinMat); neck.position.y = 1.6;
+
+let torso = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.34, 0.60, 24), bodyMat); torso.position.y = 1.25;
+let pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.30, 0.22, 24), bodyMat); pelvis.position.y = 0.92;
+
+const armL = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.10, 0.56, 20), skinMat);
+armL.position.set(-0.46, 1.28, 0); armL.rotation.z = 0.15;
+const armR = armL.clone(); armR.position.x = 0.46; armR.rotation.z = -0.15;
+
+const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.14, 0.78, 20), skinMat); legL.position.set(-0.17, 0.46, 0);
+const legR = legL.clone(); legR.position.x = 0.17;
+
+const footL = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.34), makeMat(0x191922, 0.9, 0.05)); footL.position.set(-0.17, 0.06, 0.07);
+const footR = footL.clone(); footR.position.x = 0.17;
+
+avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR);
+
+// clothes
+function makeClothTexture(type){
+  const c = document.createElement("canvas");
+  c.width = 512; c.height = 512;
+  const g = c.getContext("2d");
+  g.fillStyle = "#202030"; g.fillRect(0,0,512,512);
+
+  if(type==="shirt"){
+    g.fillStyle = "rgba(255,213,106,.18)";
+    for(let y=0;y<512;y+=24){ g.fillRect(0,y,512,10); }
+    g.fillStyle = "rgba(255,213,106,.35)";
+    g.font = "bold 58px Arial";
+    g.fillText("SC", 46, 96);
+  } else if(type==="pants"){
+    g.fillStyle = "rgba(110,255,168,.12)";
+    for(let x=0;x<512;x+=18){ g.fillRect(x,0,7,512); }
+  } else if(type==="jacket"){
+    g.fillStyle = "rgba(255,255,255,.10)";
+    for(let i=0;i<14;i++){
+      g.beginPath();
+      g.arc(256, 256, 40 + i*18, 0, Math.PI*2);
+      g.strokeStyle = `rgba(255,213,106,${0.06 + i*0.01})`;
+      g.lineWidth = 6;
+      g.stroke();
+    }
+  }
+  return new THREE.CanvasTexture(c);
+}
+
+const shirtMat = new THREE.MeshStandardMaterial({ map: makeClothTexture("shirt"), roughness:0.85, metalness:0.05 });
+const pantsMat = new THREE.MeshStandardMaterial({ map: makeClothTexture("pants"), roughness:0.9, metalness:0.02 });
+const jacketMat = new THREE.MeshStandardMaterial({ map: makeClothTexture("jacket"), roughness:0.75, metalness:0.08 });
+
+let shirt = new THREE.Mesh(new THREE.CylinderGeometry(0.305, 0.365, 0.62, 24), shirtMat);
+shirt.position.copy(torso.position); shirt.scale.set(1.02,1.02,1.02);
+
+let pants = new THREE.Mesh(new THREE.CylinderGeometry(0.275, 0.315, 0.28, 24), pantsMat);
+pants.position.copy(pelvis.position); pants.position.y += 0.01; pants.scale.set(1.03,1.03,1.03);
+
+const jacket = new THREE.Group();
+let jacketBody = new THREE.Mesh(new THREE.CylinderGeometry(0.325, 0.385, 0.66, 24), jacketMat);
+jacketBody.position.copy(torso.position); jacketBody.scale.set(1.03,1.03,1.03);
+let sleeveL = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.12, 0.58, 20), jacketMat);
+sleeveL.position.copy(armL.position); sleeveL.rotation.copy(armL.rotation);
+let sleeveR = sleeveL.clone(); sleeveR.position.x *= -1; sleeveR.rotation.z *= -1;
+jacket.add(jacketBody, sleeveL, sleeveR);
+jacket.visible = false;
+
+avatar.add(shirt, pants, jacket);
+
+/* --------------------------
+   Controls + switches + sliders
+-------------------------- */
+let isDown=false, lastX=0, vel=0;
+renderer.domElement.addEventListener("pointerdown", (e)=>{ isDown=true; lastX=e.clientX; renderer.domElement.setPointerCapture(e.pointerId); });
+renderer.domElement.addEventListener("pointerup", ()=>{ isDown=false; });
+renderer.domElement.addEventListener("pointermove", (e)=>{
+  if(!isDown) return;
+  const dx=e.clientX-lastX; lastX=e.clientX;
+  vel = dx*0.003;
+  avatar.rotation.y += vel;
+});
+function resize3D(){
+  const w=threeWrap.clientWidth, h=threeWrap.clientHeight;
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+  renderer.setSize(w,h);
+}
+window.addEventListener("resize", resize3D);
+
+function animate(){
+  requestAnimationFrame(animate);
+  avatar.rotation.y += vel*0.15;
+  vel *= 0.88;
+  renderer.render(scene,camera);
+}
+animate();
+
+const swShirt = document.getElementById("swShirt");
+const swPants = document.getElementById("swPants");
+const swJacket = document.getElementById("swJacket");
+
+function setSwitch(el,on){ el.classList.toggle("on", !!on); }
+function toggleSwitch(el){ setSwitch(el, !el.classList.contains("on")); }
+function syncClothes(){
+  shirt.visible = swShirt.classList.contains("on");
+  pants.visible = swPants.classList.contains("on");
+  jacket.visible = swJacket.classList.contains("on");
+  save();
+}
+[swShirt,swPants,swJacket].forEach(sw=> sw.addEventListener("click", ()=>{ toggleSwitch(sw); syncClothes(); }));
+
+const slShoulders = document.getElementById("slShoulders");
+const slWaist = document.getElementById("slWaist");
+const slShouldersVal = document.getElementById("slShouldersVal");
+const slWaistVal = document.getElementById("slWaistVal");
+const btnApplyFromCalc = document.getElementById("btnApplyFromCalc");
+const btnApplySliders = document.getElementById("btnApplySliders");
+const btnResetAvatar = document.getElementById("btnResetAvatar");
+
+function updateSliderLabels(){
+  slShouldersVal.textContent = slShoulders.value;
+  slWaistVal.textContent = slWaist.value;
+}
+slShoulders.addEventListener("input", updateSliderLabels);
+slWaist.addEventListener("input", updateSliderLabels);
+
+function rebuildTorsoAndClothes(shouldersCm, waistCircCm){
+  // map to scale factors
+  const s = (shouldersCm - 44) / 20;
+  const w = (waistCircCm - 86) / 40;
+
+  const torsoTop = 0.34 * (1 + s*0.55);
+  const torsoBot = 0.28 * (1 + w*0.35);
+
+  const pelvisTop = 0.30 * (1 + w*0.35);
+  const pelvisBot = 0.26 * (1 + w*0.25);
+
+  torso.geometry.dispose();
+  torso.geometry = new THREE.CylinderGeometry(torsoBot, torsoTop, 0.60, 24);
+
+  shirt.geometry.dispose();
+  shirt.geometry = new THREE.CylinderGeometry(torsoBot*1.08, torsoTop*1.08, 0.62, 24);
+
+  jacketBody.geometry.dispose();
+  jacketBody.geometry = new THREE.CylinderGeometry(torsoBot*1.14, torsoTop*1.14, 0.66, 24);
+
+  pelvis.geometry.dispose();
+  pelvis.geometry = new THREE.CylinderGeometry(pelvisBot, pelvisTop, 0.22, 24);
+
+  pants.geometry.dispose();
+  pants.geometry = new THREE.CylinderGeometry(pelvisBot*1.06, pelvisTop*1.06, 0.28, 24);
+
+  // arms spacing
+  const armX = 0.46 * (1 + s*0.55);
+  armL.position.x = -armX;
+  armR.position.x = armX;
+  sleeveL.position.x = armL.position.x;
+  sleeveR.position.x = armR.position.x;
+}
+
+function applyAvatarFromSliders(){
+  const shoulders = Number(slShoulders.value);
+  const waist = Number(slWaist.value);
+  rebuildTorsoAndClothes(shoulders, waist);
+  save();
+}
+
+btnApplySliders.addEventListener("click", ()=>{
+  applyAvatarFromSliders();
+  const est = estimateEUSIze(gender.value, Number(slShoulders.value), Number(slWaist.value)/2.15);
+  kpiSize.textContent = est.sizeEU;
+  kpiChest.textContent = `${est.chestCm} cm`;
+  kpiNote.textContent = est.fitNote;
+});
+
+btnApplyFromCalc.addEventListener("click", ()=>{
+  if(!state.measures.shouldersCm || !state.measures.waistCm){
+    alert("Prima calcola le misure.");
+    return;
+  }
+  // shoulders = shoulders, waist slider uses circumference-like number
+  slShoulders.value = clamp(Math.round(state.measures.shouldersCm), 34, 56);
+  slWaist.value = clamp(Math.round(state.measures.waistCm*2.15), 60, 120);
+  updateSliderLabels();
+  applyAvatarFromSliders();
+});
+
+btnResetAvatar.addEventListener("click", ()=>{
+  slShoulders.value = 44;
+  slWaist.value = 86;
+  updateSliderLabels();
+  applyAvatarFromSliders();
+});
+
+/* --------------------------
+   Boot
+-------------------------- */
+load();
+syncUIFromState();
+redrawFront();
+redrawSide();
+refreshWardrobeUI();
+updateSliderLabels();
+syncClothes();
+applyAvatarFromSliders();
+
+</script>
+</body>
+</html>
