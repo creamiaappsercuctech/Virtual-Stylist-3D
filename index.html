@@ -4,40 +4,80 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SerCucTech • Virtual Stylist 3D (No-404)</title>
-  <meta name="theme-color" content="#111111" />
+  <meta name="theme-color" content="#0b0b12" />
   <style>
     :root{
-      --bg:#0b0b0e; --txt:#f2f2f5; --muted:#a9a9b6; --line:#2a2a3a;
-      --acc:#ffd56a; --ok:#6effa8; --bad:#ff6e6e;
+      --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:#2a2a3a;
+      --acc:#ffd56a;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
-    body{ margin:0; background: var(--bg); color:var(--txt); }
-    header{ position:sticky; top:0; z-index:10; background:rgba(11,11,14,.85); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,.06); }
+    body{ margin:0; background:var(--bg); color:var(--txt); }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(11,11,18,.86); backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
     .wrap{ max-width:1100px; margin:0 auto; padding:14px; }
     .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    .btn{ border:1px solid rgba(255,255,255,.1); background:rgba(255,255,255,.04); color:var(--txt); padding:10px 12px; border-radius:14px; cursor:pointer; }
-    .btn.primary{ background: rgba(255,213,106,.14); border-color: rgba(255,213,106,.25); }
-    .card{ border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); border-radius:18px; overflow:hidden; }
-    .card h2{ margin:0; font-size:14px; padding:12px 14px; border-bottom:1px solid rgba(255,255,255,.06); display:flex; justify-content:space-between; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center; padding:6px 10px;
+      border-radius:999px; border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;
+    }
+    .pill b{ color:var(--txt); }
+    .btn{
+      border:1px solid rgba(255,255,255,.1);
+      background:rgba(255,255,255,.04);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+    }
+    .btn.primary{
+      background:rgba(255,213,106,.14);
+      border-color:rgba(255,213,106,.25);
+    }
+    .card{
+      border:1px solid rgba(255,255,255,.07);
+      background:rgba(255,255,255,.02);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0;
+      font-size:14px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
     .card .body{ padding:12px 14px; }
     .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
     @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
     label{ display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
-    input[type="number"], input[type="text"], input[type="range"]{
-      width:100%; padding:10px; border-radius:12px; border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03); color:var(--txt); outline:none; box-sizing:border-box;
-    }
-    .pill{ display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.03); color:var(--muted); font-size:12px; }
-    .pill b{ color:var(--txt); }
-    #threeWrap{ height:520px; background:#090911; border-radius:16px; border:1px solid rgba(255,255,255,.06); overflow:hidden; position:relative; }
-    @media(max-width:980px){ #threeWrap{ height:420px; } }
+    input[type="range"]{ width:100%; }
     .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
+    #threeWrap{
+      height:520px;
+      background:#090912;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.06);
+      overflow:hidden;
+      position:relative;
+    }
+    @media(max-width:980px){ #threeWrap{ height:420px; } }
+
     #errBox{
       position:fixed; left:10px; right:10px; bottom:10px; z-index:99;
-      border:1px solid rgba(255,110,110,.35); background: rgba(255,110,110,.08);
-      color: rgba(255,255,255,.95); border-radius:14px; padding:10px 12px;
-      display:none; white-space:pre-wrap; font-size:12px;
+      border:1px solid rgba(255,110,110,.35);
+      background:rgba(255,110,110,.08);
+      color:rgba(255,255,255,.95);
+      border-radius:14px;
+      padding:10px 12px;
+      display:none;
+      white-space:pre-wrap;
+      font-size:12px;
     }
   </style>
 </head>
@@ -65,6 +105,7 @@
         <div id="threeWrap"></div>
 
         <div style="height:10px"></div>
+
         <div class="row">
           <div style="flex:1 1 240px; min-width:220px">
             <label>Spalle (cm)</label>
@@ -79,6 +120,7 @@
         </div>
 
         <div style="height:10px"></div>
+
         <div class="row">
           <button class="btn primary" id="btnReset">↩️ Reset</button>
           <span class="pill">Se vedi nero: <b>WebGL/JS bloccato</b></span>
@@ -87,15 +129,17 @@
     </div>
 
     <div class="card">
-      <h2><span>Debug rapido</span><span class="hint">per eliminare difetti</span></h2>
+      <h2><span>Debug rapido</span><span class="hint">anti-difetti</span></h2>
       <div class="body hint" id="debug">
-        1) Se questa pagina è 404 → GitHub Pages non sta pubblicando la root.<br/>
-        2) Se pagina ok ma avatar nero → errore JS o WebGL.<br/>
-        3) In basso comparirà un riquadro rosso con l’errore preciso.
+        Se questa pagina non è 404 ma vedi solo nero, allora:
+        <br/>• WebGL è disattivato (raro) oppure
+        <br/>• c’è un errore JS (lo vedi nel riquadro rosso in basso).
       </div>
       <div class="body">
-        <label>Link Pages corretto</label>
-        <input type="text" value="https://creamiaappsercuctech.github.io/Virtual-Stylist-3D/" readonly />
+        <div class="hint">Link Pages:</div>
+        <div class="pill" style="max-width:100%; overflow:auto">
+          <b>https://creamiaappsercuctech.github.io/Virtual-Stylist-3D/</b>
+        </div>
       </div>
     </div>
   </div>
@@ -106,6 +150,7 @@
 <script type="module">
   const status = document.getElementById("status");
   const errBox = document.getElementById("errBox");
+
   function showErr(msg){
     errBox.style.display = "block";
     errBox.textContent = "ERRORE:\n" + msg;
@@ -114,26 +159,38 @@
   window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
   window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
 
+  // Three.js da CDN (nessun asset .glb)
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
   const threeWrap = document.getElementById("threeWrap");
-  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
-  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio||1));
+
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+  renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(threeWrap.clientWidth, threeWrap.clientHeight);
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
   threeWrap.appendChild(renderer.domElement);
 
+  // Scene + background (questo evita la “schermata nera” su alcuni Android)
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, threeWrap.clientWidth/threeWrap.clientHeight, 0.1, 100);
+  scene.background = new THREE.Color(0x0b0b12);
+
+  // Camera
+  const camera = new THREE.PerspectiveCamera(45, threeWrap.clientWidth / threeWrap.clientHeight, 0.1, 100);
   camera.position.set(0, 1.55, 4.2);
 
-  scene.add(new THREE.DirectionalLight(0xffffff, 1.0)).position.set(2,3,2);
+  // Lights
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
+  dir.position.set(2,3,2);
+  scene.add(dir);
   scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
+  // Floor
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(2.0, 64),
     new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9, metalness: 0.1 })
   );
-  floor.rotation.x = -Math.PI/2;
+  floor.rotation.x = -Math.PI / 2;
   scene.add(floor);
 
   function mat(hex, rough=0.8, metal=0.05){
@@ -144,10 +201,10 @@
   const avatar = new THREE.Group();
   scene.add(avatar);
 
-  const skinMat = mat(0xf0c8a8, 0.9, 0.0);
-  const baseMat = mat(0x2a2a3a, 0.85, 0.05);
-  const shirtMat = mat(0x1c2233, 0.9, 0.02);
-  const pantsMat = mat(0x141a2b, 0.92, 0.02);
+  const skinMat   = mat(0xf0c8a8, 0.9, 0.0);
+  const baseMat   = mat(0x2a2a3a, 0.85, 0.05);
+  const shirtMat  = mat(0x1c2233, 0.9, 0.02);
+  const pantsMat  = mat(0x141a2b, 0.92, 0.02);
   const jacketMat = mat(0x2b2320, 0.8, 0.05);
 
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.22, 32, 32), skinMat); head.position.y = 1.78;
@@ -179,29 +236,31 @@
   sleeveL.position.copy(armL.position); sleeveL.rotation.copy(armL.rotation);
   const sleeveR = sleeveL.clone(); sleeveR.position.x *= -1; sleeveR.rotation.z *= -1;
   jacket.add(jacketBody, sleeveL, sleeveR);
-  jacket.visible = true;
 
   avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR, shirt, pants, jacket);
 
   // Drag rotate
-  let isDown=false, lastX=0, vel=0;
-  renderer.domElement.addEventListener("pointerdown", (e)=>{ isDown=true; lastX=e.clientX; renderer.domElement.setPointerCapture(e.pointerId); });
-  renderer.domElement.addEventListener("pointerup", ()=>{ isDown=false; });
+  let isDown = false, lastX = 0, vel = 0;
+  renderer.domElement.addEventListener("pointerdown", (e)=>{
+    isDown = true; lastX = e.clientX;
+    renderer.domElement.setPointerCapture(e.pointerId);
+  });
+  renderer.domElement.addEventListener("pointerup", ()=>{ isDown = false; });
   renderer.domElement.addEventListener("pointermove", (e)=>{
     if(!isDown) return;
-    const dx=e.clientX-lastX; lastX=e.clientX;
-    vel = dx*0.003;
+    const dx = e.clientX - lastX; lastX = e.clientX;
+    vel = dx * 0.003;
     avatar.rotation.y += vel;
   });
 
   function resize(){
-    const w=threeWrap.clientWidth, h=threeWrap.clientHeight;
-    camera.aspect=w/h; camera.updateProjectionMatrix();
-    renderer.setSize(w,h);
+    const w = threeWrap.clientWidth, h = threeWrap.clientHeight;
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
   }
   window.addEventListener("resize", resize);
 
-  // Sliders
+  // UI sliders
   const slShoulders = document.getElementById("slShoulders");
   const slWaist = document.getElementById("slWaist");
   const vShoulders = document.getElementById("vShoulders");
@@ -212,11 +271,12 @@
     vShoulders.textContent = shouldersCm;
     vWaist.textContent = waistCm;
 
-    const s = (shouldersCm - 44) / 20;
+    const s = (shouldersCm - 44) / 20; // approx range normalize
     const w = (waistCm - 86) / 40;
 
     const torsoTop = 0.34 * (1 + s*0.55);
     const torsoBot = 0.28 * (1 + w*0.35);
+
     torso.geometry.dispose();
     torso.geometry = new THREE.CylinderGeometry(torsoBot, torsoTop, 0.60, 24);
 
@@ -228,6 +288,7 @@
 
     const pelvisTop = 0.30 * (1 + w*0.35);
     const pelvisBot = 0.26 * (1 + w*0.25);
+
     pelvis.geometry.dispose();
     pelvis.geometry = new THREE.CylinderGeometry(pelvisBot, pelvisTop, 0.22, 24);
 
@@ -256,9 +317,9 @@
 
   function animate(){
     requestAnimationFrame(animate);
-    avatar.rotation.y += vel*0.15;
+    avatar.rotation.y += vel * 0.15;
     vel *= 0.88;
-    renderer.render(scene,camera);
+    renderer.render(scene, camera);
   }
   animate();
 </script>
