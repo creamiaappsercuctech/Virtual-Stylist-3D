@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 3D (v2)</title>
+  <title>SerCucTech • Virtual Stylist 3D (v2 + Admin)</title>
   <meta name="theme-color" content="#111111" />
   <style>
     :root{
@@ -184,7 +184,7 @@
     <div class="brand">
       <div class="logo">SC</div>
       <div class="title">
-        <b>SerCucTech • Virtual Stylist 3D <span style="opacity:.75">(v2)</span></b>
+        <b>SerCucTech • <span id="secretTap" style="cursor:pointer">Virtual</span> Stylist 3D <span style="opacity:.75">(v2)</span></b>
         <span>2 foto → misure più precise → taglia → avatar → guardaroba</span>
       </div>
     </div>
@@ -193,6 +193,7 @@
       <div class="tab" data-view="wardrobe">Guardaroba</div>
       <div class="tab" data-view="business">Business</div>
       <div class="tab" data-view="help">Guida</div>
+      <div class="tab hide" id="tabAdmin" data-view="admin">Admin</div>
     </div>
   </div>
 </header>
@@ -301,7 +302,7 @@
           </div>
         </div>
         <div class="foot">
-          Questa v2 migliora tanto perché la <b>vita</b> usa due punti (sinistra/destra) e non un rapporto “a caso”.
+          Questa v2 migliora tanto perché la <b>vita</b> usa due punti (sinistra/destra).
           Prossimo step: MediaPipe Pose per mettere i punti in automatico.
         </div>
       </div>
@@ -344,7 +345,7 @@
 
           <div style="height:10px"></div>
           <div class="hint">
-            L’avatar è “parametrico”: cambia larghezza spalle e vita e i vestiti seguono.
+            L’avatar è “parametrico”: cambia spalle e vita e i vestiti seguono.
             Versione 3: vestiti reali 3D (.glb) + texture + catalogo brand.
           </div>
         </div>
@@ -500,6 +501,67 @@
     </div>
   </section>
 
+  <!-- VIEW: ADMIN (hidden) -->
+  <section id="view-admin" class="hide">
+    <div class="grid">
+      <div class="card">
+        <h2>Admin SerCucTech <small class="mono">solo accesso segreto</small></h2>
+        <div class="body">
+          <div class="row">
+            <div class="pill">Stato Admin: <b id="adminState">OFF</b></div>
+            <button class="btn bad" id="btnAdminLock">🔒 Blocca Admin</button>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <h3 style="margin:0 0 6px; font-size:13px">Backup / Ripristino (JSON)</h3>
+          <div class="row">
+            <button class="btn good" id="btnExport">⬇️ Export JSON</button>
+            <button class="btn" id="btnCopyJson">📋 Copia JSON</button>
+            <input class="btn" style="padding:8px 10px; width:auto" type="file" accept="application/json" id="fileImport" />
+          </div>
+
+          <label>JSON (modifica/incolla per import)</label>
+          <textarea id="adminJson" placeholder="Qui appare l’export. Puoi incollare un JSON e poi cliccare Import."></textarea>
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" id="btnImport">⬆️ Import da textarea</button>
+            <button class="btn bad" id="btnResetProfile">🧹 Reset solo profilo+misure</button>
+            <button class="btn bad" id="btnResetWardrobe">🗑️ Svuota guardaroba</button>
+          </div>
+
+          <div style="height:12px"></div>
+
+          <h3 style="margin:0 0 6px; font-size:13px">Debug</h3>
+          <div class="row">
+            <div class="pill">Storage key: <b class="mono">sercuctech_stylist_v2_state</b></div>
+            <button class="btn" id="btnReload">🔄 Ricarica UI</button>
+          </div>
+
+          <div class="hint" style="margin-top:10px">
+            Admin è nascosto: solo chi conosce il tap segreto lo vede.  
+            Puoi fare export, import e backup dei clienti.
+          </div>
+        </div>
+        <div class="foot">
+          SerCucTech: pannello admin “invisibile” per gestire dati senza mostrarlo al pubblico.
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Come si sblocca</h2>
+        <div class="body hint">
+          Tocca la parola <b>“Virtual”</b> <b>5 volte</b> entro <b>4 secondi</b>.<br/>
+          Poi appare la tab <b>Admin</b>.<br/><br/>
+          Se vuoi bloccarlo, premi <b>Blocca Admin</b>.
+        </div>
+        <div class="foot">
+          In v3 possiamo fare “2 parole in sequenza” ancora più invisibile.
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <!-- Camera modal -->
@@ -553,7 +615,7 @@
 
   if ("serviceWorker" in navigator){
     const swCode = `
-      const CACHE = "sercuctech-stylist-v2";
+      const CACHE = "sercuctech-stylist-v2-admin";
       self.addEventListener("install", (e) => {
         e.waitUntil((async () => {
           const cache = await caches.open(CACHE);
@@ -597,6 +659,7 @@ const views = {
   wardrobe: document.getElementById("view-wardrobe"),
   business: document.getElementById("view-business"),
   help: document.getElementById("view-help"),
+  admin: document.getElementById("view-admin"),
 };
 tabs.addEventListener("click", (e) => {
   const t = e.target.closest(".tab");
@@ -606,6 +669,9 @@ tabs.addEventListener("click", (e) => {
   Object.values(views).forEach(v=>v.classList.add("hide"));
   views[t.dataset.view].classList.remove("hide");
   refreshWardrobeUI();
+  if(t.dataset.view === "admin" && isAdmin()){
+    adminJson.value = JSON.stringify(state, null, 2);
+  }
 });
 
 /* --------------------------
@@ -701,7 +767,6 @@ function syncUIFromState(){
   gender.value = state.profile.gender || "m";
   realHeight.value = state.profile.heightCm || 175;
 
-  // KPI
   kpiHeight.textContent = state.profile.heightCm ? `${Math.round(state.profile.heightCm)} cm` : "—";
   kpiShoulders.textContent = state.measures.shouldersCm ? `${Math.round(state.measures.shouldersCm)} cm` : "—";
   kpiWaist.textContent = state.measures.waistCm ? `${Math.round(state.measures.waistCm)} cm` : "—";
@@ -712,11 +777,9 @@ function syncUIFromState(){
   statusTop.textContent = (state.front.dataUrl ? "FRONTE ok" : "Fronte mancante") + " • " + (state.side.dataUrl ? "LATO ok" : "Lato mancante");
   sideStatus.textContent = state.side.dataUrl ? "Foto caricata" : "Nessuna foto";
 
-  // wardrobe header
   wardClient.textContent = state.profile.name ? state.profile.name : "—";
   wardSize.textContent = state.measures.sizeEU ? state.measures.sizeEU : "—";
 
-  // step label
   if(!state.front.dataUrl) stepLabel.textContent = "Carica/Scatta FRONTE";
   else if(!state.side.dataUrl) stepLabel.textContent = "Carica/Scatta LATO";
   else if(state.front.points.length < FRONT_LABELS.length) stepLabel.textContent = "Metti i punti sulla FRONTE";
@@ -768,6 +831,7 @@ function setSidePhoto(dataUrl){
   state.side.dataUrl = dataUrl;
   save(); syncUIFromState(); redrawSide();
 }
+function redrawAll(){ redrawFront(); redrawSide(); }
 
 function redrawFront(){
   cxF.clearRect(0,0,cvFront.width,cvFront.height);
@@ -788,7 +852,6 @@ function redrawFront(){
     const box = fitImageToCanvas(img, cvFront);
     cxF.drawImage(img, box.x, box.y, box.w, box.h);
 
-    // points
     state.front.points.forEach((p,i)=>{
       cxF.beginPath(); cxF.arc(p.x,p.y,10,0,Math.PI*2);
       cxF.fillStyle="rgba(255,213,106,.95)"; cxF.fill();
@@ -803,7 +866,6 @@ function redrawFront(){
       cxF.fillText(p.label, p.x+14, p.y+5);
     });
 
-    // helper lines
     const pH=state.front.points[0], pF=state.front.points[1], pLS=state.front.points[2], pRS=state.front.points[3], pWL=state.front.points[4], pWR=state.front.points[5];
     if(pH && pF){
       cxF.strokeStyle="rgba(110,255,168,.65)"; cxF.lineWidth=4;
@@ -866,7 +928,7 @@ const btnFlip = document.getElementById("btnFlip");
 
 let camStream=null;
 let facingMode="environment";
-let camTarget="front"; // "front" or "side"
+let camTarget="front";
 
 async function openCamera(target){
   camTarget = target;
@@ -923,9 +985,8 @@ btnResetAll.addEventListener("click", resetAll);
    Measures + Size estimation
 -------------------------- */
 function estimateEUSIze(g, shouldersCm, waistWidthCm){
-  // Heuristics: convert shoulder width to approximate chest circumference; waist width to waist circumference
-  const chest = shouldersCm * 2.25;        // rough
-  const waistCirc = waistWidthCm * 2.15;   // rough (width->circ)
+  const chest = shouldersCm * 2.25;
+  const waistCirc = waistWidthCm * 2.15;
   let size, fitNote="Regular";
 
   if(g==="f"){
@@ -947,7 +1008,6 @@ function estimateEUSIze(g, shouldersCm, waistWidthCm){
     else size=56;
   }
 
-  // fit note
   if(waistCirc > chest*0.98) fitNote="Comfort / morbida";
   else if(waistCirc < chest*0.78) fitNote="Slim / aderente";
   else fitNote="Regular";
@@ -977,27 +1037,20 @@ btnCompute.addEventListener("click", ()=>{
 
   const est = estimateEUSIze(state.profile.gender, shouldersCm, waistWidthCm);
 
-  state.measures = {
-    shouldersCm, waistCm: waistWidthCm,
-    sizeEU: est.sizeEU,
-    chestCm: est.chestCm,
-    fitNote: est.fitNote
-  };
+  state.measures = { shouldersCm, waistCm: waistWidthCm, sizeEU: est.sizeEU, chestCm: est.chestCm, fitNote: est.fitNote };
 
-  // update KPI
   syncUIFromState();
 
-  // feed avatar sliders
   slShoulders.value = clamp(Math.round(shouldersCm), 34, 56);
-  slWaist.value = clamp(Math.round(waistWidthCm*2.15), 60, 120); // map to circumference-like slider for better feel
+  slWaist.value = clamp(Math.round(waistWidthCm*2.15), 60, 120);
   updateSliderLabels();
   applyAvatarFromSliders();
 
-  // wardrobe helpers
   refreshWardrobeUI();
   updateStyleTip();
 
   save();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 /* --------------------------
@@ -1027,6 +1080,7 @@ function refreshWardrobeUI(){
       const i = Number(b.dataset.del);
       state.wardrobe.splice(i,1);
       save(); refreshWardrobeUI();
+      if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
     });
   });
 
@@ -1034,12 +1088,10 @@ function refreshWardrobeUI(){
     b.addEventListener("click", ()=>{
       const i = Number(b.dataset.try);
       const it = state.wardrobe[i];
-      // simple mapping: if outer -> jacket on, if top -> shirt on, if bottom -> pants on
       setSwitch(swJacket, it.cat==="outer");
       setSwitch(swShirt, it.cat==="top" || it.cat==="dress");
       setSwitch(swPants, it.cat==="bottom" || it.cat==="dress");
       syncClothes();
-      // switch to studio
       document.querySelector('.tab[data-view="studio"]').click();
     });
   });
@@ -1061,6 +1113,7 @@ btnAddItem.addEventListener("click", ()=>{
   state.wardrobe.push({ name, cat, size, note, ts: Date.now() });
   wName.value=""; wNote.value="";
   save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 btnLoadDemo.addEventListener("click", ()=>{
@@ -1072,12 +1125,14 @@ btnLoadDemo.addEventListener("click", ()=>{
   ];
   state.wardrobe = [...demo, ...state.wardrobe];
   save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 btnClearWard.addEventListener("click", ()=>{
   if(!confirm("Svuotare il guardaroba?")) return;
   state.wardrobe = [];
   save(); refreshWardrobeUI();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 function updateStyleTip(){
@@ -1087,7 +1142,7 @@ function updateStyleTip(){
     styleTip.textContent = "Calcola le misure per ricevere un consiglio (vestibilità e suggerimento outfit).";
     return;
   }
-  const ratio = w / s; // width ratio
+  const ratio = w / s;
   let tip = "";
   if(ratio > 0.95) tip = "Consiglio: scegli capi 'regular/comfort' e giacche leggermente strutturate. Evita slim troppo stretto.";
   else if(ratio < 0.75) tip = "Consiglio: ottimo per stile 'slim'. Maglie e giacche leggermente aderenti valorizzano la figura.";
@@ -1236,6 +1291,7 @@ function syncClothes(){
   jacket.visible = swJacket.classList.contains("on");
   save();
 }
+
 [swShirt,swPants,swJacket].forEach(sw=> sw.addEventListener("click", ()=>{ toggleSwitch(sw); syncClothes(); }));
 
 const slShoulders = document.getElementById("slShoulders");
@@ -1254,7 +1310,6 @@ slShoulders.addEventListener("input", updateSliderLabels);
 slWaist.addEventListener("input", updateSliderLabels);
 
 function rebuildTorsoAndClothes(shouldersCm, waistCircCm){
-  // map to scale factors
   const s = (shouldersCm - 44) / 20;
   const w = (waistCircCm - 86) / 40;
 
@@ -1279,7 +1334,6 @@ function rebuildTorsoAndClothes(shouldersCm, waistCircCm){
   pants.geometry.dispose();
   pants.geometry = new THREE.CylinderGeometry(pelvisBot*1.06, pelvisTop*1.06, 0.28, 24);
 
-  // arms spacing
   const armX = 0.46 * (1 + s*0.55);
   armL.position.x = -armX;
   armR.position.x = armX;
@@ -1300,6 +1354,7 @@ btnApplySliders.addEventListener("click", ()=>{
   kpiSize.textContent = est.sizeEU;
   kpiChest.textContent = `${est.chestCm} cm`;
   kpiNote.textContent = est.fitNote;
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 btnApplyFromCalc.addEventListener("click", ()=>{
@@ -1307,11 +1362,11 @@ btnApplyFromCalc.addEventListener("click", ()=>{
     alert("Prima calcola le misure.");
     return;
   }
-  // shoulders = shoulders, waist slider uses circumference-like number
   slShoulders.value = clamp(Math.round(state.measures.shouldersCm), 34, 56);
   slWaist.value = clamp(Math.round(state.measures.waistCm*2.15), 60, 120);
   updateSliderLabels();
   applyAvatarFromSliders();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
 });
 
 btnResetAvatar.addEventListener("click", ()=>{
@@ -1319,6 +1374,148 @@ btnResetAvatar.addEventListener("click", ()=>{
   slWaist.value = 86;
   updateSliderLabels();
   applyAvatarFromSliders();
+  if(isAdmin()) adminJson.value = JSON.stringify(state, null, 2);
+});
+
+/* --------------------------
+   Admin invisible unlock (SerCucTech style)
+-------------------------- */
+const secretTap = document.getElementById("secretTap");
+const tabAdmin = document.getElementById("tabAdmin");
+
+const adminState = document.getElementById("adminState");
+const btnAdminLock = document.getElementById("btnAdminLock");
+const btnExport = document.getElementById("btnExport");
+const btnCopyJson = document.getElementById("btnCopyJson");
+const fileImport = document.getElementById("fileImport");
+const adminJson = document.getElementById("adminJson");
+const btnImport = document.getElementById("btnImport");
+const btnResetProfile = document.getElementById("btnResetProfile");
+const btnResetWardrobe = document.getElementById("btnResetWardrobe");
+const btnReload = document.getElementById("btnReload");
+
+const ADMIN_KEY = "sercuctech_admin_unlocked_v1";
+let tapCount = 0;
+let tapTimer = null;
+
+function setAdmin(on){
+  localStorage.setItem(ADMIN_KEY, on ? "1" : "0");
+  tabAdmin.classList.toggle("hide", !on);
+  adminState.textContent = on ? "ON" : "OFF";
+  if(on){
+    adminJson.value = JSON.stringify(state, null, 2);
+  }
+}
+function isAdmin(){
+  return localStorage.getItem(ADMIN_KEY) === "1";
+}
+
+if(secretTap){
+  secretTap.addEventListener("click", ()=>{
+    tapCount++;
+    if(!tapTimer){
+      tapTimer = setTimeout(()=>{
+        tapCount = 0;
+        tapTimer = null;
+      }, 4000);
+    }
+    if(tapCount >= 5){
+      clearTimeout(tapTimer);
+      tapTimer = null;
+      tapCount = 0;
+      setAdmin(true);
+      document.querySelector('.tab[data-view="admin"]').classList.remove("hide");
+      document.querySelector('.tab[data-view="admin"]').click();
+    }
+  });
+}
+
+btnAdminLock?.addEventListener("click", ()=>{
+  setAdmin(false);
+  document.querySelector('.tab[data-view="studio"]').click();
+});
+
+btnExport?.addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `SerCucTech_Stylist_${(state.profile.name||"cliente").replace(/\s+/g,"_")}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  adminJson.value = JSON.stringify(state, null, 2);
+});
+
+btnCopyJson?.addEventListener("click", async ()=>{
+  adminJson.value = JSON.stringify(state, null, 2);
+  try{
+    await navigator.clipboard.writeText(adminJson.value);
+    alert("JSON copiato negli appunti ✅");
+  }catch{
+    alert("Copia non disponibile. Seleziona e copia manualmente.");
+  }
+});
+
+fileImport?.addEventListener("change", async ()=>{
+  const f = fileImport.files?.[0];
+  if(!f) return;
+  try{
+    const txt = await f.text();
+    adminJson.value = txt;
+    alert("JSON caricato. Premi 'Import' per applicarlo.");
+  }catch{
+    alert("Errore lettura file JSON.");
+  }
+});
+
+btnImport?.addEventListener("click", ()=>{
+  try{
+    const obj = JSON.parse(adminJson.value);
+    if(!obj.profile || !obj.front || !obj.side) throw new Error("Formato non valido");
+    state = obj;
+    save();
+    syncUIFromState();
+    redrawAll();
+    refreshWardrobeUI();
+    updateSliderLabels();
+    syncClothes();
+    applyAvatarFromSliders();
+    adminJson.value = JSON.stringify(state, null, 2);
+    alert("Import completato ✅");
+  }catch{
+    alert("JSON non valido. Controlla il contenuto.");
+  }
+});
+
+btnResetProfile?.addEventListener("click", ()=>{
+  if(!confirm("Reset profilo + misure?")) return;
+  state.profile = { name:"", gender:"m", heightCm:175 };
+  state.measures = { shouldersCm:null, waistCm:null, sizeEU:"", chestCm:null, fitNote:"" };
+  save();
+  syncUIFromState();
+  refreshWardrobeUI();
+  adminJson.value = JSON.stringify(state, null, 2);
+  alert("Profilo resettato ✅");
+});
+
+btnResetWardrobe?.addEventListener("click", ()=>{
+  if(!confirm("Svuotare guardaroba?")) return;
+  state.wardrobe = [];
+  save();
+  refreshWardrobeUI();
+  adminJson.value = JSON.stringify(state, null, 2);
+  alert("Guardaroba svuotato ✅");
+});
+
+btnReload?.addEventListener("click", ()=>{
+  load();
+  syncUIFromState();
+  redrawAll();
+  refreshWardrobeUI();
+  updateSliderLabels();
+  syncClothes();
+  applyAvatarFromSliders();
+  adminJson.value = JSON.stringify(state, null, 2);
+  alert("UI ricaricata ✅");
 });
 
 /* --------------------------
@@ -1326,12 +1523,12 @@ btnResetAvatar.addEventListener("click", ()=>{
 -------------------------- */
 load();
 syncUIFromState();
-redrawFront();
-redrawSide();
+redrawAll();
 refreshWardrobeUI();
 updateSliderLabels();
 syncClothes();
 applyAvatarFromSliders();
+setAdmin(isAdmin());
 
 </script>
 </body>
