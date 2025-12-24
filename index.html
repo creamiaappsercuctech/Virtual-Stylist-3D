@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 3D (No-404)</title>
+  <title>SerCucTech • Virtual Stylist 3D</title>
   <meta name="theme-color" content="#0b0b12" />
+  <link rel="manifest" href="./manifest.json">
   <style>
     :root{
-      --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:#2a2a3a;
+      --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.08);
+      --card:rgba(255,255,255,.03); --card2:rgba(255,255,255,.02);
       --acc:#ffd56a;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
@@ -19,14 +21,63 @@
     }
     .wrap{ max-width:1100px; margin:0 auto; padding:14px; }
     .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .brand{
+      width:40px;height:40px;border-radius:16px;display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(255,213,106,.95),rgba(110,255,168,.35));
+      color:#111;font-weight:900;
+    }
+    .sub{ color:var(--muted); font-size:12px; line-height:1.35; }
+    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .tab{
+      border:1px solid var(--line);
+      background:var(--card2);
+      color:var(--txt);
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background:rgba(255,213,106,.12);
+      border-color:rgba(255,213,106,.25);
+    }
+
+    .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
+    @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
+
+    .card{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0; font-size:14px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .card .body{ padding:12px 14px; }
+
     .pill{
       display:inline-flex; gap:8px; align-items:center; padding:6px 10px;
-      border-radius:999px; border:1px solid rgba(255,255,255,.08);
-      background:rgba(255,255,255,.03); color:var(--muted); font-size:12px;
+      border-radius:999px; border:1px solid var(--line);
+      background:var(--card); color:var(--muted); font-size:12px;
     }
     .pill b{ color:var(--txt); }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input[type="range"], input[type="text"], select{
+      width:100%; box-sizing:border-box;
+      padding:10px; border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--txt);
+      outline:none;
+    }
+
     .btn{
-      border:1px solid rgba(255,255,255,.1);
+      border:1px solid rgba(255,255,255,.10);
       background:rgba(255,255,255,.04);
       color:var(--txt);
       padding:10px 12px;
@@ -37,27 +88,7 @@
       background:rgba(255,213,106,.14);
       border-color:rgba(255,213,106,.25);
     }
-    .card{
-      border:1px solid rgba(255,255,255,.07);
-      background:rgba(255,255,255,.02);
-      border-radius:18px;
-      overflow:hidden;
-    }
-    .card h2{
-      margin:0;
-      font-size:14px;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,.06);
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-    }
-    .card .body{ padding:12px 14px; }
-    .grid{ display:grid; grid-template-columns: 1.1fr .9fr; gap:14px; }
-    @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
-    label{ display:block; font-size:12px; color:var(--muted); margin:8px 0 6px; }
-    input[type="range"]{ width:100%; }
-    .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
+
     #threeWrap{
       height:520px;
       background:#090912;
@@ -67,6 +98,32 @@
       position:relative;
     }
     @media(max-width:980px){ #threeWrap{ height:420px; } }
+
+    .section{ display:none; }
+    .section.active{ display:block; }
+
+    .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    @media(max-width:680px){ .cards{ grid-template-columns:1fr; } }
+    .item{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex; gap:12px;
+      padding:12px;
+    }
+    .thumb{
+      width:84px; height:84px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      display:grid; place-items:center;
+      flex:0 0 auto;
+      font-size:12px; color:var(--muted);
+    }
+    .meta{ flex:1 1 auto; min-width:0; }
+    .meta .t{ font-weight:800; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .meta .p{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
 
     #errBox{
       position:fixed; left:10px; right:10px; bottom:10px; z-index:99;
@@ -83,66 +140,181 @@
 </head>
 <body>
 <header>
-  <div class="wrap row" style="justify-content:space-between">
-    <div class="row">
-      <div style="width:36px;height:36px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(255,213,106,.95),rgba(110,255,168,.35));color:#111;font-weight:900">SC</div>
-      <div>
-        <div style="font-weight:800">SerCucTech • Virtual Stylist 3D</div>
-        <div class="hint">Versione “No-404”: avatar sempre visibile (nessun .glb richiesto)</div>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <div class="brand">SC</div>
+        <div>
+          <div style="font-weight:900">SerCucTech • Virtual Stylist 3D</div>
+          <div class="sub">Home unica (Studio / Guardaroba / Business) • No-404</div>
+        </div>
       </div>
-    </div>
-    <div class="row">
       <span class="pill">Stato: <b id="status">Avvio…</b></span>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Sezioni app">
+      <div class="tab active" data-tab="studio">Studio</div>
+      <div class="tab" data-tab="guardaroba">Guardaroba</div>
+      <div class="tab" data-tab="business">Business</div>
+      <div class="tab" data-tab="guida">Guida</div>
     </div>
   </div>
 </header>
 
 <main class="wrap">
-  <div class="grid">
-    <div class="card">
-      <h2><span>Controlli avatar</span><span class="hint">drag = ruota</span></h2>
-      <div class="body">
-        <div id="threeWrap"></div>
 
-        <div style="height:10px"></div>
+  <!-- STUDIO -->
+  <section id="studio" class="section active">
+    <div class="grid">
+      <div class="card">
+        <h2><span>Avatar 3D + prova outfit</span><span class="sub">drag = ruota</span></h2>
+        <div class="body">
+          <div id="threeWrap"></div>
 
-        <div class="row">
-          <div style="flex:1 1 240px; min-width:220px">
-            <label>Spalle (cm)</label>
-            <input id="slShoulders" type="range" min="34" max="56" value="44" />
-            <span class="pill">Spalle: <b id="vShoulders">44</b> cm</span>
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <div style="flex:1 1 240px; min-width:220px">
+              <label>Spalle (cm)</label>
+              <input id="slShoulders" type="range" min="34" max="56" value="44" />
+              <span class="pill">Spalle: <b id="vShoulders">44</b> cm</span>
+            </div>
+            <div style="flex:1 1 240px; min-width:220px">
+              <label>Vita (cm)</label>
+              <input id="slWaist" type="range" min="60" max="120" value="86" />
+              <span class="pill">Vita: <b id="vWaist">86</b> cm</span>
+            </div>
           </div>
-          <div style="flex:1 1 240px; min-width:220px">
-            <label>Vita (cm)</label>
-            <input id="slWaist" type="range" min="60" max="120" value="86" />
-            <span class="pill">Vita: <b id="vWaist">86</b> cm</span>
+
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <button class="btn primary" id="btnOutfitBase">Solo base</button>
+            <button class="btn" id="btnOutfitCasual">Casual (T-shirt)</button>
+            <button class="btn" id="btnOutfitJacket">Con giacca</button>
+            <button class="btn" id="btnReset">↩️ Reset</button>
           </div>
         </div>
+      </div>
 
-        <div style="height:10px"></div>
+      <div class="card">
+        <h2><span>Taglia stimata</span><span class="sub">demo (regole semplici)</span></h2>
+        <div class="body">
+          <div class="sub">
+            Questa è una stima “base” (poi la rendiamo precisa con foto + altezza + calibratore).
+          </div>
 
-        <div class="row">
-          <button class="btn primary" id="btnReset">↩️ Reset</button>
-          <span class="pill">Se vedi nero: <b>WebGL/JS bloccato</b></span>
+          <div style="height:10px"></div>
+
+          <div class="row">
+            <span class="pill">Top: <b id="sizeTop">M</b></span>
+            <span class="pill">Pants: <b id="sizePants">48</b></span>
+            <span class="pill">EU Shoe: <b id="sizeShoe">42</b></span>
+          </div>
+
+          <label>Altezza (cm)</label>
+          <input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
+
+          <label>Genere (per guida taglie)</label>
+          <select id="gender">
+            <option value="uomo">Uomo</option>
+            <option value="donna">Donna</option>
+            <option value="unisex" selected>Unisex</option>
+          </select>
+
+          <div style="height:10px"></div>
+          <button class="btn primary" id="btnRecalc">Ricalcola taglie</button>
+
+          <div style="height:10px"></div>
+          <div class="sub">
+            Prossimo step: “2 foto → misure reali” (serve calibrazione e/o librerie ML).
+          </div>
         </div>
       </div>
     </div>
+  </section>
 
+  <!-- GUARDAROBA -->
+  <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Debug rapido</span><span class="hint">anti-difetti</span></h2>
-      <div class="body hint" id="debug">
-        Se questa pagina non è 404 ma vedi solo nero, allora:
-        <br/>• WebGL è disattivato (raro) oppure
-        <br/>• c’è un errore JS (lo vedi nel riquadro rosso in basso).
-      </div>
+      <h2><span>Guardaroba multi-store (cards)</span><span class="sub">Acquista = link affiliato</span></h2>
       <div class="body">
-        <div class="hint">Link Pages:</div>
-        <div class="pill" style="max-width:100%; overflow:auto">
-          <b>https://creamiaappsercuctech.github.io/Virtual-Stylist-3D/</b>
+        <div class="row">
+          <button class="btn primary" id="btnAddDemo">Carica demo</button>
+          <button class="btn" id="btnClearWardrobe">Svuota</button>
+          <span class="pill">Elementi: <b id="wardCount">0</b></span>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="cards" id="wardrobe"></div>
+
+        <div style="height:12px"></div>
+        <div class="sub">
+          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. Le immagini possono essere tue (caricate) oppure solo “placeholder” finché non integriamo le API.
         </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- BUSINESS -->
+  <section id="business" class="section">
+    <div class="grid">
+      <div class="card">
+        <h2><span>Affiliate settings</span><span class="sub">Awin + Amazon</span></h2>
+        <div class="body">
+          <label>Awin Publisher ID (opzionale)</label>
+          <input id="awinId" type="text" placeholder="es. 123456" />
+
+          <label>Amazon Tag IT</label>
+          <input id="amazonTag" type="text" placeholder="es. sercuctech-21" />
+
+          <div style="height:10px"></div>
+          <span class="pill">Salvato in: <b>localStorage</b></span>
+
+          <div style="height:12px"></div>
+          <div class="sub">
+            Awin: incolla direttamente i tuoi link tracciati (deeplink) nelle card.<br/>
+            Amazon: puoi incollare un link normale e il sistema aggiunge automaticamente <b>?tag=</b>.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span>Generatore link Amazon</span><span class="sub">aggiunge il tag</span></h2>
+        <div class="body">
+          <label>Incolla link Amazon</label>
+          <input id="amazonIn" type="text" placeholder="https://www.amazon.it/..." />
+
+          <div style="height:10px"></div>
+          <button class="btn primary" id="btnAmazonMake">Crea link affiliato</button>
+
+          <label>Link affiliato generato</label>
+          <input id="amazonOut" type="text" readonly />
+
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnCopy">Copia</button>
+            <button class="btn" id="btnOpen">Apri</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUIDA -->
+  <section id="guida" class="section">
+    <div class="card">
+      <h2><span>Guida rapida</span><span class="sub">come usarla</span></h2>
+      <div class="body">
+        <div class="sub">
+          <b>Studio</b>: ruoti l’avatar e regoli misure base (spalle/vita).<br/>
+          <b>Guardaroba</b>: aggiungi card prodotti (link Awin o Amazon).<br/>
+          <b>Business</b>: imposti il tag Amazon e generi link affiliati.<br/><br/>
+          Se vuoi: aggiungo upload immagini, categorie, filtri, e voce guida.
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <div id="errBox"></div>
@@ -159,33 +331,223 @@
   window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
   window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
 
-  // Three.js da CDN (nessun asset .glb)
+  // Tabs
+  const tabs = [...document.querySelectorAll(".tab")];
+  const sections = {
+    studio: document.getElementById("studio"),
+    guardaroba: document.getElementById("guardaroba"),
+    business: document.getElementById("business"),
+    guida: document.getElementById("guida"),
+  };
+  function setTab(name){
+    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+    Object.entries(sections).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    localStorage.setItem("vs3d_tab", name);
+  }
+  tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
+  setTab(localStorage.getItem("vs3d_tab") || "studio");
+
+  // Storage
+  const KEY = "sercuctech_vs3d_state_v1";
+  const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+  state.affiliate ??= { awinId:"", amazonTag:"" };
+  state.wardrobe ??= [];
+
+  function save(){
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+
+  // Business inputs
+  const awinId = document.getElementById("awinId");
+  const amazonTag = document.getElementById("amazonTag");
+  awinId.value = state.affiliate.awinId || "";
+  amazonTag.value = state.affiliate.amazonTag || "";
+
+  awinId.addEventListener("input", ()=>{ state.affiliate.awinId = awinId.value.trim(); save(); });
+  amazonTag.addEventListener("input", ()=>{ state.affiliate.amazonTag = amazonTag.value.trim(); save(); });
+
+  // Amazon tag helper
+  function addAmazonTag(url, tag){
+    try{
+      const u = new URL(url);
+      const host = u.hostname.toLowerCase();
+      const isAmazon = host.includes("amazon.") || host.includes("amzn.");
+      if(!isAmazon) return url;
+      if(tag && !u.searchParams.get("tag")) u.searchParams.set("tag", tag);
+      return u.toString();
+    }catch{
+      return url;
+    }
+  }
+
+  // Amazon generator
+  const amazonIn = document.getElementById("amazonIn");
+  const amazonOut = document.getElementById("amazonOut");
+  document.getElementById("btnAmazonMake").addEventListener("click", ()=>{
+    const tag = (state.affiliate.amazonTag || "").trim();
+    const src = amazonIn.value.trim();
+    amazonOut.value = addAmazonTag(src, tag);
+  });
+  document.getElementById("btnCopy").addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(amazonOut.value.trim()); }catch{}
+  });
+  document.getElementById("btnOpen").addEventListener("click", ()=>{
+    const u = amazonOut.value.trim();
+    if(u) window.open(u, "_blank");
+  });
+
+  // Wardrobe UI
+  const wardrobeEl = document.getElementById("wardrobe");
+  const wardCount = document.getElementById("wardCount");
+
+  function renderWardrobe(){
+    wardrobeEl.innerHTML = "";
+    wardCount.textContent = String(state.wardrobe.length);
+
+    state.wardrobe.forEach((it, idx)=>{
+      const card = document.createElement("div");
+      card.className = "item";
+
+      const thumb = document.createElement("div");
+      thumb.className = "thumb";
+      thumb.textContent = it.store || "Store";
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+
+      const t = document.createElement("div");
+      t.className = "t";
+      t.textContent = it.title || "Prodotto";
+
+      const s = document.createElement("div");
+      s.className = "s";
+      s.textContent = `${it.store || "Store"} • ${it.type || "capo"}`;
+
+      const p = document.createElement("div");
+      p.className = "p";
+
+      const buy = document.createElement("button");
+      buy.className = "btn primary";
+      buy.textContent = "Acquista";
+      buy.addEventListener("click", ()=>{
+        let link = (it.link || "").trim();
+        link = addAmazonTag(link, state.affiliate.amazonTag || "");
+        if(link) window.open(link, "_blank");
+      });
+
+      const del = document.createElement("button");
+      del.className = "btn";
+      del.textContent = "Elimina";
+      del.addEventListener("click", ()=>{
+        state.wardrobe.splice(idx, 1);
+        save();
+        renderWardrobe();
+      });
+
+      p.appendChild(buy);
+      p.appendChild(del);
+
+      meta.appendChild(t);
+      meta.appendChild(s);
+      meta.appendChild(p);
+
+      card.appendChild(thumb);
+      card.appendChild(meta);
+      wardrobeEl.appendChild(card);
+    });
+  }
+
+  document.getElementById("btnAddDemo").addEventListener("click", ()=>{
+    state.wardrobe = [
+      { title:"T-shirt basic", store:"Amazon", type:"top", link:"https://www.amazon.it/" },
+      { title:"Jeans slim", store:"Zalando", type:"pants", link:"https://www.zalando.it/" },
+      { title:"Sneakers", store:"Decathlon", type:"shoes", link:"https://www.decathlon.it/" },
+      { title:"Giacca leggera", store:"Amazon", type:"jacket", link:"https://www.amazon.it/" }
+    ];
+    save();
+    renderWardrobe();
+    setTab("guardaroba");
+  });
+
+  document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
+    state.wardrobe = [];
+    save();
+    renderWardrobe();
+  });
+
+  renderWardrobe();
+
+  // Size estimation (simple demo rules)
+  const slShoulders = document.getElementById("slShoulders");
+  const slWaist = document.getElementById("slWaist");
+  const vShoulders = document.getElementById("vShoulders");
+  const vWaist = document.getElementById("vWaist");
+  const heightCm = document.getElementById("heightCm");
+  const gender = document.getElementById("gender");
+  const sizeTop = document.getElementById("sizeTop");
+  const sizePants = document.getElementById("sizePants");
+  const sizeShoe = document.getElementById("sizeShoe");
+
+  function calcSizes(){
+    const sh = Number(slShoulders.value);
+    const wa = Number(slWaist.value);
+    const h = Number(String(heightCm.value).replace(/[^\d]/g,"")) || 178;
+
+    // Top size (very simple)
+    let top = "M";
+    if(sh < 40) top = "S";
+    else if(sh < 44) top = "M";
+    else if(sh < 48) top = "L";
+    else top = "XL";
+
+    // Pants size (EU) simple mapping
+    let pants = 48;
+    if(wa < 76) pants = 44;
+    else if(wa < 82) pants = 46;
+    else if(wa < 88) pants = 48;
+    else if(wa < 96) pants = 50;
+    else pants = 52;
+
+    // Shoe size approximate by height (demo)
+    let shoe = 42;
+    if(h < 165) shoe = 39;
+    else if(h < 172) shoe = 40;
+    else if(h < 178) shoe = 41;
+    else if(h < 185) shoe = 42;
+    else shoe = 43;
+
+    sizeTop.textContent = top;
+    sizePants.textContent = String(pants);
+    sizeShoe.textContent = String(shoe);
+  }
+
+  document.getElementById("btnRecalc").addEventListener("click", calcSizes);
+  slShoulders.addEventListener("input", calcSizes);
+  slWaist.addEventListener("input", calcSizes);
+  heightCm.addEventListener("input", calcSizes);
+  gender.addEventListener("change", calcSizes);
+
+  // 3D (No-404)
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
   const threeWrap = document.getElementById("threeWrap");
 
-  // Renderer
   const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(threeWrap.clientWidth, threeWrap.clientHeight);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   threeWrap.appendChild(renderer.domElement);
 
-  // Scene + background (questo evita la “schermata nera” su alcuni Android)
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0b0b12);
 
-  // Camera
   const camera = new THREE.PerspectiveCamera(45, threeWrap.clientWidth / threeWrap.clientHeight, 0.1, 100);
   camera.position.set(0, 1.55, 4.2);
 
-  // Lights
-  const dir = new THREE.DirectionalLight(0xffffff, 1.0);
-  dir.position.set(2,3,2);
+  const dir = new THREE.DirectionalLight(0xffffff, 1.0); dir.position.set(2,3,2);
   scene.add(dir);
   scene.add(new THREE.AmbientLight(0xffffff, 0.35));
 
-  // Floor
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(2.0, 64),
     new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9, metalness: 0.1 })
@@ -197,7 +559,6 @@
     return new THREE.MeshStandardMaterial({ color: hex, roughness: rough, metalness: metal });
   }
 
-  // Avatar parametrico (NO file esterni)
   const avatar = new THREE.Group();
   scene.add(avatar);
 
@@ -239,6 +600,32 @@
 
   avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR, shirt, pants, jacket);
 
+  // Outfit buttons
+  const btnOutfitBase = document.getElementById("btnOutfitBase");
+  const btnOutfitCasual = document.getElementById("btnOutfitCasual");
+  const btnOutfitJacket = document.getElementById("btnOutfitJacket");
+  const btnReset = document.getElementById("btnReset");
+
+  function setOutfit(mode){
+    // mode: base | casual | jacket
+    if(mode === "base"){
+      shirt.visible = false;
+      pants.visible = false;
+      jacket.visible = false;
+    } else if(mode === "casual"){
+      shirt.visible = true;
+      pants.visible = true;
+      jacket.visible = false;
+    } else {
+      shirt.visible = true;
+      pants.visible = true;
+      jacket.visible = true;
+    }
+  }
+  btnOutfitBase.addEventListener("click", ()=> setOutfit("base"));
+  btnOutfitCasual.addEventListener("click", ()=> setOutfit("casual"));
+  btnOutfitJacket.addEventListener("click", ()=> setOutfit("jacket"));
+
   // Drag rotate
   let isDown = false, lastX = 0, vel = 0;
   renderer.domElement.addEventListener("pointerdown", (e)=>{
@@ -260,18 +647,12 @@
   }
   window.addEventListener("resize", resize);
 
-  // UI sliders
-  const slShoulders = document.getElementById("slShoulders");
-  const slWaist = document.getElementById("slWaist");
-  const vShoulders = document.getElementById("vShoulders");
-  const vWaist = document.getElementById("vWaist");
-  const btnReset = document.getElementById("btnReset");
-
+  // Rebuild avatar from sliders (basic)
   function rebuild(shouldersCm, waistCm){
     vShoulders.textContent = shouldersCm;
     vWaist.textContent = waistCm;
 
-    const s = (shouldersCm - 44) / 20; // approx range normalize
+    const s = (shouldersCm - 44) / 20;
     const w = (waistCm - 86) / 40;
 
     const torsoTop = 0.34 * (1 + s*0.55);
@@ -304,15 +685,22 @@
   function applyFromUI(){
     rebuild(Number(slShoulders.value), Number(slWaist.value));
   }
-  slShoulders.addEventListener("input", applyFromUI);
-  slWaist.addEventListener("input", applyFromUI);
+
+  slShoulders.addEventListener("input", ()=>{ applyFromUI(); calcSizes(); });
+  slWaist.addEventListener("input", ()=>{ applyFromUI(); calcSizes(); });
+
   btnReset.addEventListener("click", ()=>{
     slShoulders.value = 44;
     slWaist.value = 86;
     applyFromUI();
+    calcSizes();
+    setOutfit("casual");
   });
 
+  // Init
   applyFromUI();
+  calcSizes();
+  setOutfit("casual");
   status.textContent = "OK";
 
   function animate(){
@@ -322,6 +710,15 @@
     renderer.render(scene, camera);
   }
   animate();
+</script>
+
+<!-- PWA: register service worker -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(console.error);
+    });
+  }
 </script>
 </body>
 </html>
