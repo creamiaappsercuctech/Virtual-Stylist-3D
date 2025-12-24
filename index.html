@@ -1,11 +1,11 @@
-<label>Profilo (proporzioni avatar + taglie)</label><!doctype html>
+<!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SerCucTech • Virtual Stylist 3D</title>
   <meta name="theme-color" content="#0b0b12" />
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json" />
   <style>
     :root{
       --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.08);
@@ -146,8 +146,12 @@
       font-size:12px;
       line-height:1.4;
     }
+
+    /* Fullscreen modal */
+    #photoModal{ touch-action:none; }
   </style>
 </head>
+
 <body>
 <header>
   <div class="wrap">
@@ -205,10 +209,32 @@
             <button class="btn" id="btnReset">↩️ Reset</button>
           </div>
 
+          <div style="height:12px"></div>
+
+          <!-- Upload foto persona + preview + fullscreen -->
+          <div class="row">
+            <button class="btn primary" id="btnUploadPhoto">📷 Carica foto persona</button>
+            <button class="btn" id="btnClearPhoto">🗑️ Rimuovi foto</button>
+            <span class="pill">Foto: <b id="photoStatus">Nessuna</b></span>
+          </div>
+
+          <input id="photoInput" type="file" accept="image/*" style="display:none" />
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="border-radius:16px">
+            <h2><span>Foto persona (preview)</span><span class="sub">tocca per schermo intero</span></h2>
+            <div class="body">
+              <img id="photoPreview" alt="Foto persona"
+                   style="width:100%; max-height:320px; object-fit:contain; border-radius:14px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.02); display:none; cursor:pointer;" />
+              <div id="photoHint" class="sub">Carica una foto: verrà mostrata qui. Tocca l’immagine per aprirla a schermo intero.</div>
+            </div>
+          </div>
+
           <div style="height:10px"></div>
           <div class="note">
             🔜 Clone “da foto” (viso + misure) è possibile ma richiede modelli ML (più pesanti) e buona luce/foto frontale.
-            Qui intanto puoi scegliere profilo: Uomo / Donna / Bambino / Bambina e l’avatar cambia proporzioni.
+            Intanto: scegli profilo (Uomo / Donna / Bambino / Bambina) e l’avatar cambia proporzioni.
           </div>
         </div>
       </div>
@@ -216,7 +242,6 @@
       <div class="card">
         <h2><span>Taglia stimata</span><span class="sub">adulto + bimbo</span></h2>
         <div class="body">
-
           <label>Profilo (proporzioni avatar + taglie)</label>
           <select id="profile">
             <option value="uomo">Uomo</option>
@@ -318,16 +343,30 @@
       <h2><span>Guida rapida</span><span class="sub">come usarla</span></h2>
       <div class="body">
         <div class="sub">
-          <b>Studio</b>: ruoti l’avatar e regoli misure base (spalle/vita). Ora puoi scegliere profilo anche <b>Bambino/Bambina</b>.<br/>
+          <b>Studio</b>: ruoti l’avatar, scegli profilo (Uomo/Donna/Bambino/Bambina), carichi la foto (preview + schermo intero).<br/>
           <b>Guardaroba</b>: card prodotti (link Awin o Amazon).<br/>
           <b>Business</b>: imposti tag Amazon e generi link affiliati.<br/><br/>
-          Prossimi upgrade: upload immagini, form “Nuova card”, filtri per store/categoria, e (se vuoi) guida vocale.
+          Upgrade possibili: upload immagini per card, filtri per store/categoria, e “misure da foto”.
         </div>
       </div>
     </div>
   </section>
 
 </main>
+
+<!-- Fullscreen viewer -->
+<div id="photoModal" style="
+  position:fixed; inset:0; z-index:9999;
+  background:rgba(0,0,0,.92);
+  display:none; align-items:center; justify-content:center;
+  padding:12px;">
+  <div style="position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; gap:10px;">
+    <span class="pill">Foto a schermo intero</span>
+    <button class="btn primary" id="btnCloseModal">✖ Chiudi</button>
+  </div>
+  <img id="photoFull" alt="Foto schermo intero"
+       style="width:100%; height:100%; object-fit:contain; border-radius:16px;" />
+</div>
 
 <div id="errBox"></div>
 
@@ -360,7 +399,7 @@
   setTab(localStorage.getItem("vs3d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs3d_state_v2";
+  const KEY = "sercuctech_vs3d_state_v3";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.affiliate ??= { awinId:"", amazonTag:"" };
   state.wardrobe ??= [];
@@ -368,6 +407,7 @@
   state.heightCm ??= "178";
   state.shoulders ??= 44;
   state.waist ??= 86;
+  state.photoDataUrl ??= ""; // base64
 
   function save(){
     localStorage.setItem(KEY, JSON.stringify(state));
@@ -378,7 +418,6 @@
   const amazonTag = document.getElementById("amazonTag");
   awinId.value = state.affiliate.awinId || "";
   amazonTag.value = state.affiliate.amazonTag || "";
-
   awinId.addEventListener("input", ()=>{ state.affiliate.awinId = awinId.value.trim(); save(); });
   amazonTag.addEventListener("input", ()=>{ state.affiliate.amazonTag = amazonTag.value.trim(); save(); });
 
@@ -582,12 +621,100 @@
   }
 
   document.getElementById("btnRecalc").addEventListener("click", ()=>{ calcSizes(); });
-  slShoulders.addEventListener("input", ()=>{ state.shoulders = Number(slShoulders.value); save(); applyFromUI(); calcSizes(); });
-  slWaist.addEventListener("input", ()=>{ state.waist = Number(slWaist.value); save(); applyFromUI(); calcSizes(); });
-  heightCm.addEventListener("input", ()=>{ state.heightCm = heightCm.value; save(); calcSizes(); });
-  profile.addEventListener("change", ()=>{ state.profile = profile.value; save(); applyFromUI(); calcSizes(); });
 
-  // 3D (No-404)
+  slShoulders.addEventListener("input", ()=>{
+    state.shoulders = Number(slShoulders.value); save();
+    applyFromUI(); calcSizes();
+  });
+
+  slWaist.addEventListener("input", ()=>{
+    state.waist = Number(slWaist.value); save();
+    applyFromUI(); calcSizes();
+  });
+
+  heightCm.addEventListener("input", ()=>{
+    state.heightCm = heightCm.value; save();
+    calcSizes();
+  });
+
+  profile.addEventListener("change", ()=>{
+    state.profile = profile.value; save();
+    applyFromUI(); calcSizes();
+  });
+
+  // ===== FOTO PERSONA (upload + preview + fullscreen + localStorage) =====
+  const btnUploadPhoto = document.getElementById("btnUploadPhoto");
+  const btnClearPhoto  = document.getElementById("btnClearPhoto");
+  const photoInput     = document.getElementById("photoInput");
+  const photoPreview   = document.getElementById("photoPreview");
+  const photoFull      = document.getElementById("photoFull");
+  const photoModal     = document.getElementById("photoModal");
+  const btnCloseModal  = document.getElementById("btnCloseModal");
+  const photoStatus    = document.getElementById("photoStatus");
+  const photoHint      = document.getElementById("photoHint");
+
+  function setPhotoUI(dataUrl){
+    const has = !!dataUrl;
+    photoStatus.textContent = has ? "OK" : "Nessuna";
+    photoPreview.style.display = has ? "block" : "none";
+    photoHint.style.display = has ? "none" : "block";
+    if(has){
+      photoPreview.src = dataUrl;
+      photoFull.src = dataUrl;
+    } else {
+      photoPreview.removeAttribute("src");
+      photoFull.removeAttribute("src");
+    }
+  }
+
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(String(r.result || ""));
+      r.onerror = ()=> reject(new Error("Impossibile leggere il file"));
+      r.readAsDataURL(file);
+    });
+  }
+
+  btnUploadPhoto.addEventListener("click", ()=> photoInput.click());
+
+  photoInput.addEventListener("change", async ()=>{
+    const file = photoInput.files && photoInput.files[0];
+    if(!file) return;
+    try{
+      const dataUrl = await readFileAsDataURL(file);
+      state.photoDataUrl = dataUrl;
+      save();
+      setPhotoUI(dataUrl);
+    }catch(e){
+      showErr(e.message || String(e));
+    }finally{
+      photoInput.value = "";
+    }
+  });
+
+  btnClearPhoto.addEventListener("click", ()=>{
+    state.photoDataUrl = "";
+    save();
+    setPhotoUI("");
+  });
+
+  photoPreview.addEventListener("click", ()=>{
+    if(!state.photoDataUrl) return;
+    photoModal.style.display = "flex";
+  });
+
+  btnCloseModal.addEventListener("click", ()=>{
+    photoModal.style.display = "none";
+  });
+
+  photoModal.addEventListener("click", (e)=>{
+    if(e.target === photoModal) photoModal.style.display = "none";
+  });
+
+  setPhotoUI(state.photoDataUrl || "");
+
+  // ===== THREE.JS Avatar =====
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
   const threeWrap = document.getElementById("threeWrap");
@@ -710,7 +837,6 @@
   function rebuild(shouldersCm, waistCm){
     const p = (profile?.value || "uomo");
 
-    // profile multipliers
     let scaleY = 1.0;
     let headScale = 1.0;
     let armScale = 1.0;
@@ -756,7 +882,6 @@
     sleeveL.position.x = armL.position.x;
     sleeveR.position.x = armR.position.x;
 
-    // apply proportions
     avatar.scale.set(1, scaleY, 1);
     head.scale.set(headScale, headScale, headScale);
     armL.scale.set(1, armScale, 1);
@@ -811,12 +936,3 @@
 </body>
 </html>
 ```0
-<select id="profile">
-  <option value="uomo">Uomo</option>
-  <option value="donna">Donna</option>
-  <option value="bambino">Bambino</option>
-  <option value="bambina">Bambina</option>
-</select>
-
-<label>Altezza (cm)</label>
-<input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
