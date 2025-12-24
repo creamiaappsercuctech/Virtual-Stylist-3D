@@ -153,9 +153,6 @@
 
     .hr{ height:1px; background:rgba(255,255,255,.06); margin:12px 0; }
 
-    /* Photo modal (viewer) */
-    #photoModal{ touch-action:none; }
-
     /* Picker modal */
     #pickModal{
       position:fixed; inset:0; z-index:10000;
@@ -190,22 +187,45 @@
       border-top:1px solid rgba(255,255,255,.10);
       background:rgba(0,0,0,.25);
     }
-    .kpi{
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-    }
+    .kpi{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
 
-    table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:12px;
-      color:var(--txt);
-    }
-    td,th{
-      border-bottom:1px solid rgba(255,255,255,.08);
-      padding:8px 6px;
-      text-align:left;
-    }
+    table{ width:100%; border-collapse:collapse; font-size:12px; color:var(--txt); }
+    td,th{ border-bottom:1px solid rgba(255,255,255,.08); padding:8px 6px; text-align:left; }
     th{ color:var(--muted); font-weight:700; }
+
+    /* PREVIEW front/side */
+    .previewGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media(max-width:680px){ .previewGrid{ grid-template-columns:1fr; } }
+    .imgBox{
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.02);
+      border-radius:14px;
+      overflow:hidden;
+      position:relative;
+      min-height:160px;
+    }
+    .imgBox img{
+      width:100%;
+      height:220px;
+      object-fit:contain;
+      display:block;
+      background:rgba(0,0,0,.15);
+    }
+    .imgTag{
+      position:absolute; top:8px; left:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.35);
+      color:rgba(255,255,255,.95);
+      font-size:12px;
+    }
+    .imgEmpty{
+      padding:14px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
   </style>
 </head>
 
@@ -217,7 +237,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 3D</div>
-          <div class="sub">Home unica (Studio / Guardaroba / Business) • Misure reali da 2 foto (carta)</div>
+          <div class="sub">Home unica (Studio / Guardaroba / Business) • Misure reali da 2 foto (carta) • FIX preview</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">Avvio…</b></span>
@@ -237,7 +257,6 @@
   <!-- STUDIO -->
   <section id="studio" class="section active">
     <div class="grid">
-      <!-- LEFT: 3D + tools -->
       <div class="card">
         <h2><span>Avatar 3D + prova outfit</span><span class="sub">drag = ruota</span></h2>
         <div class="body">
@@ -269,35 +288,17 @@
 
           <div class="hr"></div>
 
-          <!-- FOTO PERSONA (preview + fullscreen) -->
-          <div class="row">
-            <button class="btn primary" id="btnUploadPhoto">📷 Carica foto persona (singola)</button>
-            <button class="btn" id="btnClearPhoto">🗑️ Rimuovi</button>
-            <span class="pill">Foto: <b id="photoStatus">Nessuna</b></span>
+          <div class="note">
+            ✅ Se vuoi “clone volto da foto”: serve ML (pesante). Qui facciamo misure reali con 2 foto + carta.
           </div>
-
-          <input id="photoInput" type="file" accept="image/*" style="display:none" />
-
-          <div style="height:12px"></div>
-
-          <div class="card" style="border-radius:16px">
-            <h2><span>Foto persona (preview)</span><span class="sub">tocca per schermo intero</span></h2>
-            <div class="body">
-              <img id="photoPreview" alt="Foto persona"
-                   style="width:100%; max-height:320px; object-fit:contain; border-radius:14px; border:1px solid rgba(255,255,255,.08); background:rgba(255,255,255,.02); display:none; cursor:pointer;" />
-              <div id="photoHint" class="sub">Carica una foto: verrà mostrata qui. Tocca l’immagine per aprirla a schermo intero.</div>
-            </div>
-          </div>
-
         </div>
       </div>
 
-      <!-- RIGHT: sizes + real measurements -->
       <div>
         <div class="card">
           <h2><span>Taglia stimata</span><span class="sub">adulto + bimbo</span></h2>
           <div class="body">
-            <label>Profilo (proporzioni avatar + taglie)</label>
+            <label>Profilo</label>
             <select id="profile">
               <option value="uomo">Uomo</option>
               <option value="donna">Donna</option>
@@ -316,22 +317,17 @@
 
             <div style="height:10px"></div>
             <button class="btn primary" id="btnRecalc">Ricalcola taglie</button>
-
-            <div style="height:10px"></div>
-            <div class="sub">
-              Suggerimento: dopo che “misure reali” calcola spalle/vita, questi slider si aggiornano automaticamente.
-            </div>
           </div>
         </div>
 
         <div style="height:14px"></div>
 
         <div class="card">
-          <h2><span>Misure reali ricavate (2 foto + carta)</span><span class="sub">precisione buona con foto dritte</span></h2>
+          <h2><span>Misure reali ricavate (2 foto + carta)</span><span class="sub">preview sempre visibile</span></h2>
           <div class="body">
             <div class="note">
-              ✅ Ti serve: <b>foto frontale</b> + <b>foto laterale</b> e una <b>carta di credito</b> visibile nella foto frontale (vicina al corpo).<br>
-              Regole: luce buona, telefono dritto, distanza 2–3m, corpo intero in foto.
+              ✅ Carica FRONTALE + LATERALE. Nella FRONTALE deve esserci la <b>carta di credito</b> visibile.
+              Le foto vengono <b>compresse</b> automaticamente per evitare errori su Android.
             </div>
 
             <div class="hr"></div>
@@ -345,7 +341,23 @@
             <input id="fileFront" type="file" accept="image/*" style="display:none" />
             <input id="fileSide" type="file" accept="image/*" style="display:none" />
 
-            <div style="height:10px"></div>
+            <div style="height:12px"></div>
+
+            <!-- ✅ PREVIEW SEMPRE VISIBILE -->
+            <div class="previewGrid">
+              <div class="imgBox">
+                <div class="imgTag">FRONTALE</div>
+                <img id="frontPreview" alt="Frontale" style="display:none" />
+                <div id="frontEmpty" class="imgEmpty">Nessuna foto frontale. Premi “Carica FRONTALE”.</div>
+              </div>
+              <div class="imgBox">
+                <div class="imgTag">LATERALE</div>
+                <img id="sidePreview" alt="Laterale" style="display:none" />
+                <div id="sideEmpty" class="imgEmpty">Nessuna foto laterale. Premi “Carica LATERALE”.</div>
+              </div>
+            </div>
+
+            <div class="hr"></div>
 
             <div class="row">
               <button class="btn" id="btnCalibrate">🎯 Calibra carta (4 angoli)</button>
@@ -400,7 +412,7 @@
 
             <div style="height:10px"></div>
             <div class="sub">
-              Nota: la circonferenza è stima “realistica” usando larghezza + profondità. Se fai bene la foto laterale, migliora molto.
+              Se vedi “Errore” in alto, guarda il box rosso: ora mostra il messaggio completo.
             </div>
           </div>
         </div>
@@ -422,11 +434,6 @@
 
         <div style="height:12px"></div>
         <div class="cards" id="wardrobe"></div>
-
-        <div style="height:12px"></div>
-        <div class="sub">
-          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. (Upgrade: upload immagini per card + categorie + filtri)
-        </div>
       </div>
     </div>
   </section>
@@ -442,15 +449,6 @@
 
           <label>Amazon Tag IT</label>
           <input id="amazonTag" type="text" placeholder="es. sercuctech-21" />
-
-          <div style="height:10px"></div>
-          <span class="pill">Salvato in: <b>localStorage</b></span>
-
-          <div style="height:12px"></div>
-          <div class="sub">
-            Awin: incolla direttamente i tuoi link tracciati (deeplink) nelle card.<br/>
-            Amazon: incolla link normale e il sistema aggiunge automaticamente <b>?tag=</b>.
-          </div>
         </div>
       </div>
 
@@ -459,7 +457,6 @@
         <div class="body">
           <label>Incolla link Amazon</label>
           <input id="amazonIn" type="text" placeholder="https://www.amazon.it/..." />
-
           <div style="height:10px"></div>
           <button class="btn primary" id="btnAmazonMake">Crea link affiliato</button>
 
@@ -481,10 +478,11 @@
       <h2><span>Guida rapida</span><span class="sub">misure reali con carta</span></h2>
       <div class="body">
         <div class="sub">
-          <b>Step 1</b>: Carica FRONTALE + LATERALE (corpo intero).<br>
-          <b>Step 2</b>: Nella foto frontale deve vedersi la <b>carta di credito</b> (vicina al corpo). Premi <b>Calibra carta</b> e clicca i 4 angoli.<br>
-          <b>Step 3</b>: Premi i bottoni misura e fai 2 click (sinistra/destra oppure davanti/dietro).<br>
-          <b>Step 4</b>: Premi <b>Calcola</b>. Le misure (cm) vengono salvate e spalle/vita aggiornano l’avatar.
+          1) Carica FRONTALE + LATERALE.<br>
+          2) Premi “Calibra carta” e clicca i 4 angoli della carta.<br>
+          3) Premi un bottone misura e fai 2 click.<br>
+          4) Premi “Calcola”.<br><br>
+          ✅ Ora vedi sempre le foto nelle anteprime (anche se il canvas avesse problemi).
         </div>
       </div>
     </div>
@@ -492,21 +490,7 @@
 
 </main>
 
-<!-- Fullscreen viewer (single photo) -->
-<div id="photoModal" style="
-  position:fixed; inset:0; z-index:9999;
-  background:rgba(0,0,0,.92);
-  display:none; align-items:center; justify-content:center;
-  padding:12px;">
-  <div style="position:absolute; top:12px; left:12px; right:12px; display:flex; justify-content:space-between; gap:10px;">
-    <span class="pill">Foto a schermo intero</span>
-    <button class="btn primary" id="btnCloseModal">✖ Chiudi</button>
-  </div>
-  <img id="photoFull" alt="Foto schermo intero"
-       style="width:100%; height:100%; object-fit:contain; border-radius:16px;" />
-</div>
-
-<!-- Picker modal (for calibration + measures) -->
+<!-- Picker modal -->
 <div id="pickModal">
   <div id="pickTop">
     <div style="min-width:0">
@@ -544,8 +528,21 @@
     errBox.textContent = "ERRORE:\n" + msg;
     status.textContent = "Errore";
   }
-  window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
-  window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
+  function clearErr(){
+    errBox.style.display = "none";
+    errBox.textContent = "";
+  }
+
+  window.addEventListener("error", (e)=>{
+    const extra = e?.error?.stack ? "\n\nSTACK:\n" + e.error.stack : "";
+    showErr((e.message || String(e.error||e)) + extra);
+  });
+  window.addEventListener("unhandledrejection", (e)=>{
+    const r = e.reason;
+    const msg = (r && r.message) ? r.message : String(r);
+    const st = (r && r.stack) ? "\n\nSTACK:\n" + r.stack : "";
+    showErr(msg + st);
+  });
 
   // Tabs
   const tabs = [...document.querySelectorAll(".tab")];
@@ -563,8 +560,8 @@
   tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
   setTab(localStorage.getItem("vs3d_tab") || "studio");
 
-  // Storage
-  const KEY = "sercuctech_vs3d_state_v4_measures_card";
+  // Storage (safe)
+  const KEY = "sercuctech_vs3d_state_v5_preview_fix";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.affiliate ??= { awinId:"", amazonTag:"" };
   state.wardrobe ??= [];
@@ -573,38 +570,55 @@
   state.shoulders ??= 44;
   state.waist ??= 86;
 
-  // photos for measurement (front/side)
   state.meas ??= {
     frontDataUrl: "",
     sideDataUrl: "",
-    // calibration
     pxPerCm: 0,
-    cardPts: [], // 4 points
-    // body points (each: [p1,p2])
+    cardPts: [],
     front: { shoulders:null, chestW:null, waistW:null, hipsW:null },
     side:  { chestD:null,  waistD:null,  hipsD:null  },
     results: null
   };
 
-  // single photo viewer
-  state.photoDataUrl ??= "";
+  function save(){
+    // se localStorage è pieno, NON rompiamo l’app
+    try{
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }catch(e){
+      showErr("Memoria piena (localStorage). Riduci foto o svuota cache.\nDettaglio: " + (e.message||String(e)));
+    }
+  }
 
-  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+  // ---------- compress image (fix Android errors) ----------
+  async function fileToCompressedDataURL(file, maxSide = 1400, quality = 0.78){
+    const dataUrl = await new Promise((res, rej)=>{
+      const r = new FileReader();
+      r.onload = ()=> res(String(r.result||""));
+      r.onerror = ()=> rej(new Error("Impossibile leggere il file"));
+      r.readAsDataURL(file);
+    });
 
-  // ---------- helpers ----------
-  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
-  function round1(x){ return Math.round(x*10)/10; }
-  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+    const img = await new Promise((res, rej)=>{
+      const im = new Image();
+      im.onload = ()=> res(im);
+      im.onerror = ()=> rej(new Error("Immagine non caricabile"));
+      im.src = dataUrl;
+    });
 
-  // Ramanujan ellipse circumference
-  function ellipseCircumference(widthCm, depthCm){
-    if(!(widthCm>0) || !(depthCm>0)) return 0;
-    const a = widthCm/2;
-    const b = depthCm/2;
-    const h = Math.pow((a-b),2)/Math.pow((a+b),2);
-    // Ramanujan approximation 2:
-    const c = Math.PI*(a+b)*(1 + (3*h)/(10+Math.sqrt(4-3*h)));
-    return c;
+    const w = img.naturalWidth || 1;
+    const h = img.naturalHeight || 1;
+    const s = Math.min(1, maxSide / Math.max(w, h));
+    const nw = Math.round(w*s);
+    const nh = Math.round(h*s);
+
+    const canvas = document.createElement("canvas");
+    canvas.width = nw;
+    canvas.height = nh;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0,0, nw, nh);
+
+    // jpeg per comprimere
+    return canvas.toDataURL("image/jpeg", quality);
   }
 
   // ---------- BUSINESS ----------
@@ -831,71 +845,9 @@
     applyFromUI(); calcSizes();
   });
 
-  // ---------- SINGLE PHOTO UPLOAD + VIEWER ----------
-  const btnUploadPhoto = document.getElementById("btnUploadPhoto");
-  const btnClearPhoto  = document.getElementById("btnClearPhoto");
-  const photoInput     = document.getElementById("photoInput");
-  const photoPreview   = document.getElementById("photoPreview");
-  const photoFull      = document.getElementById("photoFull");
-  const photoModal     = document.getElementById("photoModal");
-  const btnCloseModal  = document.getElementById("btnCloseModal");
-  const photoStatus    = document.getElementById("photoStatus");
-  const photoHint      = document.getElementById("photoHint");
-
-  function readFileAsDataURL(file){
-    return new Promise((resolve, reject)=>{
-      const r = new FileReader();
-      r.onload = ()=> resolve(String(r.result || ""));
-      r.onerror = ()=> reject(new Error("Impossibile leggere il file"));
-      r.readAsDataURL(file);
-    });
-  }
-
-  function setPhotoUI(dataUrl){
-    const has = !!dataUrl;
-    photoStatus.textContent = has ? "OK" : "Nessuna";
-    photoPreview.style.display = has ? "block" : "none";
-    photoHint.style.display = has ? "none" : "block";
-    if(has){
-      photoPreview.src = dataUrl;
-      photoFull.src = dataUrl;
-    } else {
-      photoPreview.removeAttribute("src");
-      photoFull.removeAttribute("src");
-    }
-  }
-
-  btnUploadPhoto.addEventListener("click", ()=> photoInput.click());
-  photoInput.addEventListener("change", async ()=>{
-    const file = photoInput.files && photoInput.files[0];
-    if(!file) return;
-    try{
-      const dataUrl = await readFileAsDataURL(file);
-      state.photoDataUrl = dataUrl;
-      save();
-      setPhotoUI(dataUrl);
-    }catch(e){
-      showErr(e.message || String(e));
-    }finally{
-      photoInput.value = "";
-    }
-  });
-  btnClearPhoto.addEventListener("click", ()=>{
-    state.photoDataUrl = "";
-    save();
-    setPhotoUI("");
-  });
-  photoPreview.addEventListener("click", ()=>{
-    if(!state.photoDataUrl) return;
-    photoModal.style.display = "flex";
-  });
-  btnCloseModal.addEventListener("click", ()=> photoModal.style.display = "none");
-  photoModal.addEventListener("click", (e)=>{ if(e.target === photoModal) photoModal.style.display = "none"; });
-  setPhotoUI(state.photoDataUrl || "");
-
   // ---------- REAL MEASUREMENTS (2 photos + credit card) ----------
-  const CARD_W_CM = 8.56;   // 85.60 mm
-  const CARD_H_CM = 5.398;  // 53.98 mm
+  const CARD_W_CM = 8.56;
+  const CARD_H_CM = 5.398;
 
   const btnUpFront = document.getElementById("btnUpFront");
   const btnUpSide  = document.getElementById("btnUpSide");
@@ -905,6 +857,11 @@
   const sideOk     = document.getElementById("sideOk");
   const btnCalibrate = document.getElementById("btnCalibrate");
   const scaleTxt   = document.getElementById("scaleTxt");
+
+  const frontPreview = document.getElementById("frontPreview");
+  const sidePreviewImg  = document.getElementById("sidePreview");
+  const frontEmpty = document.getElementById("frontEmpty");
+  const sideEmpty  = document.getElementById("sideEmpty");
 
   const btnMShoulders = document.getElementById("btnMShoulders");
   const btnMChestW = document.getElementById("btnMChestW");
@@ -923,9 +880,30 @@
   function refreshMeasBadges(){
     frontOk.textContent = state.meas.frontDataUrl ? "OK" : "NO";
     sideOk.textContent  = state.meas.sideDataUrl ? "OK" : "NO";
-    if(state.meas.pxPerCm > 0) scaleTxt.textContent = `${round1(state.meas.pxPerCm)} px/cm`;
-    else scaleTxt.textContent = "non calibrata";
+    scaleTxt.textContent = (state.meas.pxPerCm > 0) ? `${Math.round(state.meas.pxPerCm*10)/10} px/cm` : "non calibrata";
+
+    // ✅ preview
+    if(state.meas.frontDataUrl){
+      frontPreview.src = state.meas.frontDataUrl;
+      frontPreview.style.display = "block";
+      frontEmpty.style.display = "none";
+    }else{
+      frontPreview.removeAttribute("src");
+      frontPreview.style.display = "none";
+      frontEmpty.style.display = "block";
+    }
+
+    if(state.meas.sideDataUrl){
+      sidePreviewImg.src = state.meas.sideDataUrl;
+      sidePreviewImg.style.display = "block";
+      sideEmpty.style.display = "none";
+    }else{
+      sidePreviewImg.removeAttribute("src");
+      sidePreviewImg.style.display = "none";
+      sideEmpty.style.display = "block";
+    }
   }
+
   refreshMeasBadges();
 
   btnUpFront.addEventListener("click", ()=> fileFront.click());
@@ -934,9 +912,13 @@
   fileFront.addEventListener("change", async ()=>{
     const f = fileFront.files && fileFront.files[0];
     if(!f) return;
+    clearErr();
     try{
-      state.meas.frontDataUrl = await readFileAsDataURL(f);
-      // reset calibration & front points
+      calcStatus.textContent = "Carico frontale...";
+      const compressed = await fileToCompressedDataURL(f, 1400, 0.78);
+      state.meas.frontDataUrl = compressed;
+
+      // reset calibrazione + misure front
       state.meas.pxPerCm = 0;
       state.meas.cardPts = [];
       state.meas.front.shoulders = null;
@@ -944,10 +926,10 @@
       state.meas.front.waistW = null;
       state.meas.front.hipsW = null;
       state.meas.results = null;
+
       save();
       refreshMeasBadges();
-      calcStatus.textContent = "Foto frontale caricata";
-      renderResultsTable();
+      calcStatus.textContent = "Frontale OK ✅";
     }catch(e){ showErr(e.message || String(e)); }
     finally{ fileFront.value = ""; }
   });
@@ -955,22 +937,26 @@
   fileSide.addEventListener("change", async ()=>{
     const f = fileSide.files && fileSide.files[0];
     if(!f) return;
+    clearErr();
     try{
-      state.meas.sideDataUrl = await readFileAsDataURL(f);
-      // reset side points
+      calcStatus.textContent = "Carico laterale...";
+      const compressed = await fileToCompressedDataURL(f, 1400, 0.78);
+      state.meas.sideDataUrl = compressed;
+
+      // reset misure side
       state.meas.side.chestD = null;
       state.meas.side.waistD = null;
       state.meas.side.hipsD = null;
       state.meas.results = null;
+
       save();
       refreshMeasBadges();
-      calcStatus.textContent = "Foto laterale caricata";
-      renderResultsTable();
+      calcStatus.textContent = "Laterale OK ✅";
     }catch(e){ showErr(e.message || String(e)); }
     finally{ fileSide.value = ""; }
   });
 
-  // -------- picker modal logic --------
+  // ---------- picker modal ----------
   const pickModal = document.getElementById("pickModal");
   const pickCanvas = document.getElementById("pickCanvas");
   const pickTitle = document.getElementById("pickTitle");
@@ -981,29 +967,20 @@
   const btnPickUndo = document.getElementById("btnPickUndo");
   const btnPickCancel = document.getElementById("btnPickCancel");
   const btnPickDone = document.getElementById("btnPickDone");
+  const pctx = pickCanvas.getContext("2d");
 
-  const pctx = pickCanvas.getContext("2d", { willReadFrequently:false });
+  let pick = { mode:null, source:null, targetKey:null, need:0, pts:[], img:null, scale:1 };
 
-  let pick = {
-    mode: null,          // "card" | "measure"
-    source: null,        // "front" | "side"
-    targetKey: null,     // e.g. "shoulders" or "chestD"
-    need: 0,
-    pts: [],
-    img: null,
-    imgW: 0,
-    imgH: 0,
-    scale: 1,            // canvas px / image px
-    offsetX: 0,
-    offsetY: 0
-  };
+  function dist(a,b){ const dx=a.x-b.x, dy=a.y-b.y; return Math.hypot(dx,dy); }
 
   function openPicker({ mode, source, title, help, targetKey, need }){
-    const dataUrl = source === "front" ? state.meas.frontDataUrl : state.meas.sideDataUrl;
+    clearErr();
+    const dataUrl = (source === "front") ? state.meas.frontDataUrl : state.meas.sideDataUrl;
     if(!dataUrl){
       showErr("Manca la foto " + (source==="front" ? "FRONTALE" : "LATERALE"));
       return;
     }
+
     pick.mode = mode;
     pick.source = source;
     pick.targetKey = targetKey;
@@ -1019,24 +996,20 @@
     const img = new Image();
     img.onload = ()=>{
       pick.img = img;
-      pick.imgW = img.naturalWidth;
-      pick.imgH = img.naturalHeight;
+      const w = img.naturalWidth || 1;
+      const h = img.naturalHeight || 1;
 
-      // fit image to canvas element width
       const maxW = Math.min(window.innerWidth - 20, 980);
-      const scale = maxW / pick.imgW;
-      const canvasW = Math.round(pick.imgW * scale);
-      const canvasH = Math.round(pick.imgH * scale);
+      const s = maxW / w;
 
-      pickCanvas.width = canvasW;
-      pickCanvas.height = canvasH;
-      pick.scale = scale;
-      pick.offsetX = 0;
-      pick.offsetY = 0;
+      pickCanvas.width = Math.round(w * s);
+      pickCanvas.height = Math.round(h * s);
+      pick.scale = s;
 
       drawPicker();
       pickModal.style.display = "flex";
     };
+    img.onerror = ()=> showErr("Immagine non caricabile (errore). Riprova con una foto più leggera.");
     img.src = dataUrl;
   }
 
@@ -1050,7 +1023,6 @@
     const r = pickCanvas.getBoundingClientRect();
     const x = (clientX - r.left) * (pickCanvas.width / r.width);
     const y = (clientY - r.top) * (pickCanvas.height / r.height);
-    // convert canvas px to image px
     return { x: x / pick.scale, y: y / pick.scale };
   }
 
@@ -1059,13 +1031,11 @@
     pctx.clearRect(0,0,pickCanvas.width, pickCanvas.height);
     pctx.drawImage(pick.img, 0,0, pickCanvas.width, pickCanvas.height);
 
-    // draw points
     for(let i=0;i<pick.pts.length;i++){
       const pt = pick.pts[i];
       const cx = pt.x * pick.scale;
       const cy = pt.y * pick.scale;
 
-      // point
       pctx.beginPath();
       pctx.arc(cx, cy, 7, 0, Math.PI*2);
       pctx.fillStyle = "rgba(255,213,106,.95)";
@@ -1074,13 +1044,11 @@
       pctx.strokeStyle = "rgba(0,0,0,.7)";
       pctx.stroke();
 
-      // number
       pctx.font = "12px system-ui";
       pctx.fillStyle = "rgba(0,0,0,.85)";
       pctx.fillText(String(i+1), cx+10, cy-10);
     }
 
-    // draw line if 2 points for measure
     if(pick.mode === "measure" && pick.pts.length === 2){
       const a = pick.pts[0], b = pick.pts[1];
       pctx.lineWidth = 3;
@@ -1091,7 +1059,6 @@
       pctx.stroke();
     }
 
-    // draw rectangle edges if 4 points for card
     if(pick.mode === "card" && pick.pts.length >= 2){
       pctx.lineWidth = 3;
       pctx.strokeStyle = "rgba(110,255,168,.85)";
@@ -1124,8 +1091,19 @@
       drawPicker();
     }
   });
-
   btnPickCancel.addEventListener("click", closePicker);
+
+  function round1(x){ return Math.round(x*10)/10; }
+  function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+
+  // ellipse circumference (Ramanujan)
+  function ellipseCircumference(widthCm, depthCm){
+    if(!(widthCm>0) || !(depthCm>0)) return 0;
+    const a = widthCm/2;
+    const b = depthCm/2;
+    const h = Math.pow((a-b),2)/Math.pow((a+b),2);
+    return Math.PI*(a+b)*(1 + (3*h)/(10+Math.sqrt(4-3*h)));
+  }
 
   btnPickDone.addEventListener("click", ()=>{
     if(pick.pts.length !== pick.need){
@@ -1134,11 +1112,9 @@
     }
 
     if(pick.mode === "card"){
-      // expected 4 points: user clicks corners in order any; we use distances of adjacent edges:
       const pts = pick.pts.slice();
       state.meas.cardPts = pts;
 
-      // Use edges: (1-2) and (3-4) for width, (2-3) and (4-1) for height (assuming user clicks around the card)
       const w1 = dist(pts[0], pts[1]);
       const w2 = dist(pts[2], pts[3]);
       const h1 = dist(pts[1], pts[2]);
@@ -1147,9 +1123,7 @@
       const pxPerCmW = ((w1 + w2)/2) / CARD_W_CM;
       const pxPerCmH = ((h1 + h2)/2) / CARD_H_CM;
 
-      // average
       state.meas.pxPerCm = (pxPerCmW + pxPerCmH)/2;
-
       save();
       refreshMeasBadges();
       calcStatus.textContent = "Carta calibrata ✅";
@@ -1159,22 +1133,26 @@
 
     if(pick.mode === "measure"){
       const pts = pick.pts.slice();
-      if(pick.source === "front"){
-        state.meas.front[pick.targetKey] = pts;
-      }else{
-        state.meas.side[pick.targetKey] = pts;
-      }
+      if(pick.source === "front") state.meas.front[pick.targetKey] = pts;
+      else state.meas.side[pick.targetKey] = pts;
+
       state.meas.results = null;
       save();
       calcStatus.textContent = `Misura salvata: ${pick.targetKey} ✅`;
       closePicker();
       renderResultsTable();
-      return;
     }
   });
 
-  // open pickers
-  btnCalibrate.addEventListener("click", ()=>{
+  function requireScale(){
+    if(!(state.meas.pxPerCm>0)){
+      showErr("Prima calibra la carta (Calibra carta).");
+      return false;
+    }
+    return true;
+  }
+
+  document.getElementById("btnCalibrate").addEventListener("click", ()=>{
     openPicker({
       mode:"card",
       source:"front",
@@ -1185,105 +1163,41 @@
     });
   });
 
-  function requireScale(){
-    if(!(state.meas.pxPerCm>0)){
-      showErr("Prima devi calibrare la carta (Calibra carta).");
-      return false;
-    }
-    return true;
-  }
-
-  // front width measures
   btnMShoulders.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"front",
-      title:"Spalle (FRONTALE)",
-      help:"Clicca punto spalla SINISTRA e poi spalla DESTRA (2 click).",
-      targetKey:"shoulders",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"front", title:"Spalle (FRONTALE)", help:"Spalla sinistra poi spalla destra (2 click).", targetKey:"shoulders", need:2 });
   });
   btnMChestW.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"front",
-      title:"Torace LARGHEZZA (FRONTALE)",
-      help:"Clicca lato SINISTRO torace e lato DESTRO torace (2 click).",
-      targetKey:"chestW",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"front", title:"Torace LARGHEZZA (FRONTALE)", help:"Sinistra poi destra (2 click).", targetKey:"chestW", need:2 });
   });
   btnMWaistW.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"front",
-      title:"Vita LARGHEZZA (FRONTALE)",
-      help:"Clicca lato SINISTRO vita e lato DESTRO vita (2 click).",
-      targetKey:"waistW",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"front", title:"Vita LARGHEZZA (FRONTALE)", help:"Sinistra poi destra (2 click).", targetKey:"waistW", need:2 });
   });
   btnMHipsW.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"front",
-      title:"Fianchi LARGHEZZA (FRONTALE)",
-      help:"Clicca lato SINISTRO fianchi e lato DESTRO fianchi (2 click).",
-      targetKey:"hipsW",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"front", title:"Fianchi LARGHEZZA (FRONTALE)", help:"Sinistra poi destra (2 click).", targetKey:"hipsW", need:2 });
   });
 
-  // side depth measures
   btnMChestD.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"side",
-      title:"Torace PROFONDITÀ (LATERALE)",
-      help:"Clicca punto DAVANTI torace e punto DIETRO torace (2 click).",
-      targetKey:"chestD",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"side", title:"Torace PROFONDITÀ (LATERALE)", help:"Davanti poi dietro (2 click).", targetKey:"chestD", need:2 });
   });
   btnMWaistD.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"side",
-      title:"Vita PROFONDITÀ (LATERALE)",
-      help:"Clicca punto DAVANTI vita e punto DIETRO vita (2 click).",
-      targetKey:"waistD",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"side", title:"Vita PROFONDITÀ (LATERALE)", help:"Davanti poi dietro (2 click).", targetKey:"waistD", need:2 });
   });
   btnMHipsD.addEventListener("click", ()=>{
     if(!requireScale()) return;
-    openPicker({
-      mode:"measure",
-      source:"side",
-      title:"Fianchi PROFONDITÀ (LATERALE)",
-      help:"Clicca punto DAVANTI fianchi e punto DIETRO fianchi (2 click).",
-      targetKey:"hipsD",
-      need:2
-    });
+    openPicker({ mode:"measure", source:"side", title:"Fianchi PROFONDITÀ (LATERALE)", help:"Davanti poi dietro (2 click).", targetKey:"hipsD", need:2 });
   });
 
   btnClearMeasures.addEventListener("click", ()=>{
     state.meas.pxPerCm = 0;
     state.meas.cardPts = [];
-    state.meas.front.shoulders = null;
-    state.meas.front.chestW = null;
-    state.meas.front.waistW = null;
-    state.meas.front.hipsW = null;
-    state.meas.side.chestD = null;
-    state.meas.side.waistD = null;
-    state.meas.side.hipsD = null;
+    state.meas.front = { shoulders:null, chestW:null, waistW:null, hipsW:null };
+    state.meas.side  = { chestD:null, waistD:null, hipsD:null };
     state.meas.results = null;
     save();
     refreshMeasBadges();
@@ -1305,32 +1219,13 @@
       return;
     }
     tbl.innerHTML = `
-      <tr>
-        <td><b>Spalle</b></td>
-        <td>${r.shouldersW>0 ? `${round1(r.shouldersW)} cm` : "—"}</td>
-        <td>—</td>
-        <td>—</td>
-      </tr>
-      <tr>
-        <td><b>Torace</b></td>
-        <td>${r.chestW>0 ? `${round1(r.chestW)} cm` : "—"}</td>
-        <td>${r.chestD>0 ? `${round1(r.chestD)} cm` : "—"}</td>
-        <td>${r.chestC>0 ? `${round1(r.chestC)} cm` : "—"}</td>
-      </tr>
-      <tr>
-        <td><b>Vita</b></td>
-        <td>${r.waistW>0 ? `${round1(r.waistW)} cm` : "—"}</td>
-        <td>${r.waistD>0 ? `${round1(r.waistD)} cm` : "—"}</td>
-        <td>${r.waistC>0 ? `${round1(r.waistC)} cm` : "—"}</td>
-      </tr>
-      <tr>
-        <td><b>Fianchi</b></td>
-        <td>${r.hipsW>0 ? `${round1(r.hipsW)} cm` : "—"}</td>
-        <td>${r.hipsD>0 ? `${round1(r.hipsD)} cm` : "—"}</td>
-        <td>${r.hipsC>0 ? `${round1(r.hipsC)} cm` : "—"}</td>
-      </tr>
+      <tr><td><b>Spalle</b></td><td>${r.shouldersW>0? round1(r.shouldersW)+" cm":"—"}</td><td>—</td><td>—</td></tr>
+      <tr><td><b>Torace</b></td><td>${r.chestW>0? round1(r.chestW)+" cm":"—"}</td><td>${r.chestD>0? round1(r.chestD)+" cm":"—"}</td><td>${r.chestC>0? round1(r.chestC)+" cm":"—"}</td></tr>
+      <tr><td><b>Vita</b></td><td>${r.waistW>0? round1(r.waistW)+" cm":"—"}</td><td>${r.waistD>0? round1(r.waistD)+" cm":"—"}</td><td>${r.waistC>0? round1(r.waistC)+" cm":"—"}</td></tr>
+      <tr><td><b>Fianchi</b></td><td>${r.hipsW>0? round1(r.hipsW)+" cm":"—"}</td><td>${r.hipsD>0? round1(r.hipsD)+" cm":"—"}</td><td>${r.hipsC>0? round1(r.hipsC)+" cm":"—"}</td></tr>
     `;
   }
+  renderResultsTable();
 
   btnCompute.addEventListener("click", ()=>{
     if(!requireScale()) return;
@@ -1351,37 +1246,27 @@
     state.meas.results = { shouldersW, chestW, waistW, hipsW, chestD, waistD, hipsD, chestC, waistC, hipsC };
     save();
     renderResultsTable();
+    calcStatus.textContent = "Calcolato ✅";
 
-    // update avatar sliders if available
     if(shouldersW>0){
       const sh = clamp(Math.round(shouldersW), 30, 56);
       slShoulders.value = sh;
       state.shoulders = sh;
     }
-    if(waistW>0){
-      // waistW is width, not circumference -> approximate a bit. We'll map width to slider (reasonable):
-      // slider expects waist cm (circumference). If we have waistC use it, else guess from width.
-      let waistVal = 0;
-      if(waistC>0) waistVal = waistC;
-      else waistVal = waistW * 2.8; // rough fallback
-      waistVal = clamp(Math.round(waistVal), 45, 120);
-      slWaist.value = waistVal;
-      state.waist = waistVal;
+    if(waistC>0){
+      const wa = clamp(Math.round(waistC), 45, 120);
+      slWaist.value = wa;
+      state.waist = wa;
     }
     save();
     applyFromUI();
     calcSizes();
-
-    calcStatus.textContent = "Calcolato ✅";
   });
-
-  renderResultsTable();
 
   // ---------- THREE.JS Avatar ----------
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
 
   const threeWrap = document.getElementById("threeWrap");
-
   const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
   renderer.setSize(threeWrap.clientWidth, threeWrap.clientHeight);
@@ -1450,66 +1335,45 @@
 
   avatar.add(head, neck, torso, pelvis, armL, armR, legL, legR, footL, footR, shirt, pants, jacket);
 
-  // Outfit buttons
   const btnOutfitBase = document.getElementById("btnOutfitBase");
   const btnOutfitCasual = document.getElementById("btnOutfitCasual");
   const btnOutfitJacket = document.getElementById("btnOutfitJacket");
   const btnReset = document.getElementById("btnReset");
 
   function setOutfit(mode){
-    if(mode === "base"){
-      shirt.visible = false;
-      pants.visible = false;
-      jacket.visible = false;
-    } else if(mode === "casual"){
-      shirt.visible = true;
-      pants.visible = true;
-      jacket.visible = false;
-    } else {
-      shirt.visible = true;
-      pants.visible = true;
-      jacket.visible = true;
-    }
+    if(mode === "base"){ shirt.visible = false; pants.visible = false; jacket.visible = false; }
+    else if(mode === "casual"){ shirt.visible = true; pants.visible = true; jacket.visible = false; }
+    else { shirt.visible = true; pants.visible = true; jacket.visible = true; }
   }
   btnOutfitBase.addEventListener("click", ()=> setOutfit("base"));
   btnOutfitCasual.addEventListener("click", ()=> setOutfit("casual"));
   btnOutfitJacket.addEventListener("click", ()=> setOutfit("jacket"));
 
-  // Drag rotate
-  let isDown = false, lastX = 0, vel = 0;
+  let isDown=false, lastX=0, vel=0;
   renderer.domElement.addEventListener("pointerdown", (e)=>{
-    isDown = true; lastX = e.clientX;
+    isDown=true; lastX=e.clientX;
     renderer.domElement.setPointerCapture(e.pointerId);
   });
-  renderer.domElement.addEventListener("pointerup", ()=>{ isDown = false; });
+  renderer.domElement.addEventListener("pointerup", ()=> isDown=false);
   renderer.domElement.addEventListener("pointermove", (e)=>{
     if(!isDown) return;
-    const dx = e.clientX - lastX; lastX = e.clientX;
-    vel = dx * 0.003;
+    const dx=e.clientX-lastX; lastX=e.clientX;
+    vel=dx*0.003;
     avatar.rotation.y += vel;
   });
 
   function resize(){
     const w = threeWrap.clientWidth, h = threeWrap.clientHeight;
-    camera.aspect = w / h; camera.updateProjectionMatrix();
-    renderer.setSize(w, h);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    renderer.setSize(w,h);
   }
   window.addEventListener("resize", resize);
 
-  // Rebuild avatar from sliders + profile proportions
   function rebuild(shouldersCm, waistCm){
     const p = (profile?.value || "uomo");
-
-    let scaleY = 1.0;
-    let headScale = 1.0;
-    let armScale = 1.0;
-
-    if(p === "donna"){ headScale = 1.02; }
-    if(p === "bambino" || p === "bambina"){
-      scaleY = 0.82;
-      headScale = 1.18;
-      armScale = 0.92;
-    }
+    let scaleY=1.0, headScale=1.0, armScale=1.0;
+    if(p==="donna"){ headScale=1.02; }
+    if(p==="bambino" || p==="bambina"){ scaleY=0.82; headScale=1.18; armScale=0.92; }
 
     vShoulders.textContent = shouldersCm;
     vWaist.textContent = waistCm;
@@ -1558,19 +1422,16 @@
     heightCm.value = "178";
     slShoulders.value = 44;
     slWaist.value = 86;
-
     state.profile = profile.value;
     state.heightCm = heightCm.value;
     state.shoulders = Number(slShoulders.value);
     state.waist = Number(slWaist.value);
     save();
-
     applyFromUI();
     calcSizes();
     setOutfit("casual");
   });
 
-  // Init
   applyFromUI();
   calcSizes();
   setOutfit("casual");
@@ -1586,7 +1447,6 @@
   animate();
 </script>
 
-<!-- PWA: register service worker -->
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
