@@ -1,4 +1,4 @@
-<!doctype html>
+<label>Profilo (proporzioni avatar + taglie)</label><!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
@@ -136,6 +136,16 @@
       white-space:pre-wrap;
       font-size:12px;
     }
+
+    .note{
+      border:1px dashed rgba(255,255,255,.12);
+      background:rgba(255,255,255,.02);
+      padding:10px 12px;
+      border-radius:14px;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
   </style>
 </head>
 <body>
@@ -176,12 +186,12 @@
           <div class="row">
             <div style="flex:1 1 240px; min-width:220px">
               <label>Spalle (cm)</label>
-              <input id="slShoulders" type="range" min="34" max="56" value="44" />
+              <input id="slShoulders" type="range" min="30" max="56" value="44" />
               <span class="pill">Spalle: <b id="vShoulders">44</b> cm</span>
             </div>
             <div style="flex:1 1 240px; min-width:220px">
               <label>Vita (cm)</label>
-              <input id="slWaist" type="range" min="60" max="120" value="86" />
+              <input id="slWaist" type="range" min="45" max="120" value="86" />
               <span class="pill">Vita: <b id="vWaist">86</b> cm</span>
             </div>
           </div>
@@ -194,19 +204,28 @@
             <button class="btn" id="btnOutfitJacket">Con giacca</button>
             <button class="btn" id="btnReset">↩️ Reset</button>
           </div>
+
+          <div style="height:10px"></div>
+          <div class="note">
+            🔜 Clone “da foto” (viso + misure) è possibile ma richiede modelli ML (più pesanti) e buona luce/foto frontale.
+            Qui intanto puoi scegliere profilo: Uomo / Donna / Bambino / Bambina e l’avatar cambia proporzioni.
+          </div>
         </div>
       </div>
 
       <div class="card">
-        <h2><span>Taglia stimata</span><span class="sub">demo (regole semplici)</span></h2>
+        <h2><span>Taglia stimata</span><span class="sub">adulto + bimbo</span></h2>
         <div class="body">
-          <div class="sub">
-            Questa è una stima “base” (poi la rendiamo precisa con foto + altezza + calibratore).
-          </div>
 
-          <div style="height:10px"></div>
+          <label>Profilo (proporzioni avatar + taglie)</label>
+          <select id="profile">
+            <option value="uomo">Uomo</option>
+            <option value="donna">Donna</option>
+            <option value="bambino">Bambino</option>
+            <option value="bambina">Bambina</option>
+          </select>
 
-          <div class="row">
+          <div class="row" style="margin-top:10px">
             <span class="pill">Top: <b id="sizeTop">M</b></span>
             <span class="pill">Pants: <b id="sizePants">48</b></span>
             <span class="pill">EU Shoe: <b id="sizeShoe">42</b></span>
@@ -214,13 +233,6 @@
 
           <label>Altezza (cm)</label>
           <input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
-
-          <label>Genere (per guida taglie)</label>
-          <select id="gender">
-            <option value="uomo">Uomo</option>
-            <option value="donna">Donna</option>
-            <option value="unisex" selected>Unisex</option>
-          </select>
 
           <div style="height:10px"></div>
           <button class="btn primary" id="btnRecalc">Ricalcola taglie</button>
@@ -250,7 +262,7 @@
 
         <div style="height:12px"></div>
         <div class="sub">
-          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. Le immagini possono essere tue (caricate) oppure solo “placeholder” finché non integriamo le API.
+          Nota: qui puoi incollare link Awin (deeplink) oppure Amazon con tag. Le immagini sono placeholder (poi mettiamo upload immagini per ogni card).
         </div>
       </div>
     </div>
@@ -274,7 +286,7 @@
           <div style="height:12px"></div>
           <div class="sub">
             Awin: incolla direttamente i tuoi link tracciati (deeplink) nelle card.<br/>
-            Amazon: puoi incollare un link normale e il sistema aggiunge automaticamente <b>?tag=</b>.
+            Amazon: incolla link normale e il sistema aggiunge automaticamente <b>?tag=</b>.
           </div>
         </div>
       </div>
@@ -306,10 +318,10 @@
       <h2><span>Guida rapida</span><span class="sub">come usarla</span></h2>
       <div class="body">
         <div class="sub">
-          <b>Studio</b>: ruoti l’avatar e regoli misure base (spalle/vita).<br/>
-          <b>Guardaroba</b>: aggiungi card prodotti (link Awin o Amazon).<br/>
-          <b>Business</b>: imposti il tag Amazon e generi link affiliati.<br/><br/>
-          Se vuoi: aggiungo upload immagini, categorie, filtri, e voce guida.
+          <b>Studio</b>: ruoti l’avatar e regoli misure base (spalle/vita). Ora puoi scegliere profilo anche <b>Bambino/Bambina</b>.<br/>
+          <b>Guardaroba</b>: card prodotti (link Awin o Amazon).<br/>
+          <b>Business</b>: imposti tag Amazon e generi link affiliati.<br/><br/>
+          Prossimi upgrade: upload immagini, form “Nuova card”, filtri per store/categoria, e (se vuoi) guida vocale.
         </div>
       </div>
     </div>
@@ -348,10 +360,14 @@
   setTab(localStorage.getItem("vs3d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs3d_state_v1";
+  const KEY = "sercuctech_vs3d_state_v2";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.affiliate ??= { awinId:"", amazonTag:"" };
   state.wardrobe ??= [];
+  state.profile ??= "uomo";
+  state.heightCm ??= "178";
+  state.shoulders ??= 44;
+  state.waist ??= 86;
 
   function save(){
     localStorage.setItem(KEY, JSON.stringify(state));
@@ -477,55 +493,99 @@
 
   renderWardrobe();
 
-  // Size estimation (simple demo rules)
+  // Controls (size + profile)
   const slShoulders = document.getElementById("slShoulders");
   const slWaist = document.getElementById("slWaist");
   const vShoulders = document.getElementById("vShoulders");
   const vWaist = document.getElementById("vWaist");
   const heightCm = document.getElementById("heightCm");
-  const gender = document.getElementById("gender");
+  const profile = document.getElementById("profile");
   const sizeTop = document.getElementById("sizeTop");
   const sizePants = document.getElementById("sizePants");
   const sizeShoe = document.getElementById("sizeShoe");
+
+  // restore saved
+  profile.value = state.profile || "uomo";
+  heightCm.value = state.heightCm || "178";
+  slShoulders.value = state.shoulders ?? 44;
+  slWaist.value = state.waist ?? 86;
 
   function calcSizes(){
     const sh = Number(slShoulders.value);
     const wa = Number(slWaist.value);
     const h = Number(String(heightCm.value).replace(/[^\d]/g,"")) || 178;
+    const p = (profile?.value || "uomo");
 
-    // Top size (very simple)
     let top = "M";
-    if(sh < 40) top = "S";
-    else if(sh < 44) top = "M";
-    else if(sh < 48) top = "L";
-    else top = "XL";
-
-    // Pants size (EU) simple mapping
     let pants = 48;
-    if(wa < 76) pants = 44;
-    else if(wa < 82) pants = 46;
-    else if(wa < 88) pants = 48;
-    else if(wa < 96) pants = 50;
-    else pants = 52;
-
-    // Shoe size approximate by height (demo)
     let shoe = 42;
-    if(h < 165) shoe = 39;
-    else if(h < 172) shoe = 40;
-    else if(h < 178) shoe = 41;
-    else if(h < 185) shoe = 42;
-    else shoe = 43;
+
+    if(p === "uomo" || p === "donna"){
+      if(sh < 38) top = "XS";
+      else if(sh < 42) top = "S";
+      else if(sh < 46) top = "M";
+      else if(sh < 50) top = "L";
+      else top = "XL";
+
+      if(wa < 72) pants = 42;
+      else if(wa < 78) pants = 44;
+      else if(wa < 84) pants = 46;
+      else if(wa < 90) pants = 48;
+      else if(wa < 98) pants = 50;
+      else pants = 52;
+
+      if(h < 160) shoe = 38;
+      else if(h < 168) shoe = 39;
+      else if(h < 174) shoe = 40;
+      else if(h < 180) shoe = 41;
+      else if(h < 186) shoe = 42;
+      else shoe = 43;
+
+      if(p === "donna"){
+        if(top === "L") top = "M";
+        if(top === "XL") top = "L";
+      }
+    }
+
+    if(p === "bambino" || p === "bambina"){
+      let kid = 116;
+      if(h < 98) kid = 92;
+      else if(h < 104) kid = 98;
+      else if(h < 110) kid = 104;
+      else if(h < 116) kid = 110;
+      else if(h < 122) kid = 116;
+      else if(h < 128) kid = 122;
+      else if(h < 134) kid = 128;
+      else if(h < 140) kid = 134;
+      else if(h < 146) kid = 140;
+      else if(h < 152) kid = 146;
+      else if(h < 158) kid = 152;
+      else if(h < 164) kid = 158;
+      else kid = 164;
+
+      top = String(kid);
+      pants = String(kid);
+
+      if(h < 100) shoe = 26;
+      else if(h < 110) shoe = 28;
+      else if(h < 120) shoe = 30;
+      else if(h < 130) shoe = 33;
+      else if(h < 140) shoe = 35;
+      else if(h < 150) shoe = 37;
+      else if(h < 160) shoe = 39;
+      else shoe = 40;
+    }
 
     sizeTop.textContent = top;
     sizePants.textContent = String(pants);
     sizeShoe.textContent = String(shoe);
   }
 
-  document.getElementById("btnRecalc").addEventListener("click", calcSizes);
-  slShoulders.addEventListener("input", calcSizes);
-  slWaist.addEventListener("input", calcSizes);
-  heightCm.addEventListener("input", calcSizes);
-  gender.addEventListener("change", calcSizes);
+  document.getElementById("btnRecalc").addEventListener("click", ()=>{ calcSizes(); });
+  slShoulders.addEventListener("input", ()=>{ state.shoulders = Number(slShoulders.value); save(); applyFromUI(); calcSizes(); });
+  slWaist.addEventListener("input", ()=>{ state.waist = Number(slWaist.value); save(); applyFromUI(); calcSizes(); });
+  heightCm.addEventListener("input", ()=>{ state.heightCm = heightCm.value; save(); calcSizes(); });
+  profile.addEventListener("change", ()=>{ state.profile = profile.value; save(); applyFromUI(); calcSizes(); });
 
   // 3D (No-404)
   import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js";
@@ -607,7 +667,6 @@
   const btnReset = document.getElementById("btnReset");
 
   function setOutfit(mode){
-    // mode: base | casual | jacket
     if(mode === "base"){
       shirt.visible = false;
       pants.visible = false;
@@ -647,8 +706,24 @@
   }
   window.addEventListener("resize", resize);
 
-  // Rebuild avatar from sliders (basic)
+  // Rebuild avatar from sliders (basic) + profile proportions
   function rebuild(shouldersCm, waistCm){
+    const p = (profile?.value || "uomo");
+
+    // profile multipliers
+    let scaleY = 1.0;
+    let headScale = 1.0;
+    let armScale = 1.0;
+
+    if(p === "donna"){
+      headScale = 1.02;
+    }
+    if(p === "bambino" || p === "bambina"){
+      scaleY = 0.82;
+      headScale = 1.18;
+      armScale = 0.92;
+    }
+
     vShoulders.textContent = shouldersCm;
     vWaist.textContent = waistCm;
 
@@ -680,18 +755,30 @@
     armL.position.x = -armX; armR.position.x = armX;
     sleeveL.position.x = armL.position.x;
     sleeveR.position.x = armR.position.x;
+
+    // apply proportions
+    avatar.scale.set(1, scaleY, 1);
+    head.scale.set(headScale, headScale, headScale);
+    armL.scale.set(1, armScale, 1);
+    armR.scale.set(1, armScale, 1);
   }
 
   function applyFromUI(){
     rebuild(Number(slShoulders.value), Number(slWaist.value));
   }
 
-  slShoulders.addEventListener("input", ()=>{ applyFromUI(); calcSizes(); });
-  slWaist.addEventListener("input", ()=>{ applyFromUI(); calcSizes(); });
-
   btnReset.addEventListener("click", ()=>{
+    profile.value = "uomo";
+    heightCm.value = "178";
     slShoulders.value = 44;
     slWaist.value = 86;
+
+    state.profile = profile.value;
+    state.heightCm = heightCm.value;
+    state.shoulders = Number(slShoulders.value);
+    state.waist = Number(slWaist.value);
+    save();
+
     applyFromUI();
     calcSizes();
     setOutfit("casual");
@@ -702,6 +789,7 @@
   calcSizes();
   setOutfit("casual");
   status.textContent = "OK";
+  save();
 
   function animate(){
     requestAnimationFrame(animate);
@@ -722,3 +810,13 @@
 </script>
 </body>
 </html>
+```0
+<select id="profile">
+  <option value="uomo">Uomo</option>
+  <option value="donna">Donna</option>
+  <option value="bambino">Bambino</option>
+  <option value="bambina">Bambina</option>
+</select>
+
+<label>Altezza (cm)</label>
+<input id="heightCm" type="text" inputmode="numeric" placeholder="es. 178" value="178" />
