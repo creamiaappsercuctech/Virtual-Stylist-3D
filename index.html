@@ -126,19 +126,47 @@
 
     .layer{
       position:absolute;
-      left:50%; top:50%;
-      transform:translate(-50%,-50%);
+      left:50%;
+      transform:translateX(-50%);
       transform-origin:center center;
       user-select:none;
       -webkit-user-drag:none;
-      pointer-events:none; /* di default: non blocca */
+      pointer-events:none;
       max-width:100%;
       max-height:100%;
     }
 
-    /* gruppo outfit (sopra al modello) */
-    #outfitGroup{ position:absolute; inset:0; pointer-events:auto; } /* per drag */
-    #outfitGroup .layer{ pointer-events:none; } /* le img non prendono click */
+    /* MODELLO: sempre centrato e “a tutta altezza” */
+    #modelImg{
+      top:50%;
+      transform:translate(-50%,-50%);
+      width:92%;
+      height:auto;
+      opacity:0.98;
+    }
+
+    /* overlay outfit */
+    #outfitGroup{ position:absolute; inset:0; pointer-events:auto; }
+
+    /* Le immagini vestiti: più piccole + semi trasparenti quando sono placeholder */
+    .cloth{
+      opacity:0.95;
+      width:70%;
+      height:auto;
+      filter: drop-shadow(0 10px 25px rgba(0,0,0,.45));
+    }
+    .placeholderCloth{
+      opacity:0.25 !important;
+      filter:none !important;
+    }
+
+    /* posizioni base per tipo */
+    .pos-top    { top:33%; }
+    .pos-jacket { top:33%; }
+    .pos-bottom { top:60%; }
+    .pos-skirt  { top:58%; }
+    .pos-dress  { top:47%; }
+    .pos-shoes  { top:84%; width:55%; }
 
     .hint{
       position:absolute; left:10px; top:10px; z-index:5;
@@ -206,7 +234,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 2D</div>
-          <div class="sub">Carichi persona → clicchi un capo → va addosso • Rotazione outfit + Auto-gira</div>
+          <div class="sub">Persona + vestiti insieme • Click capo → va addosso • Auto-gira</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">OK</b></span>
@@ -227,24 +255,25 @@
     <div class="grid">
 
       <div class="card">
-        <h2><span>Avatar (foto) + outfit</span><span class="sub">drag = sposta ultimo capo</span></h2>
+        <h2><span>Persona + Outfit</span><span class="sub">drag = sposta ultimo capo</span></h2>
         <div class="body">
           <div class="stageWrap">
+            <!-- ROTAZIONE: ruota tutto (persona+vestiti) -->
             <div class="stage" id="spinTarget">
               <div class="canvasArea" id="canvasArea">
-                <div class="hint">1) Carica la foto persona • 2) Vai su Guardaroba • 3) Clicca un capo</div>
+                <div class="hint">1) Carica persona • 2) Guardaroba • 3) Clicca un capo</div>
 
                 <!-- MODELLO -->
                 <img id="modelImg" class="layer" alt="modello" />
 
-                <!-- OUTFIT GROUP (overlay) -->
+                <!-- OUTFIT -->
                 <div id="outfitGroup">
-                  <img id="layerTop"    class="layer" alt="top" />
-                  <img id="layerJacket" class="layer" alt="jacket" />
-                  <img id="layerBottom" class="layer" alt="bottom" />
-                  <img id="layerSkirt"  class="layer" alt="skirt" />
-                  <img id="layerDress"  class="layer" alt="dress" />
-                  <img id="layerShoes"  class="layer" alt="shoes" />
+                  <img id="layerTop"    class="layer cloth pos-top"    alt="top" />
+                  <img id="layerJacket" class="layer cloth pos-jacket" alt="jacket" />
+                  <img id="layerBottom" class="layer cloth pos-bottom" alt="bottom" />
+                  <img id="layerSkirt"  class="layer cloth pos-skirt"  alt="skirt" />
+                  <img id="layerDress"  class="layer cloth pos-dress"  alt="dress" />
+                  <img id="layerShoes"  class="layer cloth pos-shoes"  alt="shoes" />
                 </div>
               </div>
             </div>
@@ -259,37 +288,43 @@
           </div>
 
           <div style="height:10px"></div>
-
           <div class="mini">
-            Suggerimento: usa vestiti <b>PNG trasparenti</b>. Se non li hai, l’app mostra comunque placeholder.
+            Se vedi scritte tipo “SCARPE”, sono placeholder: carica un PNG trasparente del capo per avere l’effetto realistico.
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2><span>Controlli outfit</span><span class="sub">auto & livelli</span></h2>
+        <h2><span>Carica un vestito nel guardaroba</span><span class="sub">da telefono</span></h2>
         <div class="body">
-          <label>Ultimo capo selezionato (drag)</label>
-          <input id="lastType" type="text" readonly value="nessuno" />
-
-          <label>Modalità modello</label>
-          <select id="profile">
-            <option value="adulto">Adulto (uomo/donna)</option>
-            <option value="bambino">Bambino</option>
-            <option value="bambina">Bambina</option>
+          <label>Tipo capo</label>
+          <select id="uploadType">
+            <option value="top">Camicia / Maglia (TOP)</option>
+            <option value="jacket">Giacca / Felpa (GIACCA)</option>
+            <option value="bottom">Pantalone / Jeans (PANTALONE)</option>
+            <option value="skirt">Gonna (GONNA)</option>
+            <option value="dress">Vestito / Abito (ABITO)</option>
+            <option value="shoes">Scarpe (SCARPE)</option>
           </select>
 
-          <div style="height:12px"></div>
+          <label>Nome capo (facoltativo)</label>
+          <input id="uploadName" type="text" placeholder="es. Camicia bianca" />
 
-          <div class="row">
-            <button class="btn" id="btnCenter">🎯 Centra ultimo capo</button>
-            <button class="btn" id="btnResetPos">↩️ Reset posizioni</button>
+          <div style="height:10px"></div>
+          <button class="btn primary" id="btnUploadCloth">⬆️ Aggiungi capo (upload immagine)</button>
+
+          <div style="height:10px"></div>
+          <div class="mini">
+            Consiglio: PNG con sfondo trasparente (ritaglio). Se usi JPG va lo stesso ma coprirà la persona.
           </div>
 
           <div style="height:10px"></div>
+          <label>Ultimo capo selezionato (drag)</label>
+          <input id="lastType" type="text" readonly value="nessuno" />
 
-          <div class="mini">
-            Nota: per “somigliare alla foto” al 100% servono modelli 3D/ML. Qui facciamo un sistema 2D solido: foto + overlay vestiti.
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="btnCenter">🎯 Centra ultimo capo</button>
+            <button class="btn" id="btnResetPos">↩️ Reset posizioni</button>
           </div>
         </div>
       </div>
@@ -300,7 +335,7 @@
   <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba (clicca un capo → va addosso)</span><span class="sub">PNG trasparente consigliato</span></h2>
+      <h2><span>Guardaroba (clicca un capo → va addosso)</span><span class="sub">senza link rotti</span></h2>
       <div class="body">
         <div class="row">
           <button class="btn primary" id="btnLoadDefault">📦 Carica guardaroba base</button>
@@ -311,12 +346,12 @@
         <label style="margin-top:12px">Filtra per tipo</label>
         <select id="filterType">
           <option value="all">Tutti</option>
-          <option value="top">Camicia / Maglia (TOP)</option>
-          <option value="jacket">Giacca / Felpa (GIACCA)</option>
-          <option value="bottom">Pantalone / Jeans (PANTALONE)</option>
-          <option value="skirt">Gonna (GONNA)</option>
-          <option value="dress">Vestito / Abito (ABITO)</option>
-          <option value="shoes">Scarpe (SCARPE)</option>
+          <option value="top">TOP</option>
+          <option value="jacket">GIACCA</option>
+          <option value="bottom">PANTALONE</option>
+          <option value="skirt">GONNA</option>
+          <option value="dress">ABITO</option>
+          <option value="shoes">SCARPE</option>
         </select>
 
         <div style="height:12px"></div>
@@ -324,7 +359,7 @@
 
         <div style="height:12px"></div>
         <div class="mini">
-          Vuoi i vestiti reali? Carica PNG trasparenti tuoi oppure li metti in repo dentro <b>assets/wardrobe/</b>.
+          Per farlo “realistico”, carica immagini vestiti: così non vedi più scritte giganti.
         </div>
       </div>
     </div>
@@ -336,11 +371,11 @@
       <h2><span>Guida</span><span class="sub">passi semplici</span></h2>
       <div class="body">
         <div class="mini">
-          <b>1)</b> Studio → “Carica persona” (foto intera, ben illuminata).<br/>
-          <b>2)</b> Guardaroba → “Carica guardaroba base”.<br/>
-          <b>3)</b> Clicca un capo: appare subito addosso.<br/>
-          <b>4)</b> “Gira su se stesso” per vedere l’insieme (auto-rotazione).<br/>
-          <b>5)</b> Trascina sul modello per spostare l’ultimo capo messo.
+          <b>1)</b> Studio → “Carica persona”.<br/>
+          <b>2)</b> Guardaroba → “Carica guardaroba base” oppure “Aggiungi capo (upload)”.<br/>
+          <b>3)</b> Clicca un capo → appare addosso nella posizione giusta.<br/>
+          <b>4)</b> “Gira su se stesso” → ruota persona + outfit insieme.<br/>
+          <b>5)</b> Trascina → sposta l’ultimo capo aggiunto.
         </div>
       </div>
     </div>
@@ -349,6 +384,7 @@
 </main>
 
 <input id="filePerson" type="file" accept="image/*" style="display:none" />
+<input id="fileCloth" type="file" accept="image/*" style="display:none" />
 
 <div id="errBox"></div>
 
@@ -379,7 +415,7 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_state_v1";
+  const KEY = "sercuctech_vs2d_state_v2";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.personDataUrl ??= "";
   state.wardrobe ??= [];
@@ -388,10 +424,9 @@
     top:{x:0,y:0}, jacket:{x:0,y:0}, bottom:{x:0,y:0}, skirt:{x:0,y:0}, dress:{x:0,y:0}, shoes:{x:0,y:0}
   };
   state.lastType ??= "";
-
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
-  // SVG fallback (NO LINK ESTERNI)
+  // SVG placeholder PIÙ PICCOLO
   function svgData(type, label){
     const map = {
       top:    { t:"TOP",    c:"#ffd56a" },
@@ -404,17 +439,10 @@
     const x = map[type] || {t:"CAPO", c:"#aaa"};
     const text = label || x.t;
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="800" height="1000">
-        <defs>
-          <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="rgba(255,255,255,0.08)"/>
-            <stop offset="1" stop-color="rgba(0,0,0,0.22)"/>
-          </linearGradient>
-        </defs>
-        <rect width="800" height="1000" rx="40" fill="url(#g)"/>
-        <rect x="40" y="40" width="720" height="920" rx="34" fill="rgba(0,0,0,0.22)" stroke="rgba(255,255,255,0.14)" stroke-width="4"/>
-        <text x="50%" y="46%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="84" fill="${x.c}" font-weight="900">${text}</text>
-        <text x="50%" y="58%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="26" fill="rgba(255,255,255,0.75)">placeholder (carica PNG trasparente)</text>
+      <svg xmlns="http://www.w3.org/2000/svg" width="700" height="900">
+        <rect width="700" height="900" rx="40" fill="rgba(255,255,255,0.06)"/>
+        <rect x="26" y="26" width="648" height="848" rx="34" fill="rgba(0,0,0,0.10)" stroke="rgba(255,255,255,0.14)" stroke-width="3"/>
+        <text x="50%" y="50%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="70" fill="${x.c}" font-weight="900">${text}</text>
       </svg>`;
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
@@ -434,15 +462,33 @@
   const wardCount = document.getElementById("wardCount");
   const filterType = document.getElementById("filterType");
 
-  // Init model
+  function fileToDataURL(file){
+    return new Promise((resolve, reject)=>{
+      const r = new FileReader();
+      r.onload = ()=> resolve(String(r.result));
+      r.onerror = ()=> reject(r.error);
+      r.readAsDataURL(file);
+    });
+  }
+
+  // MODEL
   function renderModel(){
     if(state.personDataUrl){
       modelImg.src = state.personDataUrl;
     }else{
       modelImg.src = svgData("top", "PERSONA");
     }
-    modelImg.onload = ()=>{};
     modelImg.onerror = ()=>{ modelImg.src = svgData("top","PERSONA"); };
+  }
+
+  // placeholder detect: data:image/svg+xml...
+  function isPlaceholder(src){
+    return !src || String(src).startsWith("data:image/svg+xml");
+  }
+
+  function setClothClass(type, src){
+    const img = layers[type];
+    img.classList.toggle("placeholderCloth", isPlaceholder(src));
   }
 
   // Apply outfit
@@ -451,13 +497,13 @@
     state.lastType = type;
     lastTypeEl.value = type;
 
-    // mostra subito
     const img = layers[type];
-    img.src = src || svgData(type);
+    const realSrc = src || svgData(type);
+    img.src = realSrc;
     img.style.display = "block";
-    img.onerror = ()=>{ img.src = svgData(type); };
+    img.onerror = ()=>{ img.src = svgData(type); setClothClass(type, img.src); };
 
-    // applica posizione salvata
+    setClothClass(type, realSrc);
     applyPos(type);
 
     save();
@@ -465,14 +511,22 @@
 
   function applyAllOutfit(){
     Object.keys(layers).forEach(type=>{
-      const img = layers[type];
-      const src = state.outfit[type];
-      img.src = src ? src : svgData(type);
-      img.style.display = "block";
-      img.onerror = ()=>{ img.src = svgData(type); };
+      const src = state.outfit[type] ? state.outfit[type] : svgData(type);
+      layers[type].src = src;
+      layers[type].style.display = "block";
+      setClothClass(type, src);
       applyPos(type);
+      layers[type].onerror = ()=>{ layers[type].src = svgData(type); setClothClass(type, layers[type].src); };
     });
     lastTypeEl.value = state.lastType || "nessuno";
+  }
+
+  function applyPos(type){
+    const p = state.pos[type] || {x:0,y:0};
+    const img = layers[type];
+
+    // mettiamo translateX(-50%) già nel CSS, quindi qui spostiamo con translate
+    img.style.transform = `translate(calc(-50% + ${p.x}px), ${p.y}px)`;
   }
 
   function clearOutfit(){
@@ -483,35 +537,13 @@
       layers[type].src = svgData(type);
       layers[type].style.display = "block";
       state.pos[type] = {x:0,y:0};
+      setClothClass(type, layers[type].src);
       applyPos(type);
     });
     save();
   }
 
-  function applyPos(type){
-    const p = state.pos[type] || {x:0,y:0};
-    layers[type].style.transform = `translate(calc(-50% + ${p.x}px), calc(-50% + ${p.y}px))`;
-  }
-
-  // Profile (ridimensiona canvas per bimbi) - semplice
-  const profile = document.getElementById("profile");
-  const canvasArea = document.getElementById("canvasArea");
-  function applyProfile(){
-    const v = profile.value;
-    if(v === "adulto"){
-      canvasArea.style.width = "min(420px, 92vw)";
-      canvasArea.style.height = "min(520px, 120vw)";
-    }else{
-      canvasArea.style.width = "min(380px, 92vw)";
-      canvasArea.style.height = "min(480px, 120vw)";
-    }
-    localStorage.setItem("vs2d_profile", v);
-  }
-  profile.value = localStorage.getItem("vs2d_profile") || "adulto";
-  profile.addEventListener("change", applyProfile);
-  applyProfile();
-
-  // Spin button
+  // Spin: persona + vestiti
   const spinTarget = document.getElementById("spinTarget");
   const btnSpin = document.getElementById("btnSpin");
   let spinning = false;
@@ -534,16 +566,33 @@
     renderModel();
   });
 
-  function fileToDataURL(file){
-    return new Promise((resolve, reject)=>{
-      const r = new FileReader();
-      r.onload = ()=> resolve(String(r.result));
-      r.onerror = ()=> reject(r.error);
-      r.readAsDataURL(file);
-    });
-  }
+  // Upload cloth
+  const fileCloth = document.getElementById("fileCloth");
+  const uploadType = document.getElementById("uploadType");
+  const uploadName = document.getElementById("uploadName");
+  document.getElementById("btnUploadCloth").addEventListener("click", ()=> fileCloth.click());
+  fileCloth.addEventListener("change", async ()=>{
+    const f = fileCloth.files && fileCloth.files[0];
+    if(!f) return;
+    const dataUrl = await fileToDataURL(f);
 
-  // Wardrobe default (NO imgur)
+    const type = uploadType.value;
+    const title = (uploadName.value || "").trim() || `Capo ${type.toUpperCase()}`;
+
+    state.wardrobe.unshift({
+      id: "u_" + Date.now(),
+      title,
+      type,
+      img: dataUrl
+    });
+    save();
+    renderWardrobe();
+    setTab("guardaroba");
+    uploadName.value = "";
+    fileCloth.value = "";
+  });
+
+  // Wardrobe default (NO link esterni)
   function defaultWardrobe(){
     return [
       { id:"u_top",    title:"Camicia Uomo",   type:"top",    img: svgData("top","TOP") },
@@ -569,7 +618,12 @@
   }
 
   document.getElementById("btnLoadDefault").addEventListener("click", ()=>{
-    state.wardrobe = defaultWardrobe();
+    if(!Array.isArray(state.wardrobe) || state.wardrobe.length === 0){
+      state.wardrobe = defaultWardrobe();
+    }else{
+      // aggiunge base senza cancellare
+      state.wardrobe = [...defaultWardrobe(), ...state.wardrobe];
+    }
     save();
     renderWardrobe();
     setTab("guardaroba");
@@ -610,7 +664,7 @@
       t.textContent = item.title || "Capo";
       const s = document.createElement("div");
       s.className = "s";
-      s.textContent = (item.type || "capo").toUpperCase();
+      s.textContent = (item.type || "capo").toUpperCase() + " • click = addosso";
 
       meta.appendChild(t);
       meta.appendChild(s);
@@ -618,11 +672,8 @@
       card.appendChild(thumb);
       card.appendChild(meta);
 
-      // CLICK: mette addosso subito + porta in Studio
       card.addEventListener("click", ()=>{
         applyLayer(item.type, item.img);
-        // quando metti un capo: se rotazione off, non la forziamo. Se vuoi forzarla, scommenta:
-        // setSpin(true);
         setTab("studio");
       });
 
@@ -632,7 +683,7 @@
     if(filtered.length === 0){
       const empty = document.createElement("div");
       empty.className = "mini";
-      empty.textContent = "Guardaroba vuoto (premi “Carica guardaroba base”).";
+      empty.textContent = "Nessun capo in questa categoria. Premi “Carica guardaroba base” oppure carica un capo tuo.";
       wardrobeEl.appendChild(empty);
     }
   }
@@ -660,26 +711,19 @@
   let startX = 0, startY = 0;
   let baseX = 0, baseY = 0;
 
-  function getPoint(ev){
-    const e = ev.touches ? ev.touches[0] : ev;
-    return { x:e.clientX, y:e.clientY };
-  }
-
   outfitGroup.addEventListener("pointerdown", (ev)=>{
     if(!state.lastType) return;
     dragging = true;
     outfitGroup.setPointerCapture(ev.pointerId);
-    const p = getPoint(ev);
-    startX = p.x; startY = p.y;
+    startX = ev.clientX; startY = ev.clientY;
     const cur = state.pos[state.lastType] || {x:0,y:0};
     baseX = cur.x; baseY = cur.y;
   });
 
   outfitGroup.addEventListener("pointermove", (ev)=>{
     if(!dragging || !state.lastType) return;
-    const p = getPoint(ev);
-    const dx = p.x - startX;
-    const dy = p.y - startY;
+    const dx = ev.clientX - startX;
+    const dy = ev.clientY - startY;
     state.pos[state.lastType] = { x: Math.round(baseX + dx), y: Math.round(baseY + dy) };
     applyPos(state.lastType);
   });
