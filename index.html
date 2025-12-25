@@ -360,6 +360,13 @@
   };
   state.activeLayer ??= "top";
   state.wardrobe ??= [];
+  fetch("wardrobe.json")
+  .then(r => r.json())
+  .then(data => {
+    state.wardrobe = data;
+    save();
+    renderWardrobe();
+  });
   state.spin ??= { on:false, speed:1.0 }; // speed multiplier
   function save(){
     try{ localStorage.setItem(KEY, JSON.stringify(state)); }
