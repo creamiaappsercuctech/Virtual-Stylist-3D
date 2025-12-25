@@ -80,7 +80,7 @@
     }
 
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    select, input[type="text"]{
+    select, input[type="text"], input[type="range"]{
       width:100%; box-sizing:border-box;
       padding:10px; border-radius:12px;
       border:1px solid var(--line);
@@ -109,7 +109,6 @@
       transform-origin:center center;
     }
 
-    /* rotazione */
     .spinOn{ animation: spin 4s linear infinite; }
     @keyframes spin { from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
 
@@ -136,7 +135,6 @@
       max-height:100%;
     }
 
-    /* MODELLO: sempre centrato e “a tutta altezza” */
     #modelImg{
       top:50%;
       transform:translate(-50%,-50%);
@@ -145,10 +143,8 @@
       opacity:0.98;
     }
 
-    /* overlay outfit */
     #outfitGroup{ position:absolute; inset:0; pointer-events:auto; }
 
-    /* Le immagini vestiti: più piccole + semi trasparenti quando sono placeholder */
     .cloth{
       opacity:0.95;
       width:70%;
@@ -160,7 +156,6 @@
       filter:none !important;
     }
 
-    /* posizioni base per tipo */
     .pos-top    { top:33%; }
     .pos-jacket { top:33%; }
     .pos-bottom { top:60%; }
@@ -215,13 +210,35 @@
       white-space:pre-wrap;
       font-size:12px;
     }
-
     .mini{
       font-size:12px; color:var(--muted);
       border:1px dashed rgba(255,255,255,.12);
       background:rgba(255,255,255,.02);
       padding:10px;
       border-radius:14px;
+    }
+
+    /* TOOL rimozione sfondo */
+    .toolGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    @media(max-width:680px){ .toolGrid{ grid-template-columns:1fr; } }
+    .previewBox{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.18);
+      border-radius:14px;
+      overflow:hidden;
+      min-height:180px;
+      display:grid; place-items:center;
+      position:relative;
+    }
+    .previewBox img{ width:100%; height:auto; display:block; }
+    .badge{
+      position:absolute; left:10px; top:10px;
+      font-size:12px; color:rgba(255,255,255,.9);
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.12);
+      padding:6px 10px;
+      border-radius:999px;
+      backdrop-filter: blur(8px);
     }
   </style>
 </head>
@@ -234,7 +251,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 2D</div>
-          <div class="sub">Persona + vestiti insieme • Click capo → va addosso • Auto-gira</div>
+          <div class="sub">Upload vestiti + “Togli sfondo” → PNG trasparente</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">OK</b></span>
@@ -258,15 +275,12 @@
         <h2><span>Persona + Outfit</span><span class="sub">drag = sposta ultimo capo</span></h2>
         <div class="body">
           <div class="stageWrap">
-            <!-- ROTAZIONE: ruota tutto (persona+vestiti) -->
             <div class="stage" id="spinTarget">
               <div class="canvasArea" id="canvasArea">
                 <div class="hint">1) Carica persona • 2) Guardaroba • 3) Clicca un capo</div>
 
-                <!-- MODELLO -->
                 <img id="modelImg" class="layer" alt="modello" />
 
-                <!-- OUTFIT -->
                 <div id="outfitGroup">
                   <img id="layerTop"    class="layer cloth pos-top"    alt="top" />
                   <img id="layerJacket" class="layer cloth pos-jacket" alt="jacket" />
@@ -289,14 +303,15 @@
 
           <div style="height:10px"></div>
           <div class="mini">
-            Se vedi scritte tipo “SCARPE”, sono placeholder: carica un PNG trasparente del capo per avere l’effetto realistico.
+            Per un risultato bello: carica vestiti con sfondo “quasi bianco” e usa “Togli sfondo”.
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2><span>Carica un vestito nel guardaroba</span><span class="sub">da telefono</span></h2>
+        <h2><span>Upload vestito + togli sfondo</span><span class="sub">automatico (bianco)</span></h2>
         <div class="body">
+
           <label>Tipo capo</label>
           <select id="uploadType">
             <option value="top">Camicia / Maglia (TOP)</option>
@@ -307,25 +322,47 @@
             <option value="shoes">Scarpe (SCARPE)</option>
           </select>
 
-          <label>Nome capo (facoltativo)</label>
+          <label>Nome capo</label>
           <input id="uploadName" type="text" placeholder="es. Camicia bianca" />
 
-          <div style="height:10px"></div>
-          <button class="btn primary" id="btnUploadCloth">⬆️ Aggiungi capo (upload immagine)</button>
+          <div class="row" style="margin-top:10px">
+            <button class="btn primary" id="btnPickCloth">⬆️ Seleziona immagine vestito</button>
+            <button class="btn" id="btnDoCut">✂️ Togli sfondo</button>
+          </div>
+
+          <label style="margin-top:10px">Forza “togli bianco” (più alto = più aggressivo)</label>
+          <input id="cutStrength" type="range" min="5" max="80" value="28" />
 
           <div style="height:10px"></div>
-          <div class="mini">
-            Consiglio: PNG con sfondo trasparente (ritaglio). Se usi JPG va lo stesso ma coprirà la persona.
+
+          <div class="toolGrid">
+            <div class="previewBox">
+              <div class="badge">PRIMA</div>
+              <img id="prevBefore" alt="prima" />
+            </div>
+            <div class="previewBox">
+              <div class="badge">DOPO (PNG trasparente)</div>
+              <img id="prevAfter" alt="dopo" />
+            </div>
           </div>
 
           <div style="height:10px"></div>
-          <label>Ultimo capo selezionato (drag)</label>
-          <input id="lastType" type="text" readonly value="nessuno" />
+
+          <div class="row">
+            <button class="btn primary" id="btnSaveToWard">✅ Salva nel guardaroba</button>
+            <span class="pill">Ultimo capo: <b id="lastType">nessuno</b></span>
+          </div>
 
           <div class="row" style="margin-top:10px">
             <button class="btn" id="btnCenter">🎯 Centra ultimo capo</button>
             <button class="btn" id="btnResetPos">↩️ Reset posizioni</button>
           </div>
+
+          <div style="height:10px"></div>
+          <div class="mini">
+            Nota: funziona meglio su sfondi bianchi (foto tipo catalogo). Se lo sfondo è scuro/complesso, serve un sistema ML (più pesante).
+          </div>
+
         </div>
       </div>
 
@@ -335,7 +372,7 @@
   <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba (clicca un capo → va addosso)</span><span class="sub">senza link rotti</span></h2>
+      <h2><span>Guardaroba (clicca un capo → va addosso)</span><span class="sub">no link rotti</span></h2>
       <div class="body">
         <div class="row">
           <button class="btn primary" id="btnLoadDefault">📦 Carica guardaroba base</button>
@@ -359,7 +396,7 @@
 
         <div style="height:12px"></div>
         <div class="mini">
-          Per farlo “realistico”, carica immagini vestiti: così non vedi più scritte giganti.
+          Suggerimento: se carichi un vestito JPG “rettangolo”, usa “Togli sfondo” prima di salvarlo.
         </div>
       </div>
     </div>
@@ -368,14 +405,15 @@
   <!-- GUIDA -->
   <section id="guida" class="section">
     <div class="card">
-      <h2><span>Guida</span><span class="sub">passi semplici</span></h2>
+      <h2><span>Guida</span><span class="sub">passi</span></h2>
       <div class="body">
         <div class="mini">
           <b>1)</b> Studio → “Carica persona”.<br/>
-          <b>2)</b> Guardaroba → “Carica guardaroba base” oppure “Aggiungi capo (upload)”.<br/>
-          <b>3)</b> Clicca un capo → appare addosso nella posizione giusta.<br/>
-          <b>4)</b> “Gira su se stesso” → ruota persona + outfit insieme.<br/>
-          <b>5)</b> Trascina → sposta l’ultimo capo aggiunto.
+          <b>2)</b> A destra → “Seleziona immagine vestito”.<br/>
+          <b>3)</b> Premi “Togli sfondo” (se serve aumenta “Forza”).<br/>
+          <b>4)</b> Premi “Salva nel guardaroba”.<br/>
+          <b>5)</b> Vai su Guardaroba → clicca il capo → va addosso.<br/>
+          <b>6)</b> “Gira su se stesso” ruota persona + outfit insieme.
         </div>
       </div>
     </div>
@@ -415,7 +453,7 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_state_v2";
+  const KEY = "sercuctech_vs2d_state_v3_cut";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.personDataUrl ??= "";
   state.wardrobe ??= [];
@@ -426,7 +464,7 @@
   state.lastType ??= "";
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
-  // SVG placeholder PIÙ PICCOLO
+  // SVG placeholder
   function svgData(type, label){
     const map = {
       top:    { t:"TOP",    c:"#ffd56a" },
@@ -447,21 +485,6 @@
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
-  // Elements
-  const modelImg = document.getElementById("modelImg");
-  const layers = {
-    top: document.getElementById("layerTop"),
-    jacket: document.getElementById("layerJacket"),
-    bottom: document.getElementById("layerBottom"),
-    skirt: document.getElementById("layerSkirt"),
-    dress: document.getElementById("layerDress"),
-    shoes: document.getElementById("layerShoes")
-  };
-  const lastTypeEl = document.getElementById("lastType");
-  const wardrobeEl = document.getElementById("wardrobe");
-  const wardCount = document.getElementById("wardCount");
-  const filterType = document.getElementById("filterType");
-
   function fileToDataURL(file){
     return new Promise((resolve, reject)=>{
       const r = new FileReader();
@@ -471,7 +494,33 @@
     });
   }
 
-  // MODEL
+  // Elements stage
+  const modelImg = document.getElementById("modelImg");
+  const layers = {
+    top: document.getElementById("layerTop"),
+    jacket: document.getElementById("layerJacket"),
+    bottom: document.getElementById("layerBottom"),
+    skirt: document.getElementById("layerSkirt"),
+    dress: document.getElementById("layerDress"),
+    shoes: document.getElementById("layerShoes")
+  };
+
+  const lastTypeEl = document.getElementById("lastType");
+  const wardrobeEl = document.getElementById("wardrobe");
+  const wardCount = document.getElementById("wardCount");
+  const filterType = document.getElementById("filterType");
+
+  // Upload UI
+  const uploadType = document.getElementById("uploadType");
+  const uploadName = document.getElementById("uploadName");
+  const cutStrength = document.getElementById("cutStrength");
+  const prevBefore = document.getElementById("prevBefore");
+  const prevAfter = document.getElementById("prevAfter");
+
+  // Local temp per tool
+  let tempClothOriginal = ""; // dataURL
+  let tempClothCut = "";      // dataURL PNG
+
   function renderModel(){
     if(state.personDataUrl){
       modelImg.src = state.personDataUrl;
@@ -481,21 +530,24 @@
     modelImg.onerror = ()=>{ modelImg.src = svgData("top","PERSONA"); };
   }
 
-  // placeholder detect: data:image/svg+xml...
   function isPlaceholder(src){
     return !src || String(src).startsWith("data:image/svg+xml");
   }
-
   function setClothClass(type, src){
     const img = layers[type];
     img.classList.toggle("placeholderCloth", isPlaceholder(src));
   }
 
-  // Apply outfit
+  function applyPos(type){
+    const p = state.pos[type] || {x:0,y:0};
+    const img = layers[type];
+    img.style.transform = `translate(calc(-50% + ${p.x}px), ${p.y}px)`;
+  }
+
   function applyLayer(type, src){
     state.outfit[type] = src || "";
     state.lastType = type;
-    lastTypeEl.value = type;
+    lastTypeEl.textContent = type;
 
     const img = layers[type];
     const realSrc = src || svgData(type);
@@ -505,7 +557,6 @@
 
     setClothClass(type, realSrc);
     applyPos(type);
-
     save();
   }
 
@@ -518,21 +569,13 @@
       applyPos(type);
       layers[type].onerror = ()=>{ layers[type].src = svgData(type); setClothClass(type, layers[type].src); };
     });
-    lastTypeEl.value = state.lastType || "nessuno";
-  }
-
-  function applyPos(type){
-    const p = state.pos[type] || {x:0,y:0};
-    const img = layers[type];
-
-    // mettiamo translateX(-50%) già nel CSS, quindi qui spostiamo con translate
-    img.style.transform = `translate(calc(-50% + ${p.x}px), ${p.y}px)`;
+    lastTypeEl.textContent = state.lastType || "nessuno";
   }
 
   function clearOutfit(){
     state.outfit = { top:"", jacket:"", bottom:"", skirt:"", dress:"", shoes:"" };
     state.lastType = "";
-    lastTypeEl.value = "nessuno";
+    lastTypeEl.textContent = "nessuno";
     Object.keys(layers).forEach(type=>{
       layers[type].src = svgData(type);
       layers[type].style.display = "block";
@@ -543,7 +586,7 @@
     save();
   }
 
-  // Spin: persona + vestiti
+  // Spin
   const spinTarget = document.getElementById("spinTarget");
   const btnSpin = document.getElementById("btnSpin");
   let spinning = false;
@@ -566,33 +609,113 @@
     renderModel();
   });
 
-  // Upload cloth
+  // Upload cloth (tool)
   const fileCloth = document.getElementById("fileCloth");
-  const uploadType = document.getElementById("uploadType");
-  const uploadName = document.getElementById("uploadName");
-  document.getElementById("btnUploadCloth").addEventListener("click", ()=> fileCloth.click());
+  document.getElementById("btnPickCloth").addEventListener("click", ()=> fileCloth.click());
   fileCloth.addEventListener("change", async ()=>{
     const f = fileCloth.files && fileCloth.files[0];
     if(!f) return;
-    const dataUrl = await fileToDataURL(f);
+    tempClothOriginal = await fileToDataURL(f);
+    tempClothCut = ""; // reset
+    prevBefore.src = tempClothOriginal;
+    prevAfter.src = "";
+  });
 
+  // Background remove (white-ish)
+  async function removeWhiteBg(dataUrl, strength){
+    // strength: 5..80 (soglia)
+    // Algoritmo: se pixel vicino al bianco (o molto chiaro), alpha=0 con morbidezza
+    const img = await new Promise((res, rej)=>{
+      const im = new Image();
+      im.onload = ()=>res(im);
+      im.onerror = ()=>rej(new Error("Immagine non caricabile"));
+      im.src = dataUrl;
+    });
+
+    const maxW = 900; // limitiamo per prestazioni
+    const scale = Math.min(1, maxW / img.width);
+    const w = Math.max(1, Math.round(img.width * scale));
+    const h = Math.max(1, Math.round(img.height * scale));
+
+    const c = document.createElement("canvas");
+    c.width = w; c.height = h;
+    const ctx = c.getContext("2d", { willReadFrequently:true });
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const imd = ctx.getImageData(0, 0, w, h);
+    const d = imd.data;
+
+    const thr = Number(strength) || 28;    // soglia “quanto bianco”
+    const soft = 18;                        // morbidezza bordo
+    // Convertiamo in: luminanza alta => trasparente
+    // Bianco perfetto = 255,255,255
+    for(let i=0;i<d.length;i+=4){
+      const r = d[i], g = d[i+1], b = d[i+2];
+      // distanza dal bianco (0=bianco)
+      const dist = Math.max(0, 255 - r) + Math.max(0, 255 - g) + Math.max(0, 255 - b); // 0..765
+      // più dist è basso => più è bianco
+      // trasformiamo in “whiteness”
+      const whiteness = 765 - dist; // 0..765 (alto=bianco)
+      // soglia basata su thr: thr 5..80 => convertiamo in 0..765
+      const T = 765 - (thr * 9); // thr alto => T più basso => più aggressivo
+      // se whiteness > T => togli
+      if(whiteness > T){
+        // morbidezza: più vicino al bianco => alpha più basso
+        const over = whiteness - T; // 0..765
+        const a = Math.max(0, 255 - Math.round((over / (soft*9)) * 255));
+        d[i+3] = Math.min(d[i+3], a);
+      }
+    }
+
+    ctx.putImageData(imd, 0, 0);
+    return c.toDataURL("image/png");
+  }
+
+  document.getElementById("btnDoCut").addEventListener("click", async ()=>{
+    try{
+      if(!tempClothOriginal) return showErr("Prima seleziona un'immagine vestito.");
+      const out = await removeWhiteBg(tempClothOriginal, cutStrength.value);
+      tempClothCut = out;
+      prevAfter.src = tempClothCut;
+    }catch(e){
+      showErr(e.message || String(e));
+    }
+  });
+
+  cutStrength.addEventListener("input", async ()=>{
+    // se già tagliato, aggiorna live
+    if(!tempClothOriginal) return;
+    if(!prevAfter.src) return; // solo se c'è già un preview
+    try{
+      const out = await removeWhiteBg(tempClothOriginal, cutStrength.value);
+      tempClothCut = out;
+      prevAfter.src = tempClothCut;
+    }catch{}
+  });
+
+  // Save to wardrobe
+  document.getElementById("btnSaveToWard").addEventListener("click", ()=>{
+    if(!tempClothOriginal){
+      return showErr("Seleziona un'immagine vestito prima di salvare.");
+    }
     const type = uploadType.value;
     const title = (uploadName.value || "").trim() || `Capo ${type.toUpperCase()}`;
+    const img = tempClothCut || tempClothOriginal; // se non tagliato, salva originale
 
-    state.wardrobe.unshift({
-      id: "u_" + Date.now(),
-      title,
-      type,
-      img: dataUrl
-    });
+    state.wardrobe.unshift({ id:"u_"+Date.now(), title, type, img });
     save();
     renderWardrobe();
     setTab("guardaroba");
+
+    // opzionale: auto-indossa subito
+    applyLayer(type, img);
+
+    // reset tool
     uploadName.value = "";
-    fileCloth.value = "";
+    // non resettiamo l'immagine: utile se vuoi salvarla 2 volte, ma puoi farlo tu
   });
 
-  // Wardrobe default (NO link esterni)
+  // Default wardrobe (NO link esterni)
   function defaultWardrobe(){
     return [
       { id:"u_top",    title:"Camicia Uomo",   type:"top",    img: svgData("top","TOP") },
@@ -621,7 +744,6 @@
     if(!Array.isArray(state.wardrobe) || state.wardrobe.length === 0){
       state.wardrobe = defaultWardrobe();
     }else{
-      // aggiunge base senza cancellare
       state.wardrobe = [...defaultWardrobe(), ...state.wardrobe];
     }
     save();
@@ -688,7 +810,7 @@
     }
   }
 
-  // Outfit buttons
+  // Buttons
   document.getElementById("btnClearOutfit").addEventListener("click", clearOutfit);
 
   document.getElementById("btnCenter").addEventListener("click", ()=>{
@@ -705,7 +827,7 @@
     save();
   });
 
-  // DRAG: sposta ultimo capo messo
+  // DRAG: sposta ultimo capo
   const outfitGroup = document.getElementById("outfitGroup");
   let dragging = false;
   let startX = 0, startY = 0;
@@ -743,7 +865,6 @@
   renderModel();
   applyAllOutfit();
   renderWardrobe();
-  lastTypeEl.value = state.lastType || "nessuno";
   setSpin(false);
 </script>
 </body>
