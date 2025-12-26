@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>SerCucTech • Virtual Stylist 2D PRO</title>
   <meta name="theme-color" content="#0b0b12" />
-  <link rel="manifest" href="./manifest.json" />
   <style>
     :root{
       --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.10);
       --card:rgba(255,255,255,.04); --card2:rgba(255,255,255,.02);
-      --acc:#ffd56a; --ok:#9ef7b7; --bad:#ff8a8a;
+      --acc:#ffd56a; --ok:#9ef7b7; --bad:#ff8a8a; --cyan:#6ee0ff;
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
     *{ box-sizing:border-box; }
@@ -44,10 +43,7 @@
       cursor:pointer;
       user-select:none;
     }
-    .tab.active{
-      background:rgba(255,213,106,.12);
-      border-color:rgba(255,213,106,.25);
-    }
+    .tab.active{ background:rgba(255,213,106,.12); border-color:rgba(255,213,106,.25); }
 
     .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:14px; }
     @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
@@ -62,8 +58,7 @@
       margin:0; font-size:14px;
       padding:12px 14px;
       border-bottom:1px solid rgba(255,255,255,.08);
-      display:flex; justify-content:space-between; align-items:center;
-      gap:10px;
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
     }
     .card .body{ padding:12px 14px; }
 
@@ -90,8 +85,9 @@
     }
     textarea{ min-height:70px; resize:vertical; }
     input[type="range"]{ width:100%; }
+    .miniBtns{ display:flex; gap:8px; flex-wrap:wrap; }
 
-    /* ✅ IMPORTANT: LO STAGE NON BLOCCA PIÙ LO SCROLL GENERALE */
+    /* Stage (persona + outfit) */
     .stageWrap{
       position:relative;
       border:1px solid rgba(255,255,255,.08);
@@ -100,68 +96,30 @@
       overflow:hidden;
       width:100%;
       aspect-ratio: 3/4;
-      touch-action: pan-y; /* ✅ permette scroll verticale, drag gestito solo sui capi */
+      touch-action: pan-y; /* scroll verticale ok */
     }
-    @media(max-width:980px){
-      .stageWrap{ aspect-ratio: 9/16; }
-    }
+    @media(max-width:980px){ .stageWrap{ aspect-ratio: 9/16; } }
+    .stage{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+    .stageInner{ position:relative; width:100%; height:100%; overflow:hidden; }
+    .personLayer, .garmentLayer{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; }
+    .personImg{ max-width:100%; max-height:100%; object-fit:contain; user-select:none; pointer-events:none; -webkit-user-drag:none; }
 
-    .stage{
-      position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      background: radial-gradient(circle at 30% 20%, rgba(255,213,106,.06), transparent 45%),
-                  radial-gradient(circle at 70% 70%, rgba(110,255,168,.05), transparent 50%);
-    }
-    .stageInner{
-      position:relative;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-    }
-    .personLayer, .garmentLayer{
-      position:absolute; inset:0;
-      display:flex; align-items:center; justify-content:center;
-    }
-    .personImg{
-      max-width:100%;
-      max-height:100%;
-      object-fit:contain;
-      transform: translateZ(0);
-      will-change: transform, opacity, filter;
-      user-select:none;
-      pointer-events:none;
-      -webkit-user-drag:none;
-    }
-
-    /* ✅ DRAG SOLO QUI */
     .garment{
       position:absolute;
-      left:0; top:0;
-      transform: translate(0,0);
-      transform-origin:center;
-      user-select:none;
       border:1px dashed rgba(255,213,106,.35);
       border-radius:12px;
       background:rgba(255,255,255,.01);
-      touch-action:none; /* ✅ qui blocchiamo scroll durante drag */
+      touch-action:none;
     }
     .garment.selected{ outline:2px solid rgba(255,213,106,.55); }
-    .garment img{
-      width:100%; height:100%;
-      object-fit:contain;
-      display:block;
-      pointer-events:none;
-      user-select:none;
-      -webkit-user-drag:none;
-    }
-    .handles{ position:absolute; inset:0; }
+    .garment img{ width:100%; height:100%; object-fit:contain; display:block; pointer-events:none; user-select:none; -webkit-user-drag:none; }
     .h{
       width:18px;height:18px;border-radius:999px;
       background:rgba(110,220,255,.92);
       position:absolute;
       border:2px solid rgba(0,0,0,.35);
       box-shadow: 0 6px 18px rgba(0,0,0,.35);
-      touch-action:none; /* ✅ anche sulle maniglie */
+      touch-action:none;
     }
     .h.tl{ left:-9px; top:-9px; }
     .h.tr{ right:-9px; top:-9px; }
@@ -172,6 +130,7 @@
     .toolbox{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media(max-width:520px){ .toolbox{ grid-template-columns:1fr; } }
 
+    /* Wardrobe */
     .filters{ display:flex; gap:10px; flex-wrap:wrap; }
     .chip{
       border:1px solid var(--line);
@@ -183,13 +142,9 @@
       user-select:none;
       font-size:13px;
     }
-    .chip.active{
-      background:rgba(255,213,106,.12);
-      border-color:rgba(255,213,106,.25);
-    }
+    .chip.active{ background:rgba(255,213,106,.12); border-color:rgba(255,213,106,.25); }
     .wardGrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
     @media(max-width:680px){ .wardGrid{ grid-template-columns:1fr; } }
-
     .wCard{
       border:1px solid var(--line);
       background:var(--card2);
@@ -213,6 +168,7 @@
     .wSub{ font-size:12px; color:var(--muted); margin-top:2px; }
     .wBtns{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
 
+    /* Modal */
     .modal{
       position:fixed; inset:0; z-index:999;
       background:rgba(0,0,0,.55);
@@ -223,7 +179,7 @@
     .modalCard{
       width:min(980px, 100%);
       max-height: min(92vh, 980px);
-      overflow:auto; /* ✅ scroll dentro modal */
+      overflow:auto;  /* ✅ scorrevole */
       -webkit-overflow-scrolling: touch;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
@@ -245,30 +201,55 @@
       color:var(--txt);
       cursor:pointer;
     }
-    .modalBody{ padding:12px 14px; }
+    .modalBody{ padding:12px 14px 24px; } /* ✅ padding basso per vedere maniglie */
 
-    #errBox{
-      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
-      border:1px solid rgba(255,110,110,.35);
-      background:rgba(255,110,110,.08);
-      color:rgba(255,255,255,.95);
-      border-radius:14px;
-      padding:10px 12px;
-      display:none;
-      white-space:pre-wrap;
-      font-size:12px;
+    /* Crop PRO */
+    .cropWrap{
+      border:1px solid rgba(255,255,255,.10);
+      background:#070710;
+      border-radius:18px;
+      overflow:hidden;
+      width:100%;
+      aspect-ratio: 9/16;
+      position:relative;
+      touch-action: pan-y;
     }
-    .okBox{
-      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
-      border:1px solid rgba(158,247,183,.35);
-      background:rgba(158,247,183,.08);
-      color:rgba(255,255,255,.95);
-      border-radius:14px;
-      padding:10px 12px;
-      display:none;
-      white-space:pre-wrap;
-      font-size:12px;
+    .cropStage{ position:absolute; inset:0; }
+    .cropCanvas{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      display:block;
+      background: radial-gradient(circle at 30% 20%, rgba(255,213,106,.06), transparent 45%),
+                  radial-gradient(circle at 70% 70%, rgba(110,255,168,.05), transparent 50%);
+      touch-action: pan-y;
     }
+    .cropRect{
+      position:absolute;
+      border:2px solid rgba(110,224,255,.85);
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.35); /* oscuramento fuori */
+      border-radius:14px;
+      touch-action:none;
+    }
+    .cropHandle{
+      width:22px;height:22px;border-radius:999px;
+      background:rgba(110,224,255,.95);
+      position:absolute;
+      border:2px solid rgba(0,0,0,.35);
+      box-shadow: 0 8px 22px rgba(0,0,0,.35);
+      touch-action:none;
+    }
+    .cropHandle.tl{ left:-11px; top:-11px; }
+    .cropHandle.tr{ right:-11px; top:-11px; }
+    .cropHandle.bl{ left:-11px; bottom:-11px; }
+    .cropHandle.br{ right:-11px; bottom:-11px; }
+
+    #errBox, #okBox{
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
+      border-radius:14px; padding:10px 12px; display:none;
+      white-space:pre-wrap; font-size:12px;
+    }
+    #errBox{ border:1px solid rgba(255,110,110,.35); background:rgba(255,110,110,.08); }
+    #okBox{ border:1px solid rgba(158,247,183,.35); background:rgba(158,247,183,.08); }
   </style>
 </head>
 <body>
@@ -294,7 +275,6 @@
 </header>
 
 <main class="wrap">
-
   <section id="studio" class="section active">
     <div class="grid">
       <div class="card">
@@ -340,7 +320,7 @@
           </div>
 
           <label style="margin-top:10px">Sfoca persona (nasconde vestiti originali)</label>
-          <input id="blurPerson" type="range" min="0" max="10" step="1" value="0" />
+          <input id="blurPerson" type="range" min="0" max="12" step="1" value="0" />
         </div>
       </div>
 
@@ -348,7 +328,7 @@
         <h2><span>Azioni rapide</span><span class="sub">click capo → va addosso</span></h2>
         <div class="body">
           <div class="row">
-            <button class="btn primary" id="btnAddGarment">👗 Aggiungi capo</button>
+            <button class="btn primary" id="btnAddGarment">👗 Aggiungi capo (ritaglio PRO)</button>
             <button class="btn" id="btnGoWardrobe">🧥 Vai al guardaroba</button>
           </div>
 
@@ -364,7 +344,7 @@
           </div>
 
           <div style="height:12px"></div>
-          <div class="sub">Tip: trascina il capo e usa le 4 maniglie per ridimensionare.</div>
+          <div class="sub">Tip: trascina il capo e usa le 4 maniglie per ridimensionare. (Android OK)</div>
         </div>
       </div>
     </div>
@@ -372,7 +352,7 @@
 
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba</span><span class="sub">salva capi</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">salva capi puliti (ritaglio)</span></h2>
       <div class="body">
         <div class="row">
           <button class="btn primary" id="btnAddGarment2">👗 Aggiungi capo</button>
@@ -399,24 +379,23 @@
 
   <section id="guida" class="section">
     <div class="card">
-      <h2><span>Guida</span><span class="sub">rapida</span></h2>
+      <h2><span>Guida</span><span class="sub">passi</span></h2>
       <div class="body">
         <div class="sub" style="font-size:13px; line-height:1.55">
-          1) Carica persona<br/>
-          2) Guardaroba → aggiungi capo<br/>
-          3) Metti addosso → trascina e ridimensiona<br/>
-          4) Rotazione auto-gira
+          1) Studio → “Carica persona (4 viste)”<br/>
+          2) Guardaroba → “Aggiungi capo” → fai ritaglio PRO e salva (senza barra Amazon)<br/>
+          3) Guardaroba → “Metti addosso” (auto-fit) → se serve trascina / maniglie<br/>
+          4) Rotazione: avanti/indietro o auto-gira
         </div>
       </div>
     </div>
   </section>
-
 </main>
 
 <div id="errBox"></div>
-<div id="okBox" class="okBox"></div>
+<div id="okBox"></div>
 
-<!-- Person modal -->
+<!-- PERSON MODAL -->
 <div class="modal" id="personModal">
   <div class="modalCard">
     <div class="modalHead">
@@ -439,21 +418,62 @@
   </div>
 </div>
 
-<!-- Garment modal -->
+<!-- GARMENT MODAL (CROP PRO + OCR) -->
 <div class="modal" id="garmentModal">
   <div class="modalCard">
     <div class="modalHead">
       <div>
-        <div style="font-weight:900">Aggiungi capo</div>
-        <div class="sub">Carica PNG/JPG → Salva nel guardaroba</div>
+        <div style="font-weight:900">Aggiungi/Modifica capo</div>
+        <div class="sub">Ritaglio PRO (maniglie) + “togli bianco” + OCR opzionale</div>
       </div>
       <button class="xBtn" id="closeGarmentModal">✕</button>
     </div>
+
     <div class="modalBody">
-      <label>Immagine capo</label>
+      <label>Seleziona immagine (screenshot Amazon ok)</label>
       <input type="file" accept="image/*" id="garmentFile" />
-      <label>Nome capo</label>
-      <input id="gName" type="text" placeholder="es. Vestito casual" />
+
+      <div style="height:10px"></div>
+      <div class="cropWrap" id="cropWrap">
+        <div class="cropStage" id="cropStage">
+          <canvas class="cropCanvas" id="cropCanvas"></canvas>
+          <div class="cropRect" id="cropRect" style="display:none">
+            <div class="cropHandle tl" data-h="tl"></div>
+            <div class="cropHandle tr" data-h="tr"></div>
+            <div class="cropHandle bl" data-h="bl"></div>
+            <div class="cropHandle br" data-h="br"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toolbox" style="margin-top:12px">
+        <div>
+          <label>Zoom immagine</label>
+          <input id="zoom" type="range" min="50" max="220" step="1" value="100" />
+          <span class="pill">Zoom: <b id="zoomVal">100%</b></span>
+        </div>
+        <div>
+          <label>Soglia “togli bianco” (bordi bianchi → trasparente)</label>
+          <input id="whiteKey" type="range" min="0" max="80" step="1" value="18" />
+          <span class="pill">Bianco: <b id="whiteKeyVal">18</b></span>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="btnFitCrop">🔎 Adatta capo</button>
+        <button class="btn" id="btnNewCrop">🧩 Nuovo ritaglio</button>
+        <button class="btn" id="btnResetCrop">↩️ Reset</button>
+      </div>
+
+      <label style="margin-top:12px">Testo (Nome capo) + bottoni seleziona/copia/incolla</label>
+      <div class="miniBtns">
+        <button class="btn" id="btnSelectText">Seleziona</button>
+        <button class="btn" id="btnCopyText">Copia</button>
+        <button class="btn" id="btnPasteText">Incolla</button>
+        <button class="btn good" id="btnOCR" title="Legge testo dal ritaglio (internet necessario)">OCR dal ritaglio</button>
+      </div>
+      <input id="gName" type="text" placeholder="es. Vestito casual (puoi incollare da OCR)" />
+
       <label>Tipo capo</label>
       <select id="gType">
         <option value="top">Camicia / Maglia (TOP)</option>
@@ -462,7 +482,8 @@
         <option value="shoes">Scarpe (SHOES)</option>
         <option value="accessory">Accessorio (ACCESSORY)</option>
       </select>
-      <label>Vista</label>
+
+      <label>Vista che stai salvando</label>
       <select id="gView">
         <option value="front">FRONTE</option>
         <option value="right">FIANCO DX</option>
@@ -471,8 +492,12 @@
       </select>
 
       <div class="row" style="justify-content:space-between; margin-top:12px">
-        <span class="sub">Poi: Guardaroba → Metti addosso</span>
+        <span class="sub">Salva SOLO la zona ritagliata (pulita) nel guardaroba</span>
         <button class="btn primary" id="btnSaveGarment">Salva nel guardaroba</button>
+      </div>
+
+      <div class="sub" style="margin-top:10px">
+        Tip: fai screenshot Amazon → qui ritagli SOLO il capo (senza barra/telefono). Poi “Metti addosso”.
       </div>
     </div>
   </div>
@@ -483,11 +508,10 @@
   const status = document.getElementById("status");
   const errBox = document.getElementById("errBox");
   const okBox  = document.getElementById("okBox");
-
   function showErr(msg){
     errBox.style.display = "block";
     errBox.textContent = "ERRORE:\n" + msg;
-    setTimeout(()=> errBox.style.display = "none", 6000);
+    setTimeout(()=> errBox.style.display = "none", 6500);
     status.textContent = "Errore";
   }
   function showOk(msg){
@@ -516,7 +540,7 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_pro_v3_scrollfix";
+  const KEY = "sercuctech_vs2d_pro_final_v1";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.person ??= { front:null, right:null, back:null, left:null };
   state.wardrobe ??= [];
@@ -664,6 +688,8 @@
   function applyItemToScene(itemId){
     const item = state.wardrobe.find(x => x.id === itemId);
     if(!item){ showErr("Capo non trovato."); return; }
+    const imgSrc = overlayImageFor(item, currentView);
+    if(!imgSrc){ showErr("Questo capo non ha immagine per questa vista. Salva anche la vista " + VIEW_LABEL[currentView] + "."); return; }
 
     if(item.type === "dress"){
       state.scene.applied = state.scene.applied.filter(o => !["top","bottom"].includes(o.type));
@@ -718,7 +744,6 @@
       el.appendChild(img);
 
       const handles = document.createElement("div");
-      handles.className = "handles";
       ["tl","tr","bl","br"].forEach(c=>{
         const h = document.createElement("div");
         h.className = "h " + c;
@@ -731,7 +756,6 @@
         selectedOverlayId = o.id;
         save();
         renderApplied();
-        // NON blocchiamo qui lo scroll: il blocco avviene solo durante drag vero
         e.stopPropagation();
       }, {passive:true});
 
@@ -740,7 +764,7 @@
     });
   }
 
-  // ✅ FIX: blocco scroll SOLO durante drag, non sempre
+  // ✅ Drag/resize stabile Android (scroll bloccato SOLO mentre trascini)
   function makeDragResizeStable(el, overlayId){
     let mode = null;
     let handle = null;
@@ -763,7 +787,6 @@
       startRect = normToPxRect(o.rect);
       dragging = true;
 
-      // ✅ ora sì: blocchiamo scroll SOLO quando abbiamo iniziato drag
       e.preventDefault();
 
       window.addEventListener("pointermove", onMove, {passive:false});
@@ -773,17 +796,14 @@
 
     function onMove(e){
       if(!dragging || !mode || !startRect) return;
-
-      const o = getOverlay();
-      if(!o) return;
+      const o = getOverlay(); if(!o) return;
 
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
 
       let px = {...startRect};
       if(mode==="move"){
-        px.x += dx;
-        px.y += dy;
+        px.x += dx; px.y += dy;
       }else{
         const minSize = 40;
         if(handle==="tl"){ px.x += dx; px.y += dy; px.w -= dx; px.h -= dy; }
@@ -806,17 +826,14 @@
       el.style.width  = px.w + "px";
       el.style.height = px.h + "px";
 
-      e.preventDefault(); // ✅ mantiene blocco scroll mentre trascini
+      e.preventDefault();
     }
 
     function onUp(e){
-      dragging = false;
-      mode=null; handle=null; startRect=null;
-
+      dragging = false; mode=null; handle=null; startRect=null;
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
-
       renderApplied();
       e.preventDefault?.();
     }
@@ -826,37 +843,25 @@
 
   // Buttons
   document.getElementById("btnClearOutfit").addEventListener("click", ()=>{
-    state.scene.applied = [];
-    selectedOverlayId = null;
-    save();
-    renderApplied();
+    state.scene.applied = []; selectedOverlayId = null; save(); renderApplied();
   });
   document.getElementById("btnResetFit").addEventListener("click", ()=>{
-    state.scene.applied.forEach(o=>{
-      const preset = FIT_PRESET[o.type] || FIT_PRESET.top;
-      o.rect = {...preset};
-    });
-    save();
-    renderApplied();
-    showOk("↩️ Posizioni ripristinate");
+    state.scene.applied.forEach(o=>{ o.rect = {...(FIT_PRESET[o.type] || FIT_PRESET.top)}; });
+    save(); renderApplied(); showOk("↩️ Posizioni ripristinate");
   });
   document.getElementById("btnBringFront").addEventListener("click", ()=>{
     const o = state.scene.applied.find(x=> x.id === selectedOverlayId);
-    if(!o) return;
-    o.z = Date.now(); save(); renderApplied();
+    if(!o) return; o.z = Date.now(); save(); renderApplied();
   });
   document.getElementById("btnSendBack").addEventListener("click", ()=>{
     const o = state.scene.applied.find(x=> x.id === selectedOverlayId);
-    if(!o) return;
-    o.z = 1; save(); renderApplied();
+    if(!o) return; o.z = 1; save(); renderApplied();
   });
   document.getElementById("btnDeleteSelected").addEventListener("click", ()=>{
     if(!selectedOverlayId) return;
-    state.scene.applied = state.scene.applied.filter(x=> x.id !== selectedOverlayId);
-    selectedOverlayId = null;
-    save(); renderApplied();
+    state.scene.applied = state.scene.applied.filter(x => x.id !== selectedOverlayId);
+    selectedOverlayId = null; save(); renderApplied();
   });
-
   stageInner.addEventListener("pointerdown", ()=>{
     selectedOverlayId = null; save(); renderApplied();
   }, {passive:true});
@@ -961,17 +966,14 @@
   }
   document.getElementById("btnLoadDemo").addEventListener("click", ()=>{
     state.wardrobe = [
-      {id:uid(), name:"T-shirt basic", type:"top", createdAt:Date.now(), views:{front:svgData("TOP")}},
-      {id:uid(), name:"Jeans", type:"bottom", createdAt:Date.now()-1, views:{front:svgData("PANT")}},
-      {id:uid(), name:"Vestito", type:"dress", createdAt:Date.now()-2, views:{front:svgData("DRESS")}}
+      {id:uid(), name:"T-shirt basic (demo)", type:"top", createdAt:Date.now(), views:{front:svgData("TOP")}},
+      {id:uid(), name:"Jeans (demo)", type:"bottom", createdAt:Date.now()-1, views:{front:svgData("PANT")}},
+      {id:uid(), name:"Vestito (demo)", type:"dress", createdAt:Date.now()-2, views:{front:svgData("DRESS")}}
     ];
-    save(); renderWardrobe();
-    showOk("📦 Demo caricata");
+    save(); renderWardrobe(); showOk("📦 Demo caricata");
   });
   document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
-    state.wardrobe = [];
-    state.scene.applied = [];
-    save(); renderWardrobe(); renderApplied();
+    state.wardrobe = []; state.scene.applied = []; save(); renderWardrobe(); renderApplied();
   });
 
   // Modals
@@ -995,6 +997,14 @@
       fr.onload = ()=> resolve(fr.result);
       fr.onerror = reject;
       fr.readAsDataURL(file);
+    });
+  }
+  async function dataURLToImage(dataURL){
+    return new Promise((resolve,reject)=>{
+      const img = new Image();
+      img.onload = ()=> resolve(img);
+      img.onerror = reject;
+      img.src = dataURL;
     });
   }
 
@@ -1024,46 +1034,452 @@
     save(); renderPerson(); showOk("🧼 Persona rimossa");
   });
 
-  // Save garment
+  // ===== CROP PRO + OCR =====
+  const garmentFile = document.getElementById("garmentFile");
+  const cropCanvas = document.getElementById("cropCanvas");
+  const cropWrap   = document.getElementById("cropWrap");
+  const cropRectEl = document.getElementById("cropRect");
+  const zoom = document.getElementById("zoom");
+  const zoomVal = document.getElementById("zoomVal");
+  const whiteKey = document.getElementById("whiteKey");
+  const whiteKeyVal = document.getElementById("whiteKeyVal");
+
+  let srcImg = null;       // Image()
+  let srcW=0, srcH=0;      // px
+  let imgX=0, imgY=0;      // canvas coords
+  let scale=1;             // zoom scale
+  let crop = {x:80,y:120,w:220,h:360}; // canvas coords
+  let draggingMode=null;   // "img" | "crop" | "handle"
+  let dragHandle=null;
+  let start = {x:0,y:0, imgX:0, imgY:0, crop:null};
+
+  function resizeCropCanvas(){
+    const r = cropWrap.getBoundingClientRect();
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+    cropCanvas.width  = Math.floor(r.width * dpr);
+    cropCanvas.height = Math.floor(r.height * dpr);
+    cropCanvas.style.width = r.width + "px";
+    cropCanvas.style.height = r.height + "px";
+    drawCrop();
+    placeCropRect();
+  }
+
+  function drawCrop(){
+    const ctx = cropCanvas.getContext("2d");
+    const W = cropCanvas.width, H = cropCanvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    // background grid
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    ctx.strokeStyle = "rgba(255,255,255,0.08)";
+    ctx.lineWidth = 1;
+    const step = 40;
+    for(let x=0;x<W;x+=step){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for(let y=0;y<H;y+=step){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+    ctx.restore();
+
+    if(!srcImg) return;
+
+    // draw image
+    ctx.save();
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcImg, imgX, imgY, srcW*scale, srcH*scale);
+    ctx.restore();
+  }
+
+  function placeCropRect(){
+    const r = cropWrap.getBoundingClientRect();
+    if(!srcImg){
+      cropRectEl.style.display = "none";
+      return;
+    }
+    cropRectEl.style.display = "block";
+
+    // convert from canvas pixel to css pixel
+    const dpr = cropCanvas.width / r.width;
+    const cssX = crop.x / dpr;
+    const cssY = crop.y / dpr;
+    const cssW = crop.w / dpr;
+    const cssH = crop.h / dpr;
+
+    cropRectEl.style.left = cssX + "px";
+    cropRectEl.style.top  = cssY + "px";
+    cropRectEl.style.width  = cssW + "px";
+    cropRectEl.style.height = cssH + "px";
+  }
+
+  function clampCrop(){
+    const r = cropWrap.getBoundingClientRect();
+    const dpr = cropCanvas.width / r.width;
+    const W = cropCanvas.width, H = cropCanvas.height;
+    const min = 80*dpr;
+
+    crop.w = Math.max(min, crop.w);
+    crop.h = Math.max(min, crop.h);
+
+    crop.x = clamp(crop.x, 0, W - crop.w);
+    crop.y = clamp(crop.y, 0, H - crop.h);
+  }
+
+  function fitCropToCenter(){
+    const W = cropCanvas.width, H = cropCanvas.height;
+    const dpr = cropCanvas.width / cropWrap.getBoundingClientRect().width;
+    crop = { x: W*0.18, y: H*0.12, w: W*0.64, h: H*0.76 };
+    clampCrop();
+    drawCrop(); placeCropRect();
+  }
+
+  function resetCropAll(){
+    if(!srcImg) return;
+    const r = cropWrap.getBoundingClientRect();
+    const dpr = cropCanvas.width / r.width;
+
+    // center image with "contain"
+    const W = cropCanvas.width, H = cropCanvas.height;
+    const s1 = W / srcW;
+    const s2 = H / srcH;
+    scale = Math.min(s1, s2) * (Number(zoom.value)/100);
+
+    const drawW = srcW*scale;
+    const drawH = srcH*scale;
+    imgX = (W - drawW)/2;
+    imgY = (H - drawH)/2;
+
+    fitCropToCenter();
+  }
+
+  function setZoom(z){
+    zoom.value = String(z);
+    zoomVal.textContent = `${z}%`;
+    if(!srcImg) return;
+    resetCropAll(); // stabile: ricalcola posizione
+  }
+
+  zoom.addEventListener("input", ()=>{
+    zoomVal.textContent = `${zoom.value}%`;
+    if(!srcImg) return;
+    // non resettiamo crop, aggiorniamo solo scale mantenendo centro
+    const r = cropWrap.getBoundingClientRect();
+    const W = cropCanvas.width, H = cropCanvas.height;
+
+    const newScaleFactor = (Number(zoom.value)/100);
+    // base contain scale
+    const s1 = W / srcW;
+    const s2 = H / srcH;
+    const base = Math.min(s1, s2);
+    const newScale = base * newScaleFactor;
+
+    // mantieni centro immagine
+    const oldDrawW = srcW*scale, oldDrawH = srcH*scale;
+    const cx = imgX + oldDrawW/2;
+    const cy = imgY + oldDrawH/2;
+
+    scale = newScale;
+    const drawW = srcW*scale, drawH = srcH*scale;
+    imgX = cx - drawW/2;
+    imgY = cy - drawH/2;
+
+    drawCrop();
+    placeCropRect();
+  });
+
+  whiteKey.addEventListener("input", ()=>{
+    whiteKeyVal.textContent = String(whiteKey.value);
+  });
+
+  document.getElementById("btnFitCrop").addEventListener("click", ()=>{
+    if(!srcImg) return;
+    fitCropToCenter();
+    showOk("🔎 Ritaglio adattato");
+  });
+  document.getElementById("btnNewCrop").addEventListener("click", ()=>{
+    if(!srcImg) return;
+    fitCropToCenter();
+    showOk("🧩 Nuovo ritaglio");
+  });
+  document.getElementById("btnResetCrop").addEventListener("click", ()=>{
+    if(!srcImg) return;
+    setZoom(100);
+    whiteKey.value = "18"; whiteKeyVal.textContent = "18";
+    resetCropAll();
+    showOk("↩️ Reset");
+  });
+
+  function eventToCanvasXY(e){
+    const r = cropWrap.getBoundingClientRect();
+    const dpr = cropCanvas.width / r.width;
+    const x = (e.clientX - r.left) * dpr;
+    const y = (e.clientY - r.top) * dpr;
+    return {x,y};
+  }
+
+  // Drag immagine (tocchi sul canvas fuori dal crop) + drag crop rect + resize handles
+  cropCanvas.addEventListener("pointerdown", (e)=>{
+    if(!srcImg) return;
+    const p = eventToCanvasXY(e);
+
+    // se dentro crop => muove crop
+    const insideCrop = (p.x>=crop.x && p.x<=crop.x+crop.w && p.y>=crop.y && p.y<=crop.y+crop.h);
+    draggingMode = insideCrop ? "crop" : "img";
+    start = {x:p.x,y:p.y,imgX, imgY, crop:{...crop}};
+    e.preventDefault();
+
+    window.addEventListener("pointermove", onCropMove, {passive:false});
+    window.addEventListener("pointerup", onCropUp, {passive:false});
+    window.addEventListener("pointercancel", onCropUp, {passive:false});
+  }, {passive:false});
+
+  // handles
+  cropRectEl.addEventListener("pointerdown", (e)=>{
+    if(!srcImg) return;
+    const h = e.target?.dataset?.h;
+    if(!h) return; // click sul bordo -> gestito dal canvas
+    const p = eventToCanvasXY(e);
+    draggingMode = "handle";
+    dragHandle = h;
+    start = {x:p.x,y:p.y,imgX, imgY, crop:{...crop}};
+    e.preventDefault();
+
+    window.addEventListener("pointermove", onCropMove, {passive:false});
+    window.addEventListener("pointerup", onCropUp, {passive:false});
+    window.addEventListener("pointercancel", onCropUp, {passive:false});
+  }, {passive:false});
+
+  function onCropMove(e){
+    if(!srcImg || !draggingMode) return;
+    const p = eventToCanvasXY(e);
+    const dx = p.x - start.x;
+    const dy = p.y - start.y;
+
+    if(draggingMode==="img"){
+      imgX = start.imgX + dx;
+      imgY = start.imgY + dy;
+      drawCrop(); // cropRect non cambia
+      placeCropRect();
+    }
+    else if(draggingMode==="crop"){
+      crop.x = start.crop.x + dx;
+      crop.y = start.crop.y + dy;
+      clampCrop();
+      drawCrop(); placeCropRect();
+    }
+    else if(draggingMode==="handle"){
+      const c = {...start.crop};
+      const min = 80 * (cropCanvas.width / cropWrap.getBoundingClientRect().width);
+      if(dragHandle==="tl"){ c.x += dx; c.y += dy; c.w -= dx; c.h -= dy; }
+      if(dragHandle==="tr"){ c.y += dy; c.w += dx; c.h -= dy; }
+      if(dragHandle==="bl"){ c.x += dx; c.w -= dx; c.h += dy; }
+      if(dragHandle==="br"){ c.w += dx; c.h += dy; }
+
+      c.w = Math.max(min, c.w);
+      c.h = Math.max(min, c.h);
+
+      crop = c;
+      clampCrop();
+      drawCrop(); placeCropRect();
+    }
+
+    e.preventDefault();
+  }
+
+  function onCropUp(e){
+    draggingMode=null;
+    dragHandle=null;
+    window.removeEventListener("pointermove", onCropMove);
+    window.removeEventListener("pointerup", onCropUp);
+    window.removeEventListener("pointercancel", onCropUp);
+    e.preventDefault?.();
+  }
+
+  // Load garment image
+  garmentFile.addEventListener("change", async ()=>{
+    try{
+      const f = garmentFile.files[0];
+      if(!f) return;
+      const data = await fileToDataURL(f);
+      srcImg = await dataURLToImage(data);
+      srcW = srcImg.naturalWidth;
+      srcH = srcImg.naturalHeight;
+      await new Promise(r=>setTimeout(r,10));
+      resizeCropCanvas();
+      setZoom(100);
+      resetCropAll();
+      showOk("✅ Immagine caricata: fai ritaglio");
+    }catch(e){
+      showErr("Errore caricamento immagine: " + e);
+    }
+  });
+
+  // OCR buttons (Seleziona/Copia/Incolla)
+  const gName = document.getElementById("gName");
+  document.getElementById("btnSelectText").addEventListener("click", ()=>{
+    gName.focus();
+    gName.select();
+  });
+  document.getElementById("btnCopyText").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(gName.value || "");
+      showOk("📋 Copiato");
+    }catch(e){
+      // fallback
+      gName.focus(); gName.select();
+      document.execCommand("copy");
+      showOk("📋 Copiato");
+    }
+  });
+  document.getElementById("btnPasteText").addEventListener("click", async ()=>{
+    try{
+      const t = await navigator.clipboard.readText();
+      gName.value = t || "";
+      showOk("📥 Incollato");
+    }catch(e){
+      showErr("Incolla non permesso dal browser. Usa pressione lunga → Incolla.");
+    }
+  });
+
+  // OCR on crop
+  let tesseractLoaded = false;
+  async function loadTesseract(){
+    if(tesseractLoaded) return;
+    // carica tesseract da CDN (solo quando serve)
+    await new Promise((resolve, reject)=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload = ()=> resolve();
+      s.onerror = ()=> reject("Impossibile caricare OCR (internet?)");
+      document.head.appendChild(s);
+    });
+    tesseractLoaded = true;
+  }
+
+  function exportCroppedDataURL(){
+    if(!srcImg) throw new Error("Prima carica un'immagine.");
+
+    // crop dal canvas "virtuale": creiamo output in pixels reali della sorgente
+    // 1) trasformiamo il cropRect (canvas coords) in coords sulla sorgente
+    const dprScale = cropCanvas.width / cropWrap.getBoundingClientRect().width;
+
+    // dove sta l'immagine disegnata sul canvas
+    const drawW = srcW * scale;
+    const drawH = srcH * scale;
+
+    // crop (canvas coords) -> relativo all'immagine disegnata
+    const rx = (crop.x - imgX);
+    const ry = (crop.y - imgY);
+    const rw = crop.w;
+    const rh = crop.h;
+
+    // converti in sorgente px
+    const sx = rx / scale;
+    const sy = ry / scale;
+    const sw = rw / scale;
+    const sh = rh / scale;
+
+    // limita a bounds sorgente
+    const sx2 = clamp(sx, 0, srcW-1);
+    const sy2 = clamp(sy, 0, srcH-1);
+    const sw2 = clamp(sw, 1, srcW - sx2);
+    const sh2 = clamp(sh, 1, srcH - sy2);
+
+    // output canvas
+    const out = document.createElement("canvas");
+    out.width = Math.floor(sw2);
+    out.height = Math.floor(sh2);
+    const ctx = out.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcImg, sx2, sy2, sw2, sh2, 0, 0, out.width, out.height);
+
+    // togli bianco -> trasparente
+    const key = Number(whiteKey.value || 0);
+    if(key > 0){
+      const imgd = ctx.getImageData(0,0,out.width,out.height);
+      const d = imgd.data;
+      for(let i=0;i<d.length;i+=4){
+        const r=d[i], g=d[i+1], b=d[i+2];
+        // near-white: distanza da 255
+        const dist = (255-r) + (255-g) + (255-b);
+        if(dist < key*3){
+          d[i+3] = 0;
+        }
+      }
+      ctx.putImageData(imgd,0,0);
+    }
+
+    return out.toDataURL("image/png"); // PNG trasparente
+  }
+
+  document.getElementById("btnOCR").addEventListener("click", async ()=>{
+    try{
+      if(!srcImg){ showErr("Carica prima un'immagine."); return; }
+      showOk("OCR… (attendi)");
+      await loadTesseract();
+      const dataUrl = exportCroppedDataURL();
+      const { data } = await Tesseract.recognize(dataUrl, "ita+eng");
+      const txt = (data?.text || "").trim();
+      if(!txt){ showErr("OCR: nessun testo trovato. Prova a includere il nome nella zona ritaglio."); return; }
+      gName.value = txt.replace(/\s+/g," ").slice(0,120);
+      showOk("✅ OCR copiato nel nome capo");
+    }catch(e){
+      showErr("OCR fallito: " + e);
+    }
+  });
+
+  // Save garment: salva SOLO ritaglio pulito
   document.getElementById("btnSaveGarment").addEventListener("click", async ()=>{
     try{
-      const f = document.getElementById("garmentFile").files[0];
-      if(!f){ showErr("Carica immagine capo."); return; }
-      const data = await fileToDataURL(f);
-
-      const name = (document.getElementById("gName").value || "").trim() || "Capo";
+      if(!srcImg){ showErr("Carica un'immagine capo e fai il ritaglio."); return; }
+      const name = (gName.value || "").trim() || "Capo";
       const type = document.getElementById("gType").value;
       const view = document.getElementById("gView").value;
+
+      const pngData = exportCroppedDataURL();
 
       let item = state.wardrobe.find(x => x.name === name && x.type === type);
       if(!item){
         item = { id: uid(), name, type, createdAt: Date.now(), views:{front:null,right:null,back:null,left:null} };
         state.wardrobe.unshift(item);
       }
-      item.views[view] = data;
+      item.views[view] = pngData;
 
       save();
       renderWardrobe();
       garmentModal.classList.remove("open");
       showOk(`✅ Salvato: ${name} (${VIEW_LABEL[view]})`);
-    }catch(e){ showErr("Errore capo: " + e); }
+    }catch(e){
+      showErr("Errore salvataggio capo: " + e);
+    }
   });
 
-  // Init
+  // Open garment modal resets UI a little
+  garmentModal.addEventListener("transitionend", ()=>{});
+  garmentModal.addEventListener("click", ()=>{});
+
+  // globalScale label
+  globalScaleVal.textContent = `${globalScale.value}%`;
+
+  // go wardrobe
+  document.getElementById("btnGoWardrobe").addEventListener("click", ()=> setTab("guardaroba"));
+
+  // init
   renderWardrobe();
   renderPerson();
   setView(state.scene.currentView || "front");
   renderApplied();
   status.textContent = "OK";
-})();
-</script>
 
-<script>
-  if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(()=>{});
-    });
-  }
+  // resize crop canvas on orientation change
+  window.addEventListener("resize", ()=> {
+    if(srcImg) {
+      resizeCropCanvas();
+      drawCrop();
+      placeCropRect();
+    }
+  });
+
+})();
 </script>
 </body>
 </html>
