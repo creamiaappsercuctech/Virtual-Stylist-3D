@@ -1,114 +1,700 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>SerCucTech TRYME • Camerino digitale</title>
-  <meta name="theme-color" content="#0b0b12"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SerCucTech • TryMe 2D PRO</title>
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0b0f14" />
   <style>
     :root{
-      --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.10);
-      --card:rgba(255,255,255,.04); --card2:rgba(255,255,255,.02); --acc:#ffd56a;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      --bg:#0b0f14; --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.08);
+      --txt:#e9eef5; --muted:rgba(233,238,245,.72);
+      --acc:#d1b15b; --bad:#ff5b6a; --ok:#39d98a; --line:rgba(255,255,255,.12);
+      --r:18px;
     }
-    body{margin:0;background:var(--bg);color:var(--txt);}
-    header{position:sticky;top:0;z-index:10;background:rgba(11,11,18,.86);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06);}
-    .wrap{max-width:1100px;margin:0 auto;padding:14px;}
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
-    .brand{width:44px;height:44px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(255,213,106,.95),rgba(110,255,168,.35));color:#111;font-weight:900;}
-    .sub{color:var(--muted);font-size:12px;line-height:1.35;}
-    .hero{padding:18px 0 10px;}
-    .h1{font-size:34px;line-height:1.05;font-weight:1000;margin:0;}
-    .h2{font-size:14px;color:var(--muted);margin:10px 0 0;}
-    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:14px;}
-    @media(max-width:980px){.grid{grid-template-columns:1fr;}}
-    .card{border:1px solid var(--line);background:var(--card2);border-radius:18px;overflow:hidden;}
-    .card .body{padding:14px;}
-    .btn{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:var(--txt);padding:12px 14px;border-radius:14px;cursor:pointer;text-decoration:none;display:inline-flex;gap:10px;align-items:center;}
-    .btn.primary{background:rgba(255,213,106,.14);border-color:rgba(255,213,106,.25);}
-    .pill{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:12px;}
-    .pill b{color:var(--txt);}
-    .list{display:grid;gap:10px;margin-top:10px;}
-    .li{border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:14px;padding:12px;}
-    input{width:100%;box-sizing:border-box;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);outline:none;}
-    footer{padding:18px 0 30px;color:var(--muted);font-size:12px;}
-    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(1200px 600px at 20% 0%,rgba(209,177,91,.10),transparent 55%),var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    a{color:inherit}
+    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 80px}
+    .top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(180deg,rgba(209,177,91,.85),rgba(209,177,91,.25));display:grid;place-items:center;font-weight:800}
+    h1{margin:0;font-size:20px;line-height:1.1}
+    .sub{margin:3px 0 0;color:var(--muted);font-size:13px}
+    .status{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--ok)}
+    .tabs{display:flex;gap:10px;margin:14px 0}
+    .tab{flex:1;text-align:center;padding:12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);cursor:pointer;user-select:none}
+    .tab.on{background:linear-gradient(180deg,rgba(209,177,91,.22),rgba(255,255,255,.06));border-color:rgba(209,177,91,.35)}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:860px){.grid{grid-template-columns:1.2fr .8fr}}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+    .card h2{margin:0;padding:14px 14px 8px;font-size:16px}
+    .card p{margin:0;padding:0 14px 14px;color:var(--muted);font-size:13px}
+    .tools{display:flex;flex-wrap:wrap;gap:10px;padding:14px}
+    .btn{appearance:none;border:none;cursor:pointer;border-radius:14px;padding:12px 14px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);display:inline-flex;align-items:center;gap:10px}
+    .btn.acc{background:linear-gradient(180deg,rgba(209,177,91,.25),rgba(255,255,255,.08));border-color:rgba(209,177,91,.35)}
+    .btn.bad{background:rgba(255,91,106,.12);border-color:rgba(255,91,106,.25)}
+    .btn.small{padding:9px 12px;border-radius:12px;font-size:13px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    .viewer{position:relative;background:#070a0f;border-top:1px solid var(--line)}
+    .stage{
+      position:relative;
+      width:100%;
+      aspect-ratio:3/4;
+      max-height:78vh;
+      margin:0 auto;
+      overflow:hidden;
+      touch-action:none;
+      background:#070a0f;
+    }
+    .layer{
+      position:absolute;inset:0;
+      display:block;
+      width:100%;height:100%;
+      object-fit:contain; /* persona naturale, NON schiacciata */
+      transform-origin:center center;
+      user-select:none;
+      -webkit-user-drag:none;
+      pointer-events:none;
+    }
+    .overlayWrap{position:absolute;inset:0;pointer-events:auto;touch-action:none}
+    .garmentBox{
+      position:absolute;
+      left:20%;top:20%;
+      width:50%;height:60%;
+      transform-origin:center center;
+      touch-action:none;
+      cursor:grab;
+      filter: drop-shadow(0 10px 22px rgba(0,0,0,.35));
+    }
+    .garmentImg{
+      width:100%;height:100%;
+      object-fit:contain;
+      display:block;
+      pointer-events:none;
+    }
+    .handles{position:absolute;inset:0;pointer-events:none}
+    .h{
+      width:18px;height:18px;border-radius:50%;
+      background:rgba(77,208,225,.95);
+      position:absolute;pointer-events:auto;
+      border:2px solid rgba(0,0,0,.35);
+      touch-action:none;
+    }
+    .h.tl{left:-9px;top:-9px}
+    .h.tr{right:-9px;top:-9px}
+    .h.bl{left:-9px;bottom:-9px}
+    .h.br{right:-9px;bottom:-9px}
+    .hud{
+      position:absolute;left:10px;top:10px;right:10px;
+      display:flex;flex-wrap:wrap;gap:8px;
+      padding:10px;border-radius:16px;
+      background:rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+    }
+    .hud .pill{display:inline-flex;align-items:center;gap:8px;padding:9px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:13px;color:var(--txt)}
+    .range{width:min(360px,100%);display:flex;align-items:center;gap:10px}
+    input[type=range]{width:100%}
+    .list{padding:14px;display:grid;gap:10px}
+    .item{
+      display:grid;grid-template-columns:64px 1fr auto;gap:10px;
+      align-items:center;
+      padding:10px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+    }
+    .thumb{width:64px;height:64px;border-radius:14px;background:#06080c;border:1px solid rgba(255,255,255,.10);overflow:hidden;display:grid;place-items:center}
+    .thumb img{width:100%;height:100%;object-fit:cover}
+    .meta{min-width:0}
+    .meta b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .meta small{color:var(--muted)}
+    .toast{position:fixed;left:14px;right:14px;bottom:18px;padding:12px 14px;border-radius:16px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);display:none}
+    .toast.on{display:block}
+    .fs{
+      position:fixed;inset:0;background:#000;z-index:9999;display:none;align-items:center;justify-content:center;
+      padding:10px;
+    }
+    .fs.on{display:flex}
+    .fs .stage{max-width:980px;max-height:92vh;width:100%}
+    .fsTop{position:fixed;left:10px;top:10px;z-index:10000;display:none}
+    .fs.on + .fsTop, .fs.on ~ .fsTop{display:block}
+    .smallNote{padding:0 14px 14px;color:var(--muted);font-size:12px}
+    .sep{height:1px;background:var(--line);margin:0}
   </style>
 </head>
 <body>
-<header>
   <div class="wrap">
-    <div class="row">
-      <div class="row" style="justify-content:flex-start">
-        <div class="brand">SC</div>
-        <div>
-          <div style="font-weight:1000" id="brandName">SerCucTech TRYME</div>
-          <div class="sub">Camerino digitale personale • Prova prima. Compra meglio.</div>
+    <div class="top">
+      <div class="logo">SC</div>
+      <div style="flex:1">
+        <h1>SerCucTech • TryMe 2D PRO</h1>
+        <div class="sub">Persona 4 viste • Guardaroba • Editor capi • Rotazione • Fullscreen • OCR (opzionale)</div>
+      </div>
+      <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusTxt">OK</span></div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab on" data-tab="studio">Studio</div>
+      <div class="tab" data-tab="guardaroba">Guardaroba</div>
+      <div class="tab" data-tab="guida">Guida</div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT -->
+      <div class="card" id="studioCard">
+        <h2>Persona vestita + Rotazione</h2>
+        <p>Carica fino a 4 viste (fronte → dx → retro → sx). Poi scegli un capo nel Guardaroba e “Metti addosso”.</p>
+        <div class="viewer">
+          <div class="stage" id="stage">
+            <img class="layer" id="personImg" alt="">
+            <div class="overlayWrap" id="overlayWrap">
+              <div class="garmentBox" id="garmentBox" style="display:none;">
+                <img class="garmentImg" id="garmentImg" alt="">
+                <div class="handles">
+                  <div class="h tl" data-h="tl"></div>
+                  <div class="h tr" data-h="tr"></div>
+                  <div class="h bl" data-h="bl"></div>
+                  <div class="h br" data-h="br"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="hud">
+              <div class="pill">📷 Persona: <b id="viewName" style="margin-left:6px;font-weight:700">—</b></div>
+              <button class="btn small" id="btnLoadPerson">📷 Carica persona (4 viste)</button>
+              <button class="btn small" id="btnRotate">↻ Rotazione</button>
+              <button class="btn small" id="btnAuto">▶ Auto</button>
+              <button class="btn small" id="btnStop">⏸ Stop</button>
+              <button class="btn small" id="btnFullscreen">⛶ Fullscreen</button>
+              <button class="btn small bad" id="btnClearOutfit">🧹 Pulisci capi</button>
+              <div class="range">
+                <span class="pill">Scala capi</span>
+                <input type="range" id="globalScale" min="60" max="180" value="100">
+                <span class="pill" id="globalScaleLbl">100%</span>
+              </div>
+            </div>
+          </div>
+          <div class="smallNote">
+            Tip: trascina il capo per spostarlo • usa le 4 maniglie per ridimensionare • slider per scala generale.
+          </div>
         </div>
       </div>
-      <span class="pill">Stato: <b>ONLINE</b></span>
+
+      <!-- RIGHT -->
+      <div class="card" id="rightCard">
+        <h2>Azioni rapide</h2>
+        <p>Apri Admin per creare persone/vetrine e caricare capi. Oppure gestisci il tuo guardaroba qui.</p>
+        <div class="tools">
+          <a class="btn acc" href="./admin.html">🔒 Vai in ADMIN (tu)</a>
+          <button class="btn" id="btnOpenMyWardrobe">👕 Gestisci Guardaroba</button>
+          <button class="btn" id="btnExport">⬇️ Esporta dati (backup)</button>
+          <button class="btn" id="btnImport">⬆️ Importa dati</button>
+          <input type="file" id="importFile" accept="application/json" style="display:none">
+        </div>
+        <div class="sep"></div>
+        <div class="list" id="wardrobeList">
+          <div style="color:var(--muted);font-size:13px">Nessun capo ancora. Vai in “Guardaroba” o in “Admin” per aggiungerli.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUARDAROBA TAB -->
+    <div class="card" id="wardrobeCard" style="display:none;margin-top:12px">
+      <h2>Guardaroba (clicca un capo → va addosso)</h2>
+      <p>Qui vedi i capi che hai salvato. Puoi filtrarli e vestirli subito.</p>
+      <div class="tools">
+        <button class="btn acc" id="btnAddItem">➕ Aggiungi capo (Editor PRO)</button>
+        <button class="btn" id="btnLoadDemo">📦 Carica demo</button>
+        <button class="btn bad" id="btnWipeWardrobe">🧹 Svuota guardaroba</button>
+      </div>
+      <div class="tools" style="padding-top:0">
+        <div class="row">
+          <button class="btn small" data-filter="all">Tutti</button>
+          <button class="btn small" data-filter="top">Sopra</button>
+          <button class="btn small" data-filter="bottom">Sotto</button>
+          <button class="btn small" data-filter="dress">Intero</button>
+          <button class="btn small" data-filter="accessory">Accessori</button>
+        </div>
+      </div>
+      <div class="list" id="wardrobeListFull"></div>
+    </div>
+
+    <!-- GUIDA TAB -->
+    <div class="card" id="guideCard" style="display:none;margin-top:12px">
+      <h2>Guida semplice</h2>
+      <div class="list" style="color:var(--muted);font-size:14px;line-height:1.45">
+        <div><b style="color:var(--txt)">1)</b> Vai in <b style="color:var(--txt)">Admin</b> e crea una persona/vetrina con PIN.</div>
+        <div><b style="color:var(--txt)">2)</b> In Admin carica i capi (anche screenshot Amazon/Zalando) e ritaglia pulito.</div>
+        <div><b style="color:var(--txt)">3)</b> Apri la <b style="color:var(--txt)">vetrina</b> della persona, inserisci PIN, carica le 4 viste della persona.</div>
+        <div><b style="color:var(--txt)">4)</b> Scegli un capo nel guardaroba e premi <b style="color:var(--txt)">Metti addosso</b>.</div>
+        <div><b style="color:var(--txt)">5)</b> Usa <b style="color:var(--txt)">Rotazione</b> e <b style="color:var(--txt)">Fullscreen</b>.</div>
+        <div style="margin-top:8px;font-size:13px">
+          ⚠️ Sicurezza: su GitHub Pages il PIN è “deterrente”, non blindato. Per sicurezza vera serve backend/auth (Supabase).
+        </div>
+      </div>
     </div>
   </div>
-</header>
 
-<main class="wrap">
-  <section class="hero">
-    <h1 class="h1">Il tuo camerino digitale personale.</h1>
-    <div class="h2">Vestiti • Scarpe • Occhiali • Cappelli • Gioielli • Make-up • Accessori.</div>
-  </section>
-
-  <div class="grid">
-    <div class="card">
-      <div class="body">
-        <div class="pill">Come funziona</div>
-        <div class="list">
-          <div class="li">1) Ti creo la tua <b>Vetrina TRYME</b> (link personale).</div>
-          <div class="li">2) Io (SerCucTech) carico i capi (Amazon/Zalando/negozi locali).</div>
-          <div class="li">3) Tu apri il link e <b>provi</b> i capi sul tuo corpo (rotazione + fullscreen).</div>
-          <div class="li">4) Se ti piace, clicchi <b>Compra</b> e vai allo store.</div>
-        </div>
-
-        <div style="height:12px"></div>
-        <div class="row" style="justify-content:flex-start">
-          <a class="btn primary" id="btnWhats" href="#" target="_blank" rel="noopener">📲 Richiedi la tua vetrina</a>
-          <a class="btn" href="./admin.html">🔧 Admin</a>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="body">
-        <div class="pill">Apri una vetrina</div>
-        <div class="sub" style="margin-top:10px">Inserisci l’ID della vetrina che ti hanno dato (es. <span class="mono">sara01</span>).</div>
-        <div style="height:10px"></div>
-        <input id="vid" placeholder="ID vetrina (es. sara01)" class="mono"/>
-        <div style="height:10px"></div>
-        <button class="btn primary" id="btnOpen">Apri vetrina</button>
-        <div class="sub" style="margin-top:10px">
-          Esempio link: <span class="mono">vetrina.html?id=sara01</span>
-        </div>
-      </div>
-    </div>
+  <div class="fs" id="fs">
+    <div class="stage" id="fsStage"></div>
+  </div>
+  <div class="fsTop" id="fsTop" style="position:fixed;left:10px;top:10px;z-index:10000">
+    <button class="btn small acc" id="btnExitFullscreen">⛶ Esci</button>
   </div>
 
-  <footer>
-    © <span id="y"></span> SerCucTech TRYME • Made in Italy • Privacy: immagini e dati gestiti dall’admin.
-  </footer>
-</main>
+  <div class="toast" id="toast"></div>
 
-<script src="./config.js"></script>
-<script>
-  document.getElementById("y").textContent = String(new Date().getFullYear());
-  const cfg = window.APP_CONFIG || {};
-  document.getElementById("brandName").textContent = cfg.BRAND || "SerCucTech TRYME";
-  const w = document.getElementById("btnWhats");
-  w.href = cfg.WHATSAPP_LINK || "#";
+  <input type="file" id="personFiles" accept="image/*" multiple style="display:none">
 
-  document.getElementById("btnOpen").addEventListener("click", ()=>{
-    const id = document.getElementById("vid").value.trim();
-    if(!id) return;
-    location.href = "./vetrina.html?id=" + encodeURIComponent(id);
-  });
-</script>
+  <script src="./config.js"></script>
+  <script>
+    // PWA
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+    }
+
+    const $ = (s, r=document) => r.querySelector(s);
+    const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+    const toast = (msg, bad=false) => {
+      const t = $("#toast");
+      t.textContent = msg;
+      t.style.borderColor = bad ? "rgba(255,91,106,.35)" : "rgba(57,217,138,.25)";
+      t.classList.add("on");
+      clearTimeout(toast._tm);
+      toast._tm = setTimeout(()=>t.classList.remove("on"), 2300);
+    };
+
+    const setStatus = (ok, msg) => {
+      $("#dot").style.background = ok ? "var(--ok)" : "var(--bad)";
+      $("#statusTxt").textContent = msg || (ok ? "OK" : "Errore");
+    };
+
+    // Storage base
+    const STORE_KEY = "sercuctech_tryme_store_v1";
+    function loadStore(){
+      try{
+        const raw = localStorage.getItem(STORE_KEY);
+        if(!raw) return { wardrobe: [], people: {}, lastPersonView: 0, outfit: null, globalScale: 1 };
+        return JSON.parse(raw);
+      }catch(e){
+        return { wardrobe: [], people: {}, lastPersonView: 0, outfit: null, globalScale: 1 };
+      }
+    }
+    function saveStore(s){ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
+
+    let store = loadStore();
+
+    // Tabs
+    $$(".tab").forEach(t=>{
+      t.addEventListener("click", ()=>{
+        $$(".tab").forEach(x=>x.classList.remove("on"));
+        t.classList.add("on");
+        const tab = t.dataset.tab;
+        $("#studioCard").style.display = tab==="studio" ? "" : "none";
+        $("#rightCard").style.display = tab==="studio" ? "" : "none";
+        $("#wardrobeCard").style.display = tab==="guardaroba" ? "" : "none";
+        $("#guideCard").style.display = tab==="guida" ? "" : "none";
+        if(tab==="guardaroba") renderWardrobeFull();
+        if(tab==="studio") renderWardrobeMini();
+      });
+    });
+
+    // Person 4 views
+    const person = { views: [null,null,null,null], idx: store.lastPersonView||0 };
+    const viewLabels = ["fronte","dx","retro","sx"];
+
+    function showPersonView(i){
+      person.idx = (i+4)%4;
+      store.lastPersonView = person.idx;
+      saveStore(store);
+      const src = person.views[person.idx];
+      $("#personImg").src = src || "";
+      $("#viewName").textContent = src ? viewLabels[person.idx] : "—";
+    }
+
+    function askLoadPerson(){
+      $("#personFiles").click();
+    }
+
+    $("#btnLoadPerson").addEventListener("click", askLoadPerson);
+
+    $("#personFiles").addEventListener("change", async (e)=>{
+      try{
+        const files = [...e.target.files||[]].slice(0,4);
+        if(!files.length) return;
+        // ordina: se 1 foto -> copia su tutte le viste
+        const dataUrls = [];
+        for(const f of files){
+          dataUrls.push(await fileToDataURL(f));
+        }
+        if(dataUrls.length===1){
+          person.views = [dataUrls[0],dataUrls[0],dataUrls[0],dataUrls[0]];
+        }else{
+          person.views = [dataUrls[0]||null, dataUrls[1]||null, dataUrls[2]||null, dataUrls[3]||null];
+          // se mancano viste, riempi con la prima
+          const base = person.views[0];
+          for(let i=0;i<4;i++) if(!person.views[i]) person.views[i]=base;
+        }
+        showPersonView(0);
+        toast("Persona caricata (4 viste).");
+        setStatus(true,"OK");
+      }catch(err){
+        console.error(err);
+        setStatus(false,"Errore");
+        toast("Errore caricamento persona.", true);
+      }finally{
+        e.target.value="";
+      }
+    });
+
+    // Rotation
+    let autoTimer = null;
+    $("#btnRotate").addEventListener("click", ()=> {
+      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
+      showPersonView(person.idx+1);
+      applyOutfitToView();
+    });
+    $("#btnAuto").addEventListener("click", ()=>{
+      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
+      clearInterval(autoTimer);
+      autoTimer = setInterval(()=>{
+        showPersonView(person.idx+1);
+        applyOutfitToView();
+      }, 1100);
+      toast("Auto-rotazione attiva.");
+    });
+    $("#btnStop").addEventListener("click", ()=>{
+      clearInterval(autoTimer); autoTimer=null;
+      toast("Stop.");
+    });
+
+    // Fullscreen
+    const fs = $("#fs");
+    const fsStage = $("#fsStage");
+    $("#btnFullscreen").addEventListener("click", ()=>{
+      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
+      // sposta stage in fullscreen
+      fsStage.innerHTML = "";
+      fsStage.appendChild($("#stage").cloneNode(true));
+      fs.classList.add("on");
+      // nel clone non abbiamo handlers: è solo “vista”. quindi ok.
+      toast("Fullscreen.");
+    });
+    $("#btnExitFullscreen").addEventListener("click", ()=>{
+      fs.classList.remove("on");
+      fsStage.innerHTML="";
+    });
+
+    // Outfit state
+    const outfit = {
+      itemId: null,
+      // per view: pos/size/rot (semplice)
+      perView: [
+        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
+        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
+        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
+        {x:0.20,y:0.18,w:0.55,h:0.62,r:0}
+      ]
+    };
+
+    // Global scale
+    const gs = $("#globalScale");
+    gs.value = Math.round((store.globalScale||1)*100);
+    $("#globalScaleLbl").textContent = gs.value + "%";
+    gs.addEventListener("input", ()=>{
+      store.globalScale = Number(gs.value)/100;
+      $("#globalScaleLbl").textContent = gs.value + "%";
+      saveStore(store);
+      applyGarmentBox();
+    });
+
+    $("#btnClearOutfit").addEventListener("click", ()=>{
+      outfit.itemId=null;
+      $("#garmentBox").style.display="none";
+      toast("Outfit pulito.");
+    });
+
+    function getWardrobe(){ return store.wardrobe || []; }
+
+    function renderWardrobeMini(){
+      const list = $("#wardrobeList");
+      const items = getWardrobe().slice().reverse().slice(0,6);
+      if(!items.length){
+        list.innerHTML = `<div style="color:var(--muted);font-size:13px">Nessun capo ancora. Vai in “Guardaroba” o in “Admin” per aggiungerli.</div>`;
+        return;
+      }
+      list.innerHTML = items.map(it=>itemRowHTML(it, true)).join("");
+      list.querySelectorAll("[data-act='wear']").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.dataset.id;
+          wearItem(id);
+        });
+      });
+    }
+
+    function renderWardrobeFull(filter="all"){
+      const list = $("#wardrobeListFull");
+      const items = getWardrobe().slice().reverse().filter(it=>{
+        if(filter==="all") return true;
+        return it.group===filter;
+      });
+      if(!items.length){
+        list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:14px">Nessun capo in questa categoria.</div>`;
+        return;
+      }
+      list.innerHTML = items.map(it=>itemRowHTML(it, false)).join("");
+      list.querySelectorAll("[data-act='wear']").forEach(btn=>{
+        btn.addEventListener("click", ()=> wearItem(btn.dataset.id));
+      });
+      list.querySelectorAll("[data-act='del']").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const id = btn.dataset.id;
+          store.wardrobe = getWardrobe().filter(x=>x.id!==id);
+          saveStore(store);
+          renderWardrobeFull(filter);
+          renderWardrobeMini();
+          toast("Capo eliminato.");
+        });
+      });
+    }
+
+    $$("#wardrobeCard [data-filter]").forEach(b=>{
+      b.addEventListener("click", ()=>renderWardrobeFull(b.dataset.filter));
+    });
+
+    function itemRowHTML(it, mini){
+      const img = (it.views && it.views[0]) ? it.views[0] : it.image;
+      return `
+        <div class="item">
+          <div class="thumb">${img ? `<img src="${img}" alt="">` : "—"}</div>
+          <div class="meta">
+            <b>${escapeHtml(it.name||"Senza nome")}</b>
+            <small>${labelGroup(it.group)} • ${it.views ? `${countViews(it.views)} viste` : "1 vista"}</small>
+          </div>
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn small acc" data-act="wear" data-id="${it.id}">Metti addosso</button>
+            ${mini ? "" : `<button class="btn small bad" data-act="del" data-id="${it.id}">Elimina</button>`}
+          </div>
+        </div>
+      `;
+    }
+    function countViews(v){ return (v||[]).filter(Boolean).length || 1; }
+    function labelGroup(g){
+      return g==="top"?"Sopra":g==="bottom"?"Sotto":g==="dress"?"Intero":g==="accessory"?"Accessori":"—";
+    }
+    function escapeHtml(s){
+      return String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+    }
+
+    function wearItem(id){
+      const it = getWardrobe().find(x=>x.id===id);
+      if(!it) return toast("Capo non trovato.", true);
+      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
+
+      outfit.itemId = id;
+      // scegli immagine giusta per vista corrente
+      const vImg = (it.views && it.views[person.idx]) ? it.views[person.idx] : (it.views && it.views[0]) ? it.views[0] : it.image;
+      $("#garmentImg").src = vImg || "";
+      $("#garmentBox").style.display = vImg ? "block" : "none";
+
+      // reset posizione vista se mai
+      applyGarmentBox();
+      toast(`Indossato: ${it.name || "capo"}`);
+    }
+
+    function applyOutfitToView(){
+      if(!outfit.itemId) return;
+      const it = getWardrobe().find(x=>x.id===outfit.itemId);
+      if(!it) return;
+      const vImg = (it.views && it.views[person.idx]) ? it.views[person.idx] : (it.views && it.views[0]) ? it.views[0] : it.image;
+      $("#garmentImg").src = vImg || "";
+      $("#garmentBox").style.display = vImg ? "block" : "none";
+      applyGarmentBox();
+    }
+
+    function applyGarmentBox(){
+      const b = $("#garmentBox");
+      if(b.style.display==="none") return;
+      const pv = outfit.perView[person.idx];
+      const scale = store.globalScale || 1;
+
+      b.style.left = (pv.x*100)+"%";
+      b.style.top  = (pv.y*100)+"%";
+      b.style.width = (pv.w*100*scale)+"%";
+      b.style.height= (pv.h*100*scale)+"%";
+      b.style.transform = `rotate(${pv.r||0}deg)`;
+    }
+
+    // Drag + resize (NO setPointerCapture -> evita InvalidStateError)
+    (function garmentInteractions(){
+      const box = $("#garmentBox");
+      const wrap = $("#overlayWrap");
+      let mode = null; // "move" o handle
+      let start = null;
+
+      function getRel(e){
+        const rect = $("#stage").getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        return {x,y,rect};
+      }
+
+      wrap.addEventListener("pointerdown", (e)=>{
+        if(box.style.display==="none") return;
+        const t = e.target;
+        const isHandle = t.classList.contains("h");
+        const isBox = t === box || box.contains(t);
+        if(!isHandle && !isBox) return;
+
+        e.preventDefault();
+        mode = isHandle ? t.dataset.h : "move";
+        const pv = outfit.perView[person.idx];
+        const rel = getRel(e);
+        start = { mode, pv: {...pv}, rel, cx: rel.x, cy: rel.y };
+      }, {passive:false});
+
+      wrap.addEventListener("pointermove", (e)=>{
+        if(!start) return;
+        e.preventDefault();
+
+        const pv = outfit.perView[person.idx];
+        const rel = getRel(e);
+
+        if(start.mode==="move"){
+          const dx = rel.x - start.cx;
+          const dy = rel.y - start.cy;
+          pv.x = clamp(start.pv.x + dx, 0, 1);
+          pv.y = clamp(start.pv.y + dy, 0, 1);
+        } else {
+          // resize from corner
+          let x = start.pv.x, y = start.pv.y, w = start.pv.w, h = start.pv.h;
+          const dx = rel.x - start.cx;
+          const dy = rel.y - start.cy;
+
+          if(start.mode==="tl"){
+            x = start.pv.x + dx;
+            y = start.pv.y + dy;
+            w = start.pv.w - dx;
+            h = start.pv.h - dy;
+          } else if(start.mode==="tr"){
+            y = start.pv.y + dy;
+            w = start.pv.w + dx;
+            h = start.pv.h - dy;
+          } else if(start.mode==="bl"){
+            x = start.pv.x + dx;
+            w = start.pv.w - dx;
+            h = start.pv.h + dy;
+          } else if(start.mode==="br"){
+            w = start.pv.w + dx;
+            h = start.pv.h + dy;
+          }
+          // min size
+          w = Math.max(0.08, w);
+          h = Math.max(0.08, h);
+          // clamp pos
+          x = clamp(x, 0, 1);
+          y = clamp(y, 0, 1);
+
+          pv.x = x; pv.y = y; pv.w = w; pv.h = h;
+        }
+
+        applyGarmentBox();
+      }, {passive:false});
+
+      window.addEventListener("pointerup", ()=>{
+        if(!start) return;
+        start = null;
+        saveStore(store);
+      });
+    })();
+
+    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+    // Demo items (leggerissimi)
+    $("#btnLoadDemo").addEventListener("click", ()=>{
+      const demo = [
+        mkItem("T-shirt basic (demo)","top", null),
+        mkItem("Pantalone (demo)","bottom", null),
+        mkItem("Abito (demo)","dress", null)
+      ];
+      store.wardrobe = [...getWardrobe(), ...demo];
+      saveStore(store);
+      renderWardrobeFull();
+      renderWardrobeMini();
+      toast("Demo caricata. Ora aggiungi i tuoi capi reali in Admin.");
+    });
+
+    $("#btnWipeWardrobe").addEventListener("click", ()=>{
+      if(!confirm("Sicuro? Cancella tutti i capi.")) return;
+      store.wardrobe = [];
+      saveStore(store);
+      renderWardrobeFull();
+      renderWardrobeMini();
+      toast("Guardaroba svuotato.");
+    });
+
+    $("#btnOpenMyWardrobe").addEventListener("click", ()=>{
+      // switch tab
+      $$(".tab").find(t=>t.dataset.tab==="guardaroba").click();
+    });
+
+    // Export/Import
+    $("#btnExport").addEventListener("click", ()=>{
+      const blob = new Blob([JSON.stringify(store, null, 2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "sercuctech-tryme-backup.json";
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+      toast("Backup esportato.");
+    });
+    $("#btnImport").addEventListener("click", ()=> $("#importFile").click());
+    $("#importFile").addEventListener("change", async (e)=>{
+      const f = e.target.files?.[0];
+      if(!f) return;
+      try{
+        const txt = await f.text();
+        const data = JSON.parse(txt);
+        if(!data || typeof data!=="object") throw new Error("bad");
+        store = data;
+        saveStore(store);
+        renderWardrobeMini();
+        toast("Import OK.");
+      }catch(err){
+        toast("Import fallito.", true);
+      }finally{ e.target.value=""; }
+    });
+
+    // Add item -> manda ad Admin (editor completo lì)
+    $("#btnAddItem").addEventListener("click", ()=>{
+      location.href = "./admin.html#addItem";
+    });
+
+    function mkItem(name, group, image){
+      return {
+        id: "it_"+Math.random().toString(36).slice(2,10),
+        name, group,
+        image: image || "",
+        views: null,
+        createdAt: Date.now()
+      };
+    }
+
+    async function fileToDataURL(file){
+      return new Promise((res, rej)=>{
+        const r = new FileReader();
+        r.onload = ()=>res(r.result);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    // init
+    renderWardrobeMini();
+    showPersonView(person.idx||0);
+    applyGarmentBox();
+    setStatus(true,"OK");
+  </script>
 </body>
 </html>
