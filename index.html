@@ -14,7 +14,7 @@
       font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
     }
     *{ box-sizing:border-box; }
-    body{ margin:0; background:var(--bg); color:var(--txt); }
+    body{ margin:0; background:var(--bg); color:var(--txt); -webkit-tap-highlight-color: transparent; }
     header{
       position:sticky; top:0; z-index:20;
       background:rgba(11,11,18,.86); backdrop-filter: blur(10px);
@@ -91,6 +91,7 @@
     textarea{ min-height:70px; resize:vertical; }
     input[type="range"]{ width:100%; }
 
+    /* ✅ IMPORTANT: LO STAGE NON BLOCCA PIÙ LO SCROLL GENERALE */
     .stageWrap{
       position:relative;
       border:1px solid rgba(255,255,255,.08);
@@ -99,7 +100,7 @@
       overflow:hidden;
       width:100%;
       aspect-ratio: 3/4;
-      touch-action: none; /* IMPORTANT: evita scroll durante drag */
+      touch-action: pan-y; /* ✅ permette scroll verticale, drag gestito solo sui capi */
     }
     @media(max-width:980px){
       .stageWrap{ aspect-ratio: 9/16; }
@@ -129,8 +130,10 @@
       will-change: transform, opacity, filter;
       user-select:none;
       pointer-events:none;
+      -webkit-user-drag:none;
     }
 
+    /* ✅ DRAG SOLO QUI */
     .garment{
       position:absolute;
       left:0; top:0;
@@ -140,7 +143,7 @@
       border:1px dashed rgba(255,213,106,.35);
       border-radius:12px;
       background:rgba(255,255,255,.01);
-      touch-action:none; /* IMPORTANT */
+      touch-action:none; /* ✅ qui blocchiamo scroll durante drag */
     }
     .garment.selected{ outline:2px solid rgba(255,213,106,.55); }
     .garment img{
@@ -158,22 +161,15 @@
       position:absolute;
       border:2px solid rgba(0,0,0,.35);
       box-shadow: 0 6px 18px rgba(0,0,0,.35);
-      touch-action:none;
+      touch-action:none; /* ✅ anche sulle maniglie */
     }
     .h.tl{ left:-9px; top:-9px; }
     .h.tr{ right:-9px; top:-9px; }
     .h.bl{ left:-9px; bottom:-9px; }
     .h.br{ right:-9px; bottom:-9px; }
 
-    .toolbar{
-      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-      margin-top:10px;
-    }
-    .toolbox{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:10px;
-    }
+    .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
+    .toolbox{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     @media(max-width:520px){ .toolbox{ grid-template-columns:1fr; } }
 
     .filters{ display:flex; gap:10px; flex-wrap:wrap; }
@@ -227,7 +223,8 @@
     .modalCard{
       width:min(980px, 100%);
       max-height: min(92vh, 980px);
-      overflow:auto;
+      overflow:auto; /* ✅ scroll dentro modal */
+      -webkit-overflow-scrolling: touch;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(12,12,20,.96);
@@ -285,10 +282,10 @@
           <div class="sub">Persona 4 viste + Guardaroba + Ritaglio PRO + Rotazione 360 + Fullscreen + OCR (opzionale)</div>
         </div>
       </div>
-      <span class="pill">Stato: <b id="status">Avvio…</b></span>
+      <span class="pill">Stato: <b id="status">OK</b></span>
     </div>
 
-    <div class="tabs" role="tablist" aria-label="Sezioni app">
+    <div class="tabs">
       <div class="tab active" data-tab="studio">Studio</div>
       <div class="tab" data-tab="guardaroba">Guardaroba</div>
       <div class="tab" data-tab="guida">Guida</div>
@@ -303,7 +300,7 @@
       <div class="card">
         <h2>
           <span>Persona vestita + Rotazione</span>
-          <span class="sub">rotazione: fronte → fianco dx → retro → fianco sx</span>
+          <span class="sub">fronte → fianco dx → retro → fianco sx</span>
         </h2>
         <div class="body">
           <div class="stageWrap" id="stageWrap">
@@ -326,7 +323,7 @@
 
           <div class="toolbox" style="margin-top:10px">
             <div>
-              <label>Controllo rotazione</label>
+              <label>Rotazione</label>
               <div class="row">
                 <button class="btn" id="btnPrev">◀︎ Indietro</button>
                 <button class="btn" id="btnNext">Avanti ▶︎</button>
@@ -334,7 +331,7 @@
               </div>
             </div>
             <div>
-              <label>Persona (solo look, NON ML)</label>
+              <label>Outfit</label>
               <div class="row">
                 <button class="btn" id="btnClearOutfit">🧼 Togli capi</button>
                 <button class="btn" id="btnResetFit">↩️ Reset posizioni</button>
@@ -342,23 +339,20 @@
             </div>
           </div>
 
-          <label style="margin-top:10px">Sfoca persona (per “nascondere” vestiti originali)</label>
+          <label style="margin-top:10px">Sfoca persona (nasconde vestiti originali)</label>
           <input id="blurPerson" type="range" min="0" max="10" step="1" value="0" />
-          <span class="sub">Nota: sostituzione realistica dei vestiti originali richiede ML. Qui facciamo overlay + blur opzionale.</span>
         </div>
       </div>
 
       <div class="card">
-        <h2><span>Azioni rapide</span><span class="sub">click capo → va addosso subito</span></h2>
+        <h2><span>Azioni rapide</span><span class="sub">click capo → va addosso</span></h2>
         <div class="body">
           <div class="row">
-            <button class="btn primary" id="btnAddGarment">👗 Aggiungi capo (ritaglio PRO)</button>
+            <button class="btn primary" id="btnAddGarment">👗 Aggiungi capo</button>
             <button class="btn" id="btnGoWardrobe">🧥 Vai al guardaroba</button>
           </div>
 
-          <div style="height:10px"></div>
-
-          <label>Auto-fit “taglia” (scala generale capi)</label>
+          <label style="margin-top:10px">Scala generale capi</label>
           <input id="globalScale" type="range" min="60" max="140" step="1" value="100" />
           <span class="pill">Scala: <b id="globalScaleVal">100%</b></span>
 
@@ -366,13 +360,11 @@
           <div class="row">
             <button class="btn" id="btnBringFront">⬆️ Porta davanti</button>
             <button class="btn" id="btnSendBack">⬇️ Porta dietro</button>
-            <button class="btn bad" id="btnDeleteSelected">🗑️ Elimina selezionato</button>
+            <button class="btn bad" id="btnDeleteSelected">🗑️ Elimina</button>
           </div>
 
           <div style="height:12px"></div>
-          <div class="sub">
-            Tip: dopo “Metti addosso” puoi <b>trascinare</b> il capo per spostarlo e usare le <b>maniglie</b> per ridimensionare.
-          </div>
+          <div class="sub">Tip: trascina il capo e usa le 4 maniglie per ridimensionare.</div>
         </div>
       </div>
     </div>
@@ -380,7 +372,7 @@
 
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba</span><span class="sub">carica capi → ritaglia → salva</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">salva capi</span></h2>
       <div class="body">
         <div class="row">
           <button class="btn primary" id="btnAddGarment2">👗 Aggiungi capo</button>
@@ -401,26 +393,19 @@
 
         <div style="height:12px"></div>
         <div class="wardGrid" id="wardGrid"></div>
-
-        <div style="height:12px"></div>
-        <div class="sub">Suggerimento: usa PNG trasparente. Con screenshot, ritaglia e rimuovi bianco (se presente).</div>
       </div>
     </div>
   </section>
 
   <section id="guida" class="section">
     <div class="card">
-      <h2><span>Guida rapida</span><span class="sub">2 minuti e vai</span></h2>
+      <h2><span>Guida</span><span class="sub">rapida</span></h2>
       <div class="body">
         <div class="sub" style="font-size:13px; line-height:1.55">
-          <b>1) Studio → Carica persona</b><br/>
-          Carica FRONTE (minimo). Se hai 4 viste, meglio.<br/><br/>
-          <b>2) Guardaroba → Aggiungi capo</b><br/>
-          Carica immagine → salva.<br/><br/>
-          <b>3) Metti addosso</b><br/>
-          Dal guardaroba premi “Metti addosso”, poi trascina e ridimensiona con maniglie.<br/><br/>
-          <b>4) Rotazione</b><br/>
-          Auto-gira: fronte→dx→retro→sx.
+          1) Carica persona<br/>
+          2) Guardaroba → aggiungi capo<br/>
+          3) Metti addosso → trascina e ridimensiona<br/>
+          4) Rotazione auto-gira
         </div>
       </div>
     </div>
@@ -431,64 +416,39 @@
 <div id="errBox"></div>
 <div id="okBox" class="okBox"></div>
 
-<!-- Modal: Person loader -->
+<!-- Person modal -->
 <div class="modal" id="personModal">
   <div class="modalCard">
     <div class="modalHead">
       <div>
         <div style="font-weight:900">Carica persona (4 viste)</div>
-        <div class="sub">FRONTE / FIANCO DX / RETRO / FIANCO SX — puoi anche caricare solo FRONTE</div>
+        <div class="sub">FRONTE / FIANCO DX / RETRO / FIANCO SX (anche solo FRONTE va bene)</div>
       </div>
       <button class="xBtn" id="closePersonModal">✕</button>
     </div>
     <div class="modalBody">
-      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
-        <div class="card">
-          <h2><span>File immagini</span><span class="sub">jpg/png</span></h2>
-          <div class="body">
-            <label>FRONTE</label>
-            <input type="file" accept="image/*" id="personFront" />
-            <label>FIANCO DX</label>
-            <input type="file" accept="image/*" id="personRight" />
-            <label>RETRO</label>
-            <input type="file" accept="image/*" id="personBack" />
-            <label>FIANCO SX</label>
-            <input type="file" accept="image/*" id="personLeft" />
-
-            <div class="row" style="margin-top:10px">
-              <button class="btn primary" id="btnSavePerson">Salva persona</button>
-              <button class="btn bad" id="btnClearPerson">Rimuovi persona</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="card">
-          <h2><span>Consigli</span><span class="sub">foto naturale</span></h2>
-          <div class="body">
-            <div class="sub">
-              • Luce buona, telefono dritto<br/>
-              • Corpo intero inquadrato<br/>
-              • Stessa distanza per tutte le viste (se le fai)<br/><br/>
-              Se carichi solo FRONTE, la rotazione userà copie/mirror.
-            </div>
-          </div>
-        </div>
+      <label>FRONTE</label><input type="file" accept="image/*" id="personFront" />
+      <label>FIANCO DX</label><input type="file" accept="image/*" id="personRight" />
+      <label>RETRO</label><input type="file" accept="image/*" id="personBack" />
+      <label>FIANCO SX</label><input type="file" accept="image/*" id="personLeft" />
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="btnSavePerson">Salva persona</button>
+        <button class="btn bad" id="btnClearPerson">Rimuovi</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Garment add (semplice, senza crop per ora; puoi riaggiungere crop dopo che drag è ok) -->
+<!-- Garment modal -->
 <div class="modal" id="garmentModal">
   <div class="modalCard">
     <div class="modalHead">
       <div>
-        <div style="font-weight:900">Aggiungi capo (base)</div>
-        <div class="sub">Carica PNG (meglio trasparente). Poi “Salva nel guardaroba”.</div>
+        <div style="font-weight:900">Aggiungi capo</div>
+        <div class="sub">Carica PNG/JPG → Salva nel guardaroba</div>
       </div>
       <button class="xBtn" id="closeGarmentModal">✕</button>
     </div>
-
     <div class="modalBody">
       <label>Immagine capo</label>
       <input type="file" accept="image/*" id="garmentFile" />
@@ -511,7 +471,7 @@
       </select>
 
       <div class="row" style="justify-content:space-between; margin-top:12px">
-        <span class="sub">Dopo salvataggio: vai in guardaroba → “Metti addosso”.</span>
+        <span class="sub">Poi: Guardaroba → Metti addosso</span>
         <button class="btn primary" id="btnSaveGarment">Salva nel guardaroba</button>
       </div>
     </div>
@@ -527,13 +487,14 @@
   function showErr(msg){
     errBox.style.display = "block";
     errBox.textContent = "ERRORE:\n" + msg;
-    setTimeout(()=> errBox.style.display = "none", 5000);
+    setTimeout(()=> errBox.style.display = "none", 6000);
     status.textContent = "Errore";
   }
   function showOk(msg){
     okBox.style.display = "block";
     okBox.textContent = msg;
-    setTimeout(()=> okBox.style.display = "none", 2600);
+    setTimeout(()=> okBox.style.display = "none", 2200);
+    status.textContent = "OK";
   }
   window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
   window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
@@ -555,7 +516,7 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_pro_v2_dragfix";
+  const KEY = "sercuctech_vs2d_pro_v3_scrollfix";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.person ??= { front:null, right:null, back:null, left:null };
   state.wardrobe ??= [];
@@ -621,7 +582,7 @@
   }
   btnFullscreen.addEventListener("click", toggleFs);
 
-  // Person render
+  // Person
   const personImg = document.getElementById("personImg");
   function pickPersonForView(v){
     const p = state.person || {};
@@ -654,8 +615,12 @@
 
   // Scene
   const garmentLayer = document.getElementById("garmentLayer");
+  const stageInner = document.getElementById("stageInner");
   let selectedOverlayId = null;
+
   function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+  function stageRect(){ return stageInner.getBoundingClientRect(); }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   const FIT_PRESET = {
     top:     { x:.22, y:.18, w:.56, h:.42 },
@@ -664,22 +629,6 @@
     shoes:   { x:.28, y:.80, w:.44, h:.20 },
     accessory:{x:.35, y:.12, w:.30, h:.22 },
   };
-
-  const globalScale = document.getElementById("globalScale");
-  const globalScaleVal = document.getElementById("globalScaleVal");
-  globalScale.value = String(state.scene.globalScale ?? 100);
-  function applyGlobalScale(){
-    state.scene.globalScale = Number(globalScale.value);
-    globalScaleVal.textContent = `${globalScale.value}%`;
-    save();
-    renderApplied();
-  }
-  globalScale.addEventListener("input", applyGlobalScale);
-  applyGlobalScale();
-
-  const stageInner = document.getElementById("stageInner");
-  function stageRect(){ return stageInner.getBoundingClientRect(); }
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   function normToPxRect(n){
     const r = stageRect();
@@ -698,6 +647,19 @@
   function overlayImageFor(item, view){
     return item.views?.[view] || item.views?.front || null;
   }
+
+  // global scale
+  const globalScale = document.getElementById("globalScale");
+  const globalScaleVal = document.getElementById("globalScaleVal");
+  globalScale.value = String(state.scene.globalScale ?? 100);
+  function applyGlobalScale(){
+    state.scene.globalScale = Number(globalScale.value);
+    globalScaleVal.textContent = `${globalScale.value}%`;
+    save();
+    renderApplied();
+  }
+  globalScale.addEventListener("input", applyGlobalScale);
+  applyGlobalScale();
 
   function applyItemToScene(itemId){
     const item = state.wardrobe.find(x => x.id === itemId);
@@ -769,21 +731,22 @@
         selectedOverlayId = o.id;
         save();
         renderApplied();
-        e.preventDefault();
+        // NON blocchiamo qui lo scroll: il blocco avviene solo durante drag vero
         e.stopPropagation();
-      });
+      }, {passive:true});
 
       makeDragResizeStable(el, o.id);
       garmentLayer.appendChild(el);
     });
   }
 
-  // ✅ DRAG/RESIZE STABILE SU ANDROID: niente setPointerCapture obbligatorio.
+  // ✅ FIX: blocco scroll SOLO durante drag, non sempre
   function makeDragResizeStable(el, overlayId){
-    let mode = null; // "move" | "resize"
+    let mode = null;
     let handle = null;
     let startX=0, startY=0;
     let startRect=null;
+    let dragging = false;
 
     function getOverlay(){ return state.scene.applied.find(x=> x.id === overlayId); }
 
@@ -798,19 +761,18 @@
       startX = e.clientX;
       startY = e.clientY;
       startRect = normToPxRect(o.rect);
+      dragging = true;
 
-      // blocca scroll
+      // ✅ ora sì: blocchiamo scroll SOLO quando abbiamo iniziato drag
       e.preventDefault();
-      e.stopPropagation();
 
-      // listener globali finché trascini
       window.addEventListener("pointermove", onMove, {passive:false});
       window.addEventListener("pointerup", onUp, {passive:false});
       window.addEventListener("pointercancel", onUp, {passive:false});
     }
 
     function onMove(e){
-      if(!mode || !startRect) return;
+      if(!dragging || !mode || !startRect) return;
 
       const o = getOverlay();
       if(!o) return;
@@ -824,23 +786,14 @@
         px.y += dy;
       }else{
         const minSize = 40;
-        if(handle==="tl"){
-          px.x += dx; px.y += dy;
-          px.w -= dx; px.h -= dy;
-        }else if(handle==="tr"){
-          px.y += dy;
-          px.w += dx; px.h -= dy;
-        }else if(handle==="bl"){
-          px.x += dx;
-          px.w -= dx; px.h += dy;
-        }else if(handle==="br"){
-          px.w += dx; px.h += dy;
-        }
+        if(handle==="tl"){ px.x += dx; px.y += dy; px.w -= dx; px.h -= dy; }
+        else if(handle==="tr"){ px.y += dy; px.w += dx; px.h -= dy; }
+        else if(handle==="bl"){ px.x += dx; px.w -= dx; px.h += dy; }
+        else if(handle==="br"){ px.w += dx; px.h += dy; }
         px.w = Math.max(minSize, px.w);
         px.h = Math.max(minSize, px.h);
       }
 
-      // clamp nello stage
       const r = stageRect();
       px.x = clamp(px.x, 0, r.width - px.w);
       px.y = clamp(px.y, 0, r.height - px.h);
@@ -848,28 +801,26 @@
       o.rect = pxToNormRect(px);
       save();
 
-      // aggiornamento rapido senza rerender completo
       el.style.left = px.x + "px";
       el.style.top  = px.y + "px";
       el.style.width  = px.w + "px";
       el.style.height = px.h + "px";
 
-      e.preventDefault();
+      e.preventDefault(); // ✅ mantiene blocco scroll mentre trascini
     }
 
     function onUp(e){
+      dragging = false;
       mode=null; handle=null; startRect=null;
 
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
 
-      // un ultimo render per sincronizzare classi/ordine
       renderApplied();
       e.preventDefault?.();
     }
 
-    // IMPORTANTE: pointerdown su el e su maniglie (bubbling)
     el.addEventListener("pointerdown", onDown, {passive:false});
   }
 
@@ -914,6 +865,7 @@
   const wardGrid = document.getElementById("wardGrid");
   const wardCount = document.getElementById("wardCount");
   let wardFilter = "all";
+
   function typeLabel(t){
     return t==="top"?"Sopra":t==="bottom"?"Sotto":t==="dress"?"Intero":t==="shoes"?"Scarpe":"Accessori";
   }
@@ -1000,14 +952,8 @@
   function svgData(label){
     const s = encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#ffd56a" stop-opacity=".25"/>
-            <stop offset="1" stop-color="#6effa8" stop-opacity=".10"/>
-          </linearGradient>
-        </defs>
         <rect width="100%" height="100%" fill="#0b0b12"/>
-        <rect x="32" y="32" width="448" height="448" rx="40" fill="url(#g)" stroke="rgba(255,255,255,.12)"/>
+        <rect x="32" y="32" width="448" height="448" rx="40" fill="rgba(255,213,106,.12)" stroke="rgba(255,255,255,.12)"/>
         <text x="50%" y="50%" fill="rgba(255,255,255,.85)" font-family="system-ui" font-size="44" text-anchor="middle" dominant-baseline="middle" font-weight="800">${label}</text>
       </svg>
     `);
@@ -1071,14 +1017,14 @@
       personModal.classList.remove("open");
       renderPerson();
       showOk("✅ Persona salvata");
-    }catch(e){ showErr("Errore salvataggio persona: " + e); }
+    }catch(e){ showErr("Errore persona: " + e); }
   });
   document.getElementById("btnClearPerson").addEventListener("click", ()=>{
     state.person = {front:null,right:null,back:null,left:null};
     save(); renderPerson(); showOk("🧼 Persona rimossa");
   });
 
-  // Save garment (base)
+  // Save garment
   document.getElementById("btnSaveGarment").addEventListener("click", async ()=>{
     try{
       const f = document.getElementById("garmentFile").files[0];
@@ -1100,7 +1046,7 @@
       renderWardrobe();
       garmentModal.classList.remove("open");
       showOk(`✅ Salvato: ${name} (${VIEW_LABEL[view]})`);
-    }catch(e){ showErr("Errore salvataggio capo: " + e); }
+    }catch(e){ showErr("Errore capo: " + e); }
   });
 
   // Init
