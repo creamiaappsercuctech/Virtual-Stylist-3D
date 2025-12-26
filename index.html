@@ -1,89 +1,1690 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SerCucTech Virtual Stylist 2D PRO</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>SerCucTech • Virtual Stylist 2D PRO</title>
+  <meta name="theme-color" content="#0b0b12" />
+  <link rel="manifest" href="./manifest.json" />
+  <style>
+    :root{
+      --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.10);
+      --card:rgba(255,255,255,.04); --card2:rgba(255,255,255,.02);
+      --acc:#ffd56a; --ok:#9ef7b7; --bad:#ff8a8a;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+    }
+    *{ box-sizing:border-box; }
+    body{ margin:0; background:var(--bg); color:var(--txt); }
+    header{
+      position:sticky; top:0; z-index:20;
+      background:rgba(11,11,18,.86); backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:14px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .brand{
+      width:40px;height:40px;border-radius:16px;display:grid;place-items:center;
+      background:linear-gradient(135deg,rgba(255,213,106,.95),rgba(110,255,168,.35));
+      color:#111;font-weight:900;
+    }
+    .sub{ color:var(--muted); font-size:12px; line-height:1.35; }
+    .pill{
+      display:inline-flex; gap:8px; align-items:center; padding:6px 10px;
+      border-radius:999px; border:1px solid var(--line);
+      background:var(--card); color:var(--muted); font-size:12px;
+    }
+    .pill b{ color:var(--txt); }
+    .tabs{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .tab{
+      border:1px solid var(--line);
+      background:var(--card2);
+      color:var(--txt);
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background:rgba(255,213,106,.12);
+      border-color:rgba(255,213,106,.25);
+    }
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#111">
+    .grid{ display:grid; grid-template-columns: 1.15fr .85fr; gap:14px; }
+    @media(max-width:980px){ .grid{ grid-template-columns:1fr; } }
 
-<style>
-body{margin:0;font-family:system-ui;background:#0b0b0f;color:#fff;text-align:center}
-header{padding:14px;font-size:20px;font-weight:700}
-button,input,select{padding:12px;border-radius:12px;border:none;margin:5px;background:#1e1e27;color:#fff}
-#stage{position:relative;width:100%;max-width:380px;margin:auto;height:520px;background:#000;border-radius:20px;overflow:hidden}
-.layer{position:absolute;left:50%;transform:translateX(-50%)}
-#person{bottom:0;height:100%;z-index:1}
-#cloth{z-index:2}
-#wardrobe img{width:80px;border-radius:10px;margin:6px;cursor:pointer}
-#fullscreen{position:fixed;inset:0;background:#000;display:none;z-index:100}
-</style>
+    .card{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .card h2{
+      margin:0; font-size:14px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
+    }
+    .card .body{ padding:12px 14px; }
+
+    .btn{
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:var(--txt);
+      padding:10px 12px;
+      border-radius:14px;
+      cursor:pointer;
+    }
+    .btn.primary{ background:rgba(255,213,106,.14); border-color:rgba(255,213,106,.25); }
+    .btn.good{ background:rgba(158,247,183,.10); border-color:rgba(158,247,183,.25); }
+    .btn.bad{ background:rgba(255,138,138,.10); border-color:rgba(255,138,138,.25); }
+    .btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input[type="text"], select, textarea{
+      width:100%; padding:10px; border-radius:12px;
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--txt);
+      outline:none;
+    }
+    textarea{ min-height:70px; resize:vertical; }
+    input[type="range"]{ width:100%; }
+
+    /* STAGE (persona + capi) */
+    .stageWrap{
+      position:relative;
+      border:1px solid rgba(255,255,255,.08);
+      background:#070710;
+      border-radius:18px;
+      overflow:hidden;
+      width:100%;
+      aspect-ratio: 3/4; /* naturale verticale */
+    }
+    @media(max-width:980px){
+      .stageWrap{ aspect-ratio: 9/16; }
+    }
+
+    .stage{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      background: radial-gradient(circle at 30% 20%, rgba(255,213,106,.06), transparent 45%),
+                  radial-gradient(circle at 70% 70%, rgba(110,255,168,.05), transparent 50%);
+    }
+    .stageInner{
+      position:relative;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+    }
+    .personLayer, .garmentLayer{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .personImg{
+      max-width:100%;
+      max-height:100%;
+      object-fit:contain; /* NON schiaccia */
+      transform: translateZ(0);
+      will-change: transform, opacity, filter;
+      user-select:none;
+      pointer-events:none;
+    }
+
+    /* Garments overlays: each is absolutely positioned over stageInner */
+    .garment{
+      position:absolute;
+      left:50%; top:50%;
+      transform: translate(-50%,-50%);
+      transform-origin:center;
+      pointer-events:auto;
+      touch-action:none;
+      user-select:none;
+      border:1px dashed rgba(255,213,106,.35);
+      border-radius:12px;
+      background:rgba(255,255,255,.01);
+    }
+    .garment.selected{ outline:2px solid rgba(255,213,106,.55); }
+    .garment img{
+      width:100%; height:100%;
+      object-fit:contain;
+      display:block;
+      pointer-events:none;
+      user-select:none;
+      -webkit-user-drag:none;
+    }
+    .handles{
+      position:absolute; inset:0;
+      pointer-events:none;
+    }
+    .h{
+      width:18px;height:18px;border-radius:999px;
+      background:rgba(110,220,255,.92);
+      position:absolute;
+      pointer-events:auto;
+      border:2px solid rgba(0,0,0,.35);
+      box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      touch-action:none;
+    }
+    .h.tl{ left:-9px; top:-9px; cursor:nwse-resize; }
+    .h.tr{ right:-9px; top:-9px; cursor:nesw-resize; }
+    .h.bl{ left:-9px; bottom:-9px; cursor:nesw-resize; }
+    .h.br{ right:-9px; bottom:-9px; cursor:nwse-resize; }
+
+    .toolbar{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+      margin-top:10px;
+    }
+    .toolbox{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media(max-width:520px){ .toolbox{ grid-template-columns:1fr; } }
+
+    /* Wardrobe */
+    .filters{ display:flex; gap:10px; flex-wrap:wrap; }
+    .chip{
+      border:1px solid var(--line);
+      background:var(--card);
+      color:var(--txt);
+      padding:8px 12px;
+      border-radius:999px;
+      cursor:pointer;
+      user-select:none;
+      font-size:13px;
+    }
+    .chip.active{
+      background:rgba(255,213,106,.12);
+      border-color:rgba(255,213,106,.25);
+    }
+    .wardGrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+    @media(max-width:680px){ .wardGrid{ grid-template-columns:1fr; } }
+
+    .wCard{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex; gap:12px;
+      padding:12px;
+    }
+    .wThumb{
+      width:92px; height:92px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      overflow:hidden;
+      flex:0 0 auto;
+      display:grid; place-items:center;
+      color:var(--muted); font-size:12px;
+    }
+    .wThumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .wMeta{ flex:1 1 auto; min-width:0; }
+    .wTitle{ font-weight:900; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wSub{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .wBtns{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+
+    /* Modal Cropper */
+    .modal{
+      position:fixed; inset:0; z-index:999;
+      background:rgba(0,0,0,.55);
+      display:none; align-items:center; justify-content:center;
+      padding:14px;
+    }
+    .modal.open{ display:flex; }
+    .modalCard{
+      width:min(980px, 100%);
+      max-height: min(92vh, 980px);
+      overflow:auto; /* SCORREVOLE */
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(12,12,20,.96);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 24px 80px rgba(0,0,0,.55);
+    }
+    .modalHead{
+      position:sticky; top:0; z-index:2;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background:rgba(12,12,20,.96);
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .xBtn{
+      width:44px;height:44px;border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.06);
+      color:var(--txt);
+      cursor:pointer;
+    }
+    .modalBody{ padding:12px 14px; }
+    .cropStage{
+      width:100%;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.10);
+      background:#05050c;
+      overflow:hidden;
+      position:relative;
+      aspect-ratio: 3/4;
+    }
+    .cropCanvas{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      display:block;
+      touch-action:none;
+    }
+    .hint{
+      position:absolute; left:10px; right:10px; top:10px;
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.12);
+      color:rgba(255,255,255,.92);
+      border-radius:14px;
+      padding:10px 12px;
+      font-size:12px;
+      backdrop-filter: blur(8px);
+    }
+    .hint b{ color:#fff; }
+
+    /* Fullscreen */
+    .fsOn header{ position:fixed; left:0; right:0; top:0; }
+    .fsOn main{ padding-top: 110px; }
+
+    /* Error box */
+    #errBox{
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
+      border:1px solid rgba(255,110,110,.35);
+      background:rgba(255,110,110,.08);
+      color:rgba(255,255,255,.95);
+      border-radius:14px;
+      padding:10px 12px;
+      display:none;
+      white-space:pre-wrap;
+      font-size:12px;
+    }
+    .okBox{
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
+      border:1px solid rgba(158,247,183,.35);
+      background:rgba(158,247,183,.08);
+      color:rgba(255,255,255,.95);
+      border-radius:14px;
+      padding:10px 12px;
+      display:none;
+      white-space:pre-wrap;
+      font-size:12px;
+    }
+  </style>
 </head>
-
 <body>
+<header>
+  <div class="wrap">
+    <div class="row" style="justify-content:space-between">
+      <div class="row">
+        <div class="brand">SC</div>
+        <div>
+          <div style="font-weight:900">SerCucTech • Virtual Stylist 2D PRO</div>
+          <div class="sub">Persona 4 viste + Guardaroba + Ritaglio PRO + Rotazione 360 + Fullscreen + OCR (opzionale)</div>
+        </div>
+      </div>
+      <span class="pill">Stato: <b id="status">Avvio…</b></span>
+    </div>
 
-<header>SerCucTech Virtual Stylist 2D PRO</header>
+    <div class="tabs" role="tablist" aria-label="Sezioni app">
+      <div class="tab active" data-tab="studio">Studio</div>
+      <div class="tab" data-tab="guardaroba">Guardaroba</div>
+      <div class="tab" data-tab="guida">Guida</div>
+    </div>
+  </div>
+</header>
 
-<button onclick="loadPerson()">📸 Carica persona</button>
-<button onclick="addCloth()">👗 Aggiungi capo</button>
-<button onclick="toggleFS()">🔲 Fullscreen</button>
+<main class="wrap">
 
-<div id="stage">
-<img id="person" class="layer">
-<img id="cloth" class="layer">
+  <!-- STUDIO -->
+  <section id="studio" class="section active">
+    <div class="grid">
+      <div class="card">
+        <h2>
+          <span>Persona vestita + Rotazione</span>
+          <span class="sub">rotazione: fronte → fianco dx → retro → fianco sx</span>
+        </h2>
+        <div class="body">
+          <div class="stageWrap" id="stageWrap">
+            <div class="stage" id="stage">
+              <div class="stageInner" id="stageInner">
+                <div class="personLayer">
+                  <img id="personImg" class="personImg" alt="persona" />
+                </div>
+                <div class="garmentLayer" id="garmentLayer"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <button class="btn primary" id="btnLoadPerson">📷 Carica persona (4 viste)</button>
+            <button class="btn" id="btnFullscreen">⛶ Fullscreen (in/out)</button>
+            <span class="pill">Vista: <b id="viewLabel">FRONTE</b></span>
+            <span class="pill">Auto-gira: <b id="spinLabel">OFF</b></span>
+          </div>
+
+          <div class="toolbox" style="margin-top:10px">
+            <div>
+              <label>Controllo rotazione</label>
+              <div class="row">
+                <button class="btn" id="btnPrev">◀︎ Indietro</button>
+                <button class="btn" id="btnNext">Avanti ▶︎</button>
+                <button class="btn good" id="btnSpin">⟲ Auto-gira</button>
+              </div>
+            </div>
+            <div>
+              <label>Persona (solo look, NON ML)</label>
+              <div class="row">
+                <button class="btn" id="btnClearOutfit">🧼 Togli capi</button>
+                <button class="btn" id="btnResetFit">↩️ Reset posizioni</button>
+              </div>
+            </div>
+          </div>
+
+          <label style="margin-top:10px">Sfoca persona (per “nascondere” vestiti originali in modo semplice)</label>
+          <input id="blurPerson" type="range" min="0" max="10" step="1" value="0" />
+          <span class="sub">Nota onesta: la sostituzione realistica dei vestiti originali richiede ML/segmentazione. Qui facciamo overlay + blur opzionale.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><span>Azioni rapide</span><span class="sub">click capo → va addosso subito</span></h2>
+        <div class="body">
+          <div class="row">
+            <button class="btn primary" id="btnAddGarment">👗 Aggiungi capo (ritaglio PRO)</button>
+            <button class="btn" id="btnGoWardrobe">🧥 Vai al guardaroba</button>
+          </div>
+
+          <div style="height:10px"></div>
+
+          <label>Auto-fit “taglia” (scala generale capi)</label>
+          <input id="globalScale" type="range" min="60" max="140" step="1" value="100" />
+          <span class="pill">Scala: <b id="globalScaleVal">100%</b></span>
+
+          <label style="margin-top:10px">Selezione capo in scena</label>
+          <div class="row">
+            <button class="btn" id="btnBringFront">⬆️ Porta davanti</button>
+            <button class="btn" id="btnSendBack">⬇️ Porta dietro</button>
+            <button class="btn bad" id="btnDeleteSelected">🗑️ Elimina selezionato</button>
+          </div>
+
+          <div style="height:12px"></div>
+          <div class="sub">
+            Tip: dopo “Metti addosso” puoi <b>trascinare</b> il capo per spostarlo e usare le <b>maniglie</b> per ridimensionare.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUARDAROBA -->
+  <section id="guardaroba" class="section">
+    <div class="card">
+      <h2><span>Guardaroba</span><span class="sub">carica capi (anche screenshot) → ritaglia → salva</span></h2>
+      <div class="body">
+        <div class="row">
+          <button class="btn primary" id="btnAddGarment2">👗 Aggiungi capo</button>
+          <button class="btn" id="btnLoadDemo">📦 Carica demo</button>
+          <button class="btn bad" id="btnClearWardrobe">🧹 Svuota</button>
+          <span class="pill">Capi: <b id="wardCount">0</b></span>
+        </div>
+
+        <div style="height:10px"></div>
+        <div class="filters">
+          <div class="chip active" data-filter="all">Tutti</div>
+          <div class="chip" data-filter="top">Sopra</div>
+          <div class="chip" data-filter="bottom">Sotto</div>
+          <div class="chip" data-filter="dress">Intero</div>
+          <div class="chip" data-filter="shoes">Scarpe</div>
+          <div class="chip" data-filter="accessory">Accessori</div>
+        </div>
+
+        <div style="height:12px"></div>
+        <div class="wardGrid" id="wardGrid"></div>
+
+        <div style="height:12px"></div>
+        <div class="sub">
+          Suggerimento: per risultati puliti usa <b>PNG trasparente</b>. Se hai solo screenshot Amazon, usa “Rimuovi bianco” nella finestra ritaglio.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUIDA -->
+  <section id="guida" class="section">
+    <div class="card">
+      <h2><span>Guida rapida</span><span class="sub">2 minuti e vai</span></h2>
+      <div class="body">
+        <div class="sub" style="font-size:13px; line-height:1.55">
+          <b>1) Studio → Carica persona</b><br/>
+          Premi “Carica persona (4 viste)”. Se hai solo una foto, carica solo FRONTE: la app userà la stessa immagine anche nelle altre viste (con mirror dove serve).<br/><br/>
+          <b>2) Guardaroba → Aggiungi capo</b><br/>
+          Carica lo screenshot o la foto del vestito → ritaglia con le maniglie → (opzionale) “Rimuovi bianco” → salva.<br/><br/>
+          <b>3) Metti addosso</b><br/>
+          Dal guardaroba premi “Metti addosso”: va subito sulla persona con auto-fit. Se serve, trascina e ridimensiona con le maniglie.<br/><br/>
+          <b>4) Rotazione</b><br/>
+          “Auto-gira” fa fronte→dx→retro→sx. Se hai caricato le 4 viste della persona e/o del capo, vedrai cambiare davvero immagine. Se no, usa copie/mirror.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div id="errBox"></div>
+<div id="okBox" class="okBox"></div>
+
+<!-- Modal: Person loader -->
+<div class="modal" id="personModal">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div style="font-weight:900">Carica persona (4 viste)</div>
+        <div class="sub">FRONTE / FIANCO DX / RETRO / FIANCO SX — puoi anche caricare solo FRONTE</div>
+      </div>
+      <button class="xBtn" id="closePersonModal">✕</button>
+    </div>
+    <div class="modalBody">
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
+        <div class="card">
+          <h2><span>File immagini</span><span class="sub">jpg/png</span></h2>
+          <div class="body">
+            <label>FRONTE</label>
+            <input type="file" accept="image/*" id="personFront" />
+            <label>FIANCO DX</label>
+            <input type="file" accept="image/*" id="personRight" />
+            <label>RETRO</label>
+            <input type="file" accept="image/*" id="personBack" />
+            <label>FIANCO SX</label>
+            <input type="file" accept="image/*" id="personLeft" />
+
+            <div class="row" style="margin-top:10px">
+              <button class="btn primary" id="btnSavePerson">Salva persona</button>
+              <button class="btn bad" id="btnClearPerson">Rimuovi persona</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span>Consigli</span><span class="sub">foto naturale</span></h2>
+          <div class="body">
+            <div class="sub">
+              • Luce buona, telefono dritto<br/>
+              • Corpo intero inquadrato<br/>
+              • Stessa distanza per tutte le viste (se le fai)<br/><br/>
+              Se carichi solo FRONTE, la rotazione userà copie/mirror.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="wardrobe"></div>
+<!-- Modal: Garment cropper -->
+<div class="modal" id="garmentModal">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div>
+        <div style="font-weight:900">Aggiungi/Modifica capo</div>
+        <div class="sub">Ritaglio PRO (maniglie) + pulizia sfondo bianco + OCR (opzionale)</div>
+      </div>
+      <button class="xBtn" id="closeGarmentModal">✕</button>
+    </div>
 
-<div id="fullscreen" onclick="toggleFS()">
-<div id="stageFS"></div>
+    <div class="modalBody">
+      <div class="row">
+        <button class="btn primary" id="btnPickGarmentImg">📷 Scegli immagine</button>
+        <input type="file" accept="image/*" id="garmentFile" style="display:none" />
+        <button class="btn" id="btnFitCrop">🔎 Adatta</button>
+        <button class="btn" id="btnNewCrop">🧩 Nuovo ritaglio</button>
+        <button class="btn bad" id="btnCropReset">↩️ Reset</button>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <div class="cropStage" id="cropStage">
+        <canvas class="cropCanvas" id="cropCanvas"></canvas>
+        <div class="hint">
+          <b>Drag</b> = sposta immagine • <b>Maniglie</b> = ridimensiona ritaglio • <b>Doppio tap</b> sul capo = seleziona testo OCR (se disponibile)
+        </div>
+      </div>
+
+      <div style="height:10px"></div>
+
+      <label>Zoom immagine</label>
+      <input id="imgZoom" type="range" min="40" max="220" value="100" />
+      <div class="row">
+        <span class="pill">Zoom: <b id="imgZoomVal">100%</b></span>
+      </div>
+
+      <label>Rimuovi “bianco” (pulizia bordi da screenshot)</label>
+      <input id="whiteCut" type="range" min="0" max="100" value="35" />
+      <div class="row">
+        <span class="pill">Soglia: <b id="whiteCutVal">35</b></span>
+        <span class="pill">Sfumatura: <b id="featherVal">2</b> px</span>
+      </div>
+      <input id="feather" type="range" min="0" max="12" value="2" />
+
+      <div style="height:10px"></div>
+
+      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
+        <div class="card">
+          <h2><span>Dati capo</span><span class="sub">nome + tipo + (vista)</span></h2>
+          <div class="body">
+            <label>Nome capo</label>
+            <input id="gName" type="text" placeholder="es. Vestito casual" />
+
+            <div class="row" style="margin-top:8px">
+              <button class="btn" id="btnSelectName">Seleziona</button>
+              <button class="btn" id="btnCopyName">Copia</button>
+              <button class="btn" id="btnPasteName">Incolla</button>
+            </div>
+
+            <label style="margin-top:10px">Tipo capo</label>
+            <select id="gType">
+              <option value="top">Camicia / Maglia (TOP)</option>
+              <option value="bottom">Pantalone / Gonna (BOTTOM)</option>
+              <option value="dress">Abito intero (DRESS)</option>
+              <option value="shoes">Scarpe (SHOES)</option>
+              <option value="accessory">Accessorio (ACCESSORY)</option>
+            </select>
+
+            <label style="margin-top:10px">Vista che stai salvando</label>
+            <select id="gView">
+              <option value="front">FRONTE</option>
+              <option value="right">FIANCO DX</option>
+              <option value="back">RETRO</option>
+              <option value="left">FIANCO SX</option>
+            </select>
+
+            <label style="margin-top:10px">Link (opzionale)</label>
+            <input id="gLink" type="text" placeholder="link Amazon/Awin (opzionale)" />
+
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span>OCR (opzionale)</span><span class="sub">testo dalla foto</span></h2>
+          <div class="body">
+            <div class="sub">
+              OCR offline “perfetto” è pesante. Qui usiamo <b>Tesseract.js</b> via CDN (caching dal Service Worker).
+            </div>
+
+            <div class="row" style="margin-top:10px">
+              <button class="btn primary" id="btnOCR">🔤 OCR</button>
+              <button class="btn" id="btnCopyOCR">Copia testo</button>
+              <button class="btn" id="btnClearOCR">Pulisci</button>
+            </div>
+
+            <label>Testo OCR</label>
+            <textarea id="ocrText" placeholder="Qui appare il testo trovato (se OCR riesce)…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="row" style="justify-content:space-between">
+        <span class="sub">Tip: se non vedi bene le maniglie in basso, scorri: questa finestra è <b>sempre scorrevole</b>.</span>
+        <button class="btn primary" id="btnSaveGarment">Salva nel guardaroba</button>
+      </div>
+    </div>
+  </div>
 </div>
-
-<input type="file" id="filePerson" hidden accept="image/*">
-<input type="file" id="fileCloth" hidden accept="image/*">
 
 <script>
-const person=document.getElementById('person')
-const cloth=document.getElementById('cloth')
-const wardrobe=document.getElementById('wardrobe')
-const filePerson=document.getElementById('filePerson')
-const fileCloth=document.getElementById('fileCloth')
+(() => {
+  const status = document.getElementById("status");
+  const errBox = document.getElementById("errBox");
+  const okBox  = document.getElementById("okBox");
 
-function loadPerson(){filePerson.click()}
-filePerson.onchange=e=>{
- const r=new FileReader()
- r.onload=()=>person.src=r.result
- r.readAsDataURL(e.target.files[0])
-}
+  function showErr(msg){
+    errBox.style.display = "block";
+    errBox.textContent = "ERRORE:\n" + msg;
+    setTimeout(()=> errBox.style.display = "none", 4200);
+    status.textContent = "Errore";
+  }
+  function showOk(msg){
+    okBox.style.display = "block";
+    okBox.textContent = msg;
+    setTimeout(()=> okBox.style.display = "none", 2600);
+  }
+  window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
+  window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
 
-function addCloth(){fileCloth.click()}
-fileCloth.onchange=e=>{
- const r=new FileReader()
- r.onload=()=>{
-  const img=document.createElement('img')
-  img.src=r.result
-  img.onclick=()=>wear(img.src)
-  wardrobe.appendChild(img)
- }
- r.readAsDataURL(e.target.files[0])
-}
+  // ---------- Tabs ----------
+  const tabs = [...document.querySelectorAll(".tab")];
+  const sections = {
+    studio: document.getElementById("studio"),
+    guardaroba: document.getElementById("guardaroba"),
+    guida: document.getElementById("guida"),
+  };
+  function setTab(name){
+    tabs.forEach(t => t.classList.toggle("active", t.dataset.tab === name));
+    Object.entries(sections).forEach(([k, el]) => el.classList.toggle("active", k === name));
+    localStorage.setItem("vs2d_tab", name);
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+  tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
+  setTab(localStorage.getItem("vs2d_tab") || "studio");
 
-function wear(src){
- cloth.src=src
- cloth.style.width="70%"
- cloth.style.bottom="18%"
-}
+  // ---------- Storage ----------
+  const KEY = "sercuctech_vs2d_pro_v1";
+  const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+  state.person ??= { front:null, right:null, back:null, left:null };
+  state.wardrobe ??= []; // items: {id,name,type,link,views:{front,right,back,left},createdAt}
+  state.scene ??= { applied: [] }; // applied overlays: {id,itemId,type,view,rect, z, scale}
 
-function toggleFS(){
- const fs=document.getElementById('fullscreen')
- if(fs.style.display==="block"){fs.style.display="none"}
- else{
-  document.getElementById('stageFS').innerHTML=document.getElementById('stage').innerHTML
-  fs.style.display="block"
- }
-}
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  // ---------- Views & rotation ----------
+  const VIEWS = ["front","right","back","left"];
+  const VIEW_LABEL = {front:"FRONTE", right:"FIANCO DX", back:"RETRO", left:"FIANCO SX"};
+  let currentView = state.scene.currentView || "front";
+  let spinning = false;
+  let spinTimer = null;
+
+  const viewLabel = document.getElementById("viewLabel");
+  const spinLabel = document.getElementById("spinLabel");
+  function setView(v){
+    currentView = v;
+    state.scene.currentView = v;
+    save();
+    viewLabel.textContent = VIEW_LABEL[v] || "FRONTE";
+    renderPerson();
+    renderApplied();
+  }
+
+  document.getElementById("btnPrev").addEventListener("click", ()=>{
+    const idx = VIEWS.indexOf(currentView);
+    setView(VIEWS[(idx - 1 + VIEWS.length) % VIEWS.length]);
+  });
+  document.getElementById("btnNext").addEventListener("click", ()=>{
+    const idx = VIEWS.indexOf(currentView);
+    setView(VIEWS[(idx + 1) % VIEWS.length]);
+  });
+
+  function stopSpin(){
+    spinning = false;
+    spinLabel.textContent = "OFF";
+    if(spinTimer) clearInterval(spinTimer);
+    spinTimer = null;
+  }
+  function startSpin(){
+    stopSpin();
+    spinning = true;
+    spinLabel.textContent = "ON";
+    spinTimer = setInterval(()=>{
+      const idx = VIEWS.indexOf(currentView);
+      setView(VIEWS[(idx + 1) % VIEWS.length]);
+    }, 900);
+  }
+  document.getElementById("btnSpin").addEventListener("click", ()=>{
+    if(spinning) stopSpin(); else startSpin();
+  });
+
+  // ---------- Fullscreen ----------
+  const btnFullscreen = document.getElementById("btnFullscreen");
+  const stageWrap = document.getElementById("stageWrap");
+  function isFs(){ return document.fullscreenElement || document.webkitFullscreenElement; }
+  async function toggleFs(){
+    try{
+      if(!isFs()){
+        await (stageWrap.requestFullscreen?.() || stageWrap.webkitRequestFullscreen?.());
+        document.body.classList.add("fsOn");
+      }else{
+        await (document.exitFullscreen?.() || document.webkitExitFullscreen?.());
+        document.body.classList.remove("fsOn");
+      }
+    }catch(e){ showErr("Fullscreen non disponibile: " + e); }
+  }
+  btnFullscreen.addEventListener("click", toggleFs);
+  document.addEventListener("fullscreenchange", ()=>{ if(!isFs()) document.body.classList.remove("fsOn"); });
+
+  // ---------- Person render ----------
+  const personImg = document.getElementById("personImg");
+  function pickPersonForView(v){
+    // If missing, fall back to front; for left/right if missing we mirror front
+    const p = state.person || {};
+    const chosen = p[v] || p.front || null;
+    return chosen;
+  }
+
+  function renderPerson(){
+    const src = pickPersonForView(currentView);
+    if(!src){
+      personImg.removeAttribute("src");
+      personImg.style.opacity = "0";
+      status.textContent = "OK (carica persona)";
+      return;
+    }
+    personImg.src = src;
+    personImg.style.opacity = "1";
+
+    // mirror if view is left and only front exists
+    const onlyFront = state.person.front && !state.person.left && !state.person.right && !state.person.back;
+    let mirror = false;
+    if(onlyFront && (currentView === "left" || currentView === "right")) mirror = true;
+    personImg.style.transform = mirror ? "scaleX(-1)" : "none";
+
+    status.textContent = "OK";
+  }
+
+  // Blur person
+  const blurPerson = document.getElementById("blurPerson");
+  blurPerson.value = String(state.scene.blurPerson ?? 0);
+  function applyBlur(){
+    const v = Number(blurPerson.value);
+    state.scene.blurPerson = v;
+    save();
+    personImg.style.filter = v ? `blur(${v}px)` : "none";
+  }
+  blurPerson.addEventListener("input", applyBlur);
+  applyBlur();
+
+  // ---------- Scene overlay system ----------
+  const garmentLayer = document.getElementById("garmentLayer");
+  let selectedOverlayId = null;
+
+  function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+
+  // Presets: rect in normalized stage coords [0..1] (x,y,w,h) for each type
+  const FIT_PRESET = {
+    top:     { x:.22, y:.18, w:.56, h:.42 },
+    bottom:  { x:.23, y:.50, w:.54, h:.46 },
+    dress:   { x:.20, y:.16, w:.60, h:.74 },
+    shoes:   { x:.28, y:.80, w:.44, h:.20 },
+    accessory:{x:.35, y:.12, w:.30, h:.22 },
+  };
+
+  const globalScale = document.getElementById("globalScale");
+  const globalScaleVal = document.getElementById("globalScaleVal");
+  globalScale.value = String(state.scene.globalScale ?? 100);
+  function applyGlobalScale(){
+    state.scene.globalScale = Number(globalScale.value);
+    globalScaleVal.textContent = `${globalScale.value}%`;
+    save();
+    renderApplied();
+  }
+  globalScale.addEventListener("input", applyGlobalScale);
+  applyGlobalScale();
+
+  function stageRect(){
+    const inner = document.getElementById("stageInner");
+    return inner.getBoundingClientRect();
+  }
+
+  function normToPxRect(n){
+    const r = stageRect();
+    return {
+      x: n.x * r.width,
+      y: n.y * r.height,
+      w: n.w * r.width,
+      h: n.h * r.height,
+    };
+  }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function applyItemToScene(itemId){
+    const item = state.wardrobe.find(x => x.id === itemId);
+    if(!item){ showErr("Capo non trovato."); return; }
+
+    // Create or replace overlay for this type? (top/bottom/dress/shoes/accessory)
+    // If dress is applied, we remove top+bottom (to avoid confusion)
+    if(item.type === "dress"){
+      state.scene.applied = state.scene.applied.filter(o => !["top","bottom"].includes(o.type));
+    } else if(item.type === "top" || item.type === "bottom"){
+      // if a dress exists, remove it
+      state.scene.applied = state.scene.applied.filter(o => o.type !== "dress");
+    }
+
+    // Remove old overlay of same type to "replace"
+    state.scene.applied = state.scene.applied.filter(o => o.type !== item.type);
+
+    const preset = FIT_PRESET[item.type] || FIT_PRESET.top;
+    const scale = (state.scene.globalScale || 100) / 100;
+    const rect = { ...preset };
+    // scale around center in normalized space
+    const cx = rect.x + rect.w/2, cy = rect.y + rect.h/2;
+    rect.w = rect.w * scale; rect.h = rect.h * scale;
+    rect.x = cx - rect.w/2; rect.y = cy - rect.h/2;
+
+    const overlay = {
+      id: uid(),
+      itemId: item.id,
+      type: item.type,
+      z: Date.now(),
+      rect, // normalized
+    };
+    state.scene.applied.push(overlay);
+    save();
+    renderApplied();
+    setTab("studio");
+    showOk(`✅ "${item.name || "Capo"}" messo addosso`);
+  }
+
+  function removeAllApplied(){
+    state.scene.applied = [];
+    selectedOverlayId = null;
+    save();
+    renderApplied();
+  }
+
+  function resetFit(){
+    // reset each overlay to preset position
+    state.scene.applied.forEach(o => {
+      const preset = FIT_PRESET[o.type] || FIT_PRESET.top;
+      o.rect = { ...preset };
+    });
+    save();
+    renderApplied();
+    showOk("↩️ Posizioni ripristinate");
+  }
+
+  document.getElementById("btnClearOutfit").addEventListener("click", removeAllApplied);
+  document.getElementById("btnResetFit").addEventListener("click", resetFit);
+
+  // Bring front/back
+  document.getElementById("btnBringFront").addEventListener("click", ()=>{
+    const o = state.scene.applied.find(x => x.id === selectedOverlayId);
+    if(!o) return;
+    o.z = Date.now();
+    save(); renderApplied();
+  });
+  document.getElementById("btnSendBack").addEventListener("click", ()=>{
+    const o = state.scene.applied.find(x => x.id === selectedOverlayId);
+    if(!o) return;
+    o.z = 1; // lowest
+    save(); renderApplied();
+  });
+  document.getElementById("btnDeleteSelected").addEventListener("click", ()=>{
+    if(!selectedOverlayId) return;
+    state.scene.applied = state.scene.applied.filter(x => x.id !== selectedOverlayId);
+    selectedOverlayId = null;
+    save(); renderApplied();
+  });
+
+  // Render overlays for current view
+  function overlayImageFor(item, view){
+    // item.views can have view-specific cropped images
+    const v = item.views?.[view] || item.views?.front || null;
+    return v;
+  }
+
+  function renderApplied(){
+    garmentLayer.innerHTML = "";
+    const applied = [...(state.scene.applied || [])].sort((a,b)=> (a.z||0)-(b.z||0));
+
+    applied.forEach(o=>{
+      const item = state.wardrobe.find(x => x.id === o.itemId);
+      if(!item) return;
+
+      const imgSrc = overlayImageFor(item, currentView);
+      if(!imgSrc) return;
+
+      const el = document.createElement("div");
+      el.className = "garment" + (o.id === selectedOverlayId ? " selected" : "");
+      el.dataset.id = o.id;
+
+      const px = normToPxRect(o.rect);
+      el.style.width  = px.w + "px";
+      el.style.height = px.h + "px";
+      el.style.left   = (px.x) + "px";
+      el.style.top    = (px.y) + "px";
+      el.style.transform = "translate(0,0)";
+
+      const img = document.createElement("img");
+      img.src = imgSrc;
+      img.alt = item.name || "capo";
+      el.appendChild(img);
+
+      const handles = document.createElement("div");
+      handles.className = "handles";
+      ["tl","tr","bl","br"].forEach(c=>{
+        const h = document.createElement("div");
+        h.className = "h " + c;
+        h.dataset.handle = c;
+        handles.appendChild(h);
+      });
+      el.appendChild(handles);
+
+      // select on tap
+      el.addEventListener("pointerdown", (e)=>{
+        selectedOverlayId = o.id;
+        save();
+        renderApplied();
+        e.stopPropagation();
+      });
+
+      makeDraggableResizable(el, o.id);
+
+      garmentLayer.appendChild(el);
+    });
+  }
+
+  // Drag/resize overlay -> updates normalized rect
+  function makeDraggableResizable(el, overlayId){
+    let mode = null; // "move" or "resize"
+    let handle = null;
+    let startX=0, startY=0;
+    let startRect=null;
+
+    function getOverlay(){
+      return state.scene.applied.find(x=> x.id === overlayId);
+    }
+
+    function pxToNormRect(px){
+      const r = stageRect();
+      return {
+        x: clamp(px.x / r.width, 0, 1),
+        y: clamp(px.y / r.height, 0, 1),
+        w: clamp(px.w / r.width, 0.05, 1),
+        h: clamp(px.h / r.height, 0.05, 1),
+      };
+    }
+
+    el.addEventListener("pointerdown", (e)=>{
+      const h = e.target?.dataset?.handle;
+      startX = e.clientX; startY = e.clientY;
+      const o = getOverlay();
+      if(!o) return;
+      const px = normToPxRect(o.rect);
+      startRect = px;
+
+      if(h){
+        mode="resize"; handle=h;
+      }else{
+        mode="move"; handle=null;
+      }
+      el.setPointerCapture(e.pointerId);
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    el.addEventListener("pointermove", (e)=>{
+      if(!mode) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      let px = {...startRect};
+      if(mode==="move"){
+        px.x = px.x + dx;
+        px.y = px.y + dy;
+      }else if(mode==="resize"){
+        const minSize = 40;
+        if(handle==="tl"){
+          px.x = px.x + dx; px.y = px.y + dy;
+          px.w = px.w - dx; px.h = px.h - dy;
+        }else if(handle==="tr"){
+          px.y = px.y + dy;
+          px.w = px.w + dx; px.h = px.h - dy;
+        }else if(handle==="bl"){
+          px.x = px.x + dx;
+          px.w = px.w - dx; px.h = px.h + dy;
+        }else if(handle==="br"){
+          px.w = px.w + dx; px.h = px.h + dy;
+        }
+        px.w = Math.max(minSize, px.w);
+        px.h = Math.max(minSize, px.h);
+      }
+
+      // clamp in stage
+      const r = stageRect();
+      px.x = clamp(px.x, 0, r.width - px.w);
+      px.y = clamp(px.y, 0, r.height - px.h);
+
+      const o = getOverlay();
+      if(!o) return;
+      o.rect = pxToNormRect(px);
+      save();
+      renderApplied();
+      e.preventDefault();
+    });
+
+    el.addEventListener("pointerup", ()=>{ mode=null; handle=null; startRect=null; });
+    el.addEventListener("pointercancel", ()=>{ mode=null; handle=null; startRect=null; });
+  }
+
+  // ---------- Wardrobe ----------
+  const wardGrid = document.getElementById("wardGrid");
+  const wardCount = document.getElementById("wardCount");
+  let wardFilter = "all";
+
+  function typeLabel(t){
+    return t==="top"?"Sopra":t==="bottom"?"Sotto":t==="dress"?"Intero":t==="shoes"?"Scarpe":"Accessori";
+  }
+
+  function renderWardrobe(){
+    wardGrid.innerHTML = "";
+    wardCount.textContent = String(state.wardrobe.length);
+
+    const list = state.wardrobe.filter(it => wardFilter==="all" ? true : it.type===wardFilter);
+    if(list.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "sub";
+      empty.textContent = "Nessun capo in questa categoria. Premi “Aggiungi capo”.";
+      wardGrid.appendChild(empty);
+      return;
+    }
+
+    list.sort((a,b)=> (b.createdAt||0)-(a.createdAt||0)).forEach(it=>{
+      const card = document.createElement("div");
+      card.className = "wCard";
+
+      const thumb = document.createElement("div");
+      thumb.className = "wThumb";
+      const timg = document.createElement("img");
+      const src = it.views?.front || it.views?.right || it.views?.back || it.views?.left || "";
+      if(src) timg.src = src;
+      else thumb.textContent = "NO IMG";
+      if(src) thumb.appendChild(timg);
+
+      const meta = document.createElement("div");
+      meta.className = "wMeta";
+
+      const title = document.createElement("div");
+      title.className = "wTitle";
+      title.textContent = it.name || "Capo";
+
+      const sub = document.createElement("div");
+      sub.className = "wSub";
+      sub.textContent = `${typeLabel(it.type)} • 4 viste: ${countViews(it)}/4`;
+
+      const btns = document.createElement("div");
+      btns.className = "wBtns";
+
+      const wear = document.createElement("button");
+      wear.className = "btn primary";
+      wear.textContent = "Metti addosso";
+      wear.addEventListener("click", ()=> applyItemToScene(it.id));
+
+      const open = document.createElement("button");
+      open.className = "btn";
+      open.textContent = "Apri link";
+      open.disabled = !it.link;
+      open.addEventListener("click", ()=>{ if(it.link) window.open(it.link, "_blank"); });
+
+      const del = document.createElement("button");
+      del.className = "btn bad";
+      del.textContent = "Elimina";
+      del.addEventListener("click", ()=>{
+        state.wardrobe = state.wardrobe.filter(x => x.id !== it.id);
+        // remove from scene if applied
+        state.scene.applied = state.scene.applied.filter(o => o.itemId !== it.id);
+        save(); renderWardrobe(); renderApplied();
+      });
+
+      btns.appendChild(wear);
+      btns.appendChild(open);
+      btns.appendChild(del);
+
+      meta.appendChild(title);
+      meta.appendChild(sub);
+      meta.appendChild(btns);
+
+      card.appendChild(thumb);
+      card.appendChild(meta);
+      wardGrid.appendChild(card);
+    });
+  }
+
+  function countViews(it){
+    const v = it.views || {};
+    return ["front","right","back","left"].filter(k => !!v[k]).length;
+  }
+
+  // filters
+  const chips = [...document.querySelectorAll(".chip")];
+  chips.forEach(c=>{
+    c.addEventListener("click", ()=>{
+      chips.forEach(x=> x.classList.toggle("active", x===c));
+      wardFilter = c.dataset.filter;
+      renderWardrobe();
+    });
+  });
+
+  // demo wardrobe (placeholder images using simple SVG so no 404)
+  function svgData(label){
+    const s = encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#ffd56a" stop-opacity=".25"/>
+            <stop offset="1" stop-color="#6effa8" stop-opacity=".10"/>
+          </linearGradient>
+        </defs>
+        <rect width="100%" height="100%" fill="#0b0b12"/>
+        <rect x="32" y="32" width="448" height="448" rx="40" fill="url(#g)" stroke="rgba(255,255,255,.12)"/>
+        <text x="50%" y="50%" fill="rgba(255,255,255,.85)" font-family="system-ui" font-size="44" text-anchor="middle" dominant-baseline="middle" font-weight="800">${label}</text>
+        <text x="50%" y="78%" fill="rgba(255,255,255,.55)" font-family="system-ui" font-size="22" text-anchor="middle" dominant-baseline="middle">demo</text>
+      </svg>
+    `);
+    return `data:image/svg+xml;charset=utf-8,${s}`;
+  }
+
+  document.getElementById("btnLoadDemo").addEventListener("click", ()=>{
+    state.wardrobe = [
+      {id:uid(), name:"T-shirt basic", type:"top", link:"", createdAt:Date.now(), views:{front:svgData("TOP"), right:svgData("TOP DX"), back:svgData("TOP R"), left:svgData("TOP SX")}},
+      {id:uid(), name:"Jeans", type:"bottom", link:"", createdAt:Date.now()-1, views:{front:svgData("PANT"), right:svgData("PANT DX"), back:svgData("PANT R"), left:svgData("PANT SX")}},
+      {id:uid(), name:"Vestito", type:"dress", link:"", createdAt:Date.now()-2, views:{front:svgData("DRESS"), right:svgData("DRESS DX"), back:svgData("DRESS R"), left:svgData("DRESS SX")}},
+      {id:uid(), name:"Sneakers", type:"shoes", link:"", createdAt:Date.now()-3, views:{front:svgData("SHOES"), right:svgData("SHOES DX"), back:svgData("SHOES R"), left:svgData("SHOES SX")}},
+      {id:uid(), name:"Borsa", type:"accessory", link:"", createdAt:Date.now()-4, views:{front:svgData("BAG"), right:svgData("BAG DX"), back:svgData("BAG R"), left:svgData("BAG SX")}},
+    ];
+    save(); renderWardrobe();
+    showOk("📦 Demo caricata");
+  });
+
+  document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
+    state.wardrobe = [];
+    state.scene.applied = [];
+    save(); renderWardrobe(); renderApplied();
+  });
+
+  // ---------- Person modal ----------
+  const personModal = document.getElementById("personModal");
+  const closePersonModal = document.getElementById("closePersonModal");
+  const btnLoadPerson = document.getElementById("btnLoadPerson");
+  const btnSavePerson = document.getElementById("btnSavePerson");
+  const btnClearPerson = document.getElementById("btnClearPerson");
+
+  btnLoadPerson.addEventListener("click", ()=>{ personModal.classList.add("open"); });
+  closePersonModal.addEventListener("click", ()=> personModal.classList.remove("open"));
+  personModal.addEventListener("click", (e)=>{ if(e.target===personModal) personModal.classList.remove("open"); });
+
+  function fileToDataURL(file){
+    return new Promise((resolve,reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> resolve(fr.result);
+      fr.onerror = reject;
+      fr.readAsDataURL(file);
+    });
+  }
+
+  btnSavePerson.addEventListener("click", async ()=>{
+    try{
+      const f = document.getElementById("personFront").files[0];
+      const r = document.getElementById("personRight").files[0];
+      const b = document.getElementById("personBack").files[0];
+      const l = document.getElementById("personLeft").files[0];
+
+      if(!f && !state.person.front){
+        showErr("Carica almeno la foto FRONTE.");
+        return;
+      }
+
+      if(f) state.person.front = await fileToDataURL(f);
+      if(r) state.person.right = await fileToDataURL(r);
+      if(b) state.person.back  = await fileToDataURL(b);
+      if(l) state.person.left  = await fileToDataURL(l);
+
+      save();
+      personModal.classList.remove("open");
+      renderPerson();
+      showOk("✅ Persona salvata");
+    }catch(e){ showErr("Errore salvataggio persona: " + e); }
+  });
+
+  btnClearPerson.addEventListener("click", ()=>{
+    state.person = {front:null,right:null,back:null,left:null};
+    save();
+    renderPerson();
+    showOk("🧼 Persona rimossa");
+  });
+
+  // ---------- Garment modal & cropper ----------
+  const garmentModal = document.getElementById("garmentModal");
+  const closeGarmentModal = document.getElementById("closeGarmentModal");
+  const btnAddGarment = document.getElementById("btnAddGarment");
+  const btnAddGarment2 = document.getElementById("btnAddGarment2");
+  const btnGoWardrobe = document.getElementById("btnGoWardrobe");
+
+  btnGoWardrobe.addEventListener("click", ()=> setTab("guardaroba"));
+  btnAddGarment.addEventListener("click", ()=> openGarmentModal());
+  btnAddGarment2.addEventListener("click", ()=> openGarmentModal());
+  closeGarmentModal.addEventListener("click", ()=> garmentModal.classList.remove("open"));
+  garmentModal.addEventListener("click", (e)=>{ if(e.target===garmentModal) garmentModal.classList.remove("open"); });
+
+  const garmentFile = document.getElementById("garmentFile");
+  const btnPickGarmentImg = document.getElementById("btnPickGarmentImg");
+  btnPickGarmentImg.addEventListener("click", ()=> garmentFile.click());
+
+  const cropCanvas = document.getElementById("cropCanvas");
+  const cropStage  = document.getElementById("cropStage");
+  const ctx = cropCanvas.getContext("2d");
+
+  let srcImg = new Image();
+  let imgLoaded = false;
+
+  // image transform in cropper
+  let imgX=0, imgY=0, imgScale=1; // image placement in stage pixels
+  let crop = { x:0.18, y:0.18, w:0.64, h:0.64 }; // normalized [0..1]
+  let dragging = null; // "img" or handle id
+  let start = null;
+
+  // handles positions in normalized crop
+  const handles = ["tl","tr","bl","br"];
+
+  function resizeCropCanvas(){
+    const r = cropStage.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    cropCanvas.width = Math.round(r.width * dpr);
+    cropCanvas.height = Math.round(r.height * dpr);
+    cropCanvas.style.width = r.width + "px";
+    cropCanvas.style.height = r.height + "px";
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    drawCropper();
+  }
+  window.addEventListener("resize", resizeCropCanvas);
+
+  function openGarmentModal(){
+    garmentModal.classList.add("open");
+    setTimeout(resizeCropCanvas, 50);
+    // reset form fields
+    document.getElementById("gName").value = "";
+    document.getElementById("gLink").value = "";
+    document.getElementById("ocrText").value = "";
+    // keep type/view from last selection
+  }
+
+  garmentFile.addEventListener("change", async ()=>{
+    const f = garmentFile.files[0];
+    if(!f) return;
+    const data = await fileToDataURL(f);
+    await loadSourceImage(data);
+    showOk("📷 Immagine caricata (usa maniglie per ritaglio)");
+  });
+
+  async function loadSourceImage(dataUrl){
+    imgLoaded = false;
+    await new Promise((resolve,reject)=>{
+      srcImg = new Image();
+      srcImg.onload = ()=>{ imgLoaded = true; resolve(); };
+      srcImg.onerror = reject;
+      srcImg.src = dataUrl;
+    });
+
+    // fit image to stage
+    const r = cropStage.getBoundingClientRect();
+    const sx = r.width / srcImg.width;
+    const sy = r.height / srcImg.height;
+    imgScale = Math.min(sx, sy) * 1.0;
+    imgX = (r.width - srcImg.width * imgScale) / 2;
+    imgY = (r.height - srcImg.height * imgScale) / 2;
+
+    // default crop centered
+    crop = { x:0.18, y:0.18, w:0.64, h:0.64 };
+
+    // zoom slider
+    document.getElementById("imgZoom").value = "100";
+    document.getElementById("imgZoomVal").textContent = "100%";
+
+    drawCropper();
+  }
+
+  function drawCropper(){
+    const r = cropStage.getBoundingClientRect();
+    ctx.clearRect(0,0,r.width,r.height);
+
+    // background
+    ctx.fillStyle = "#05050c";
+    ctx.fillRect(0,0,r.width,r.height);
+
+    if(imgLoaded){
+      ctx.drawImage(srcImg, imgX, imgY, srcImg.width*imgScale, srcImg.height*imgScale);
+    }else{
+      // placeholder text
+      ctx.fillStyle = "rgba(255,255,255,.55)";
+      ctx.font = "700 16px system-ui";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText("Scegli un’immagine per iniziare", r.width/2, r.height/2);
+      return;
+    }
+
+    // dim outside crop
+    const cx = crop.x * r.width;
+    const cy = crop.y * r.height;
+    const cw = crop.w * r.width;
+    const ch = crop.h * r.height;
+
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,.48)";
+    ctx.beginPath();
+    ctx.rect(0,0,r.width,r.height);
+    ctx.rect(cx,cy,cw,ch);
+    ctx.fill("evenodd");
+    ctx.restore();
+
+    // crop rect
+    ctx.strokeStyle = "rgba(110,220,255,.95)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(cx,cy,cw,ch);
+
+    // handles
+    const hs = 10;
+    function dot(x,y){
+      ctx.fillStyle = "rgba(110,220,255,.95)";
+      ctx.beginPath();
+      ctx.arc(x,y,hs,0,Math.PI*2);
+      ctx.fill();
+      ctx.strokeStyle="rgba(0,0,0,.35)";
+      ctx.lineWidth=2;
+      ctx.stroke();
+    }
+    dot(cx,cy);
+    dot(cx+cw,cy);
+    dot(cx,cy+ch);
+    dot(cx+cw,cy+ch);
+  }
+
+  function hitTestHandle(px,py){
+    const r = cropStage.getBoundingClientRect();
+    const cx = crop.x * r.width;
+    const cy = crop.y * r.height;
+    const cw = crop.w * r.width;
+    const ch = crop.h * r.height;
+    const pts = {
+      tl:[cx,cy], tr:[cx+cw,cy], bl:[cx,cy+ch], br:[cx+cw,cy+ch]
+    };
+    const rad = 18;
+    for(const k of handles){
+      const [x,y] = pts[k];
+      const d = Math.hypot(px-x,py-y);
+      if(d<=rad) return k;
+    }
+    // inside crop? (for dragging crop) not needed: we drag image, crop handles resize
+    return null;
+  }
+
+  function clampCrop(){
+    crop.w = clamp(crop.w, 0.10, 0.98);
+    crop.h = clamp(crop.h, 0.10, 0.98);
+    crop.x = clamp(crop.x, 0.01, 0.99 - crop.w);
+    crop.y = clamp(crop.y, 0.01, 0.99 - crop.h);
+  }
+
+  cropCanvas.addEventListener("pointerdown", (e)=>{
+    const r = cropStage.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+
+    const h = hitTestHandle(x,y);
+    dragging = h ? ("handle:"+h) : "img";
+    start = { x, y, imgX, imgY, crop:{...crop} };
+    cropCanvas.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+
+  cropCanvas.addEventListener("pointermove", (e)=>{
+    if(!dragging || !start) return;
+    const r = cropStage.getBoundingClientRect();
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    const dx = x - start.x;
+    const dy = y - start.y;
+
+    if(dragging==="img"){
+      imgX = start.imgX + dx;
+      imgY = start.imgY + dy;
+    }else{
+      const which = dragging.split(":")[1];
+      const nx = dx / r.width;
+      const ny = dy / r.height;
+      crop = {...start.crop};
+
+      if(which==="tl"){
+        crop.x += nx; crop.y += ny;
+        crop.w -= nx; crop.h -= ny;
+      }else if(which==="tr"){
+        crop.y += ny;
+        crop.w += nx; crop.h -= ny;
+      }else if(which==="bl"){
+        crop.x += nx;
+        crop.w -= nx; crop.h += ny;
+      }else if(which==="br"){
+        crop.w += nx; crop.h += ny;
+      }
+      clampCrop();
+    }
+    drawCropper();
+    e.preventDefault();
+  });
+
+  cropCanvas.addEventListener("pointerup", ()=>{ dragging=null; start=null; });
+  cropCanvas.addEventListener("pointercancel", ()=>{ dragging=null; start=null; });
+
+  document.getElementById("btnFitCrop").addEventListener("click", ()=>{
+    // expand crop to fit visible content center
+    crop = { x:0.08, y:0.08, w:0.84, h:0.84 };
+    clampCrop();
+    drawCropper();
+  });
+  document.getElementById("btnNewCrop").addEventListener("click", ()=>{
+    crop = { x:0.18, y:0.18, w:0.64, h:0.64 };
+    clampCrop();
+    drawCropper();
+  });
+  document.getElementById("btnCropReset").addEventListener("click", ()=>{
+    if(!imgLoaded) return;
+    loadSourceImage(srcImg.src);
+  });
+
+  // zoom
+  const imgZoom = document.getElementById("imgZoom");
+  const imgZoomVal = document.getElementById("imgZoomVal");
+  imgZoom.addEventListener("input", ()=>{
+    const r = cropStage.getBoundingClientRect();
+    const z = Number(imgZoom.value) / 100;
+    imgZoomVal.textContent = `${imgZoom.value}%`;
+
+    // scale around stage center
+    const cx = r.width/2;
+    const cy = r.height/2;
+    const oldScale = imgScale;
+    const newScale = oldScale * (z / (state._lastZoom || 1));
+    state._lastZoom = z;
+
+    imgX = cx - (cx - imgX) * (newScale/oldScale);
+    imgY = cy - (cy - imgY) * (newScale/oldScale);
+    imgScale = newScale;
+    drawCropper();
+  });
+
+  // white cut + feather
+  const whiteCut = document.getElementById("whiteCut");
+  const whiteCutVal = document.getElementById("whiteCutVal");
+  const feather = document.getElementById("feather");
+  const featherVal = document.getElementById("featherVal");
+  whiteCut.addEventListener("input", ()=> whiteCutVal.textContent = whiteCut.value);
+  feather.addEventListener("input", ()=> featherVal.textContent = feather.value);
+  whiteCutVal.textContent = whiteCut.value;
+  featherVal.textContent = feather.value;
+
+  // select/copy/paste name
+  const gName = document.getElementById("gName");
+  document.getElementById("btnSelectName").addEventListener("click", ()=>{ gName.focus(); gName.select(); });
+  document.getElementById("btnCopyName").addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(gName.value || ""); showOk("📋 Copiato"); }catch{ showErr("Clipboard non disponibile"); }
+  });
+  document.getElementById("btnPasteName").addEventListener("click", async ()=>{
+    try{ const t = await navigator.clipboard.readText(); gName.value = t || ""; showOk("📋 Incollato"); }catch{ showErr("Incolla non disponibile (permessi)"); }
+  });
+
+  // ---------- OCR (optional) ----------
+  const btnOCR = document.getElementById("btnOCR");
+  const ocrText = document.getElementById("ocrText");
+  document.getElementById("btnCopyOCR").addEventListener("click", async ()=>{
+    try{ await navigator.clipboard.writeText(ocrText.value || ""); showOk("📋 Testo copiato"); }catch{ showErr("Clipboard non disponibile"); }
+  });
+  document.getElementById("btnClearOCR").addEventListener("click", ()=>{ ocrText.value=""; });
+
+  async function loadTesseract(){
+    if(window.Tesseract) return window.Tesseract;
+    // load from CDN
+    await new Promise((resolve,reject)=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    return window.Tesseract;
+  }
+
+  function getCroppedCanvas(){
+    // produce cropped image from source with background cleaning
+    if(!imgLoaded) return null;
+
+    const r = cropStage.getBoundingClientRect();
+    const cx = crop.x * r.width;
+    const cy = crop.y * r.height;
+    const cw = crop.w * r.width;
+    const ch = crop.h * r.height;
+
+    // map crop rect (stage coords) into source image coords:
+    // stage pixel -> source pixel using imgX/imgY/imgScale
+    const sx = (cx - imgX) / imgScale;
+    const sy = (cy - imgY) / imgScale;
+    const sw = cw / imgScale;
+    const sh = ch / imgScale;
+
+    const out = document.createElement("canvas");
+    out.width = Math.max(2, Math.round(sw));
+    out.height = Math.max(2, Math.round(sh));
+    const octx = out.getContext("2d");
+
+    // draw
+    octx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, out.width, out.height);
+
+    // clean white background
+    const cut = Number(whiteCut.value); // 0..100
+    const featherPx = Number(feather.value);
+
+    if(cut > 0){
+      const imgData = octx.getImageData(0,0,out.width,out.height);
+      const d = imgData.data;
+      const thr = 255 - Math.round((cut/100) * 140); // 255..115 approx
+      for(let i=0;i<d.length;i+=4){
+        const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
+        if(a===0) continue;
+        // if near-white => make transparent
+        const maxc = Math.max(r,g,b);
+        const minc = Math.min(r,g,b);
+        const isWhiteish = (minc > thr) && (maxc > thr);
+        if(isWhiteish){
+          d[i+3] = 0;
+        }
+      }
+      imgData.data.set(d);
+      octx.putImageData(imgData,0,0);
+
+      // feather edges by drawing with shadow blur onto new canvas
+      if(featherPx > 0){
+        const out2 = document.createElement("canvas");
+        out2.width = out.width; out2.height = out.height;
+        const c2 = out2.getContext("2d");
+        c2.clearRect(0,0,out2.width,out2.height);
+        c2.filter = `blur(${featherPx}px)`;
+        c2.drawImage(out,0,0);
+        c2.filter = "none";
+        // keep alpha from blurred (soft)
+        const tmp = document.createElement("canvas");
+        tmp.width = out.width; tmp.height = out.height;
+        tmp.getContext("2d").drawImage(out2,0,0);
+        // Replace out with softened edges
+        out.width = out.width; // reset
+        out.getContext("2d").drawImage(tmp,0,0);
+      }
+    }
+
+    return out;
+  }
+
+  btnOCR.addEventListener("click", async ()=>{
+    try{
+      const c = getCroppedCanvas();
+      if(!c){ showErr("Prima carica un’immagine capo."); return; }
+      ocrText.value = "OCR in corso…";
+      const T = await loadTesseract();
+      const res = await T.recognize(c, "ita+eng");
+      ocrText.value = (res?.data?.text || "").trim();
+      showOk("✅ OCR completato");
+    }catch(e){
+      showErr("OCR non riuscito. Suggerimento: fai zoom e ritaglia meglio. Dettagli: " + e);
+    }
+  });
+
+  // ---------- Save garment ----------
+  document.getElementById("btnSaveGarment").addEventListener("click", async ()=>{
+    try{
+      const c = getCroppedCanvas();
+      if(!c){ showErr("Prima carica un’immagine capo."); return; }
+
+      const name = (document.getElementById("gName").value || "").trim() || "Capo";
+      const type = document.getElementById("gType").value;
+      const view = document.getElementById("gView").value;
+      const link = (document.getElementById("gLink").value || "").trim();
+
+      const dataUrl = c.toDataURL("image/png"); // PNG con trasparenza
+
+      // Find existing item by name+type? We keep it simple: if same name+type exists, update view.
+      let item = state.wardrobe.find(x => x.name === name && x.type === type);
+      if(!item){
+        item = { id: uid(), name, type, link, createdAt: Date.now(), views: {front:null,right:null,back:null,left:null} };
+        state.wardrobe.unshift(item);
+      }
+      item.link = link;
+      item.views[view] = dataUrl;
+
+      save();
+      renderWardrobe();
+      garmentModal.classList.remove("open");
+      showOk(`✅ Salvato: ${name} (${VIEW_LABEL[view]})`);
+    }catch(e){ showErr("Errore salvataggio capo: " + e); }
+  });
+
+  // ---------- Navigation buttons ----------
+  document.getElementById("btnGoWardrobe").addEventListener("click", ()=> setTab("guardaroba"));
+  document.getElementById("btnAddGarment2").addEventListener("click", openGarmentModal);
+  document.getElementById("btnAddGarment").addEventListener("click", openGarmentModal);
+
+  // ---------- Init ----------
+  state.scene.applied ??= [];
+  save();
+  renderWardrobe();
+  renderPerson();
+  renderApplied();
+  setView(state.scene.currentView || "front");
+  status.textContent = "OK";
+
+  // Close modals on ESC
+  window.addEventListener("keydown", (e)=>{
+    if(e.key==="Escape"){
+      personModal.classList.remove("open");
+      garmentModal.classList.remove("open");
+    }
+  });
+
+  // ---------- FIX: stage click clears selection ----------
+  document.getElementById("stageInner").addEventListener("pointerdown", ()=>{
+    selectedOverlayId = null; save(); renderApplied();
+  });
+
+  // Auto open cropper resize
+  const ro = new ResizeObserver(()=>{ if(garmentModal.classList.contains("open")) resizeCropCanvas(); });
+  ro.observe(cropStage);
+
+})();
 </script>
 
+<!-- PWA: service worker -->
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    });
+  }
+</script>
 </body>
 </html>
