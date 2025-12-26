@@ -3,9 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 2D</title>
+  <title>SerCucTech • Virtual Stylist 2D PRO (Auto Fit + Fullscreen)</title>
   <meta name="theme-color" content="#0b0b12" />
-
   <style>
     :root{
       --bg:#0b0b12; --txt:#f2f2f5; --muted:#a9a9b6; --line:rgba(255,255,255,.10);
@@ -78,9 +77,12 @@
       background:rgba(255,213,106,.14);
       border-color:rgba(255,213,106,.25);
     }
-
+    .btn.danger{
+      background:rgba(255,110,110,.10);
+      border-color:rgba(255,110,110,.25);
+    }
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    select, input[type="text"], input[type="range"], input[type="number"]{
+    select, input[type="range"], input[type="number"]{
       width:100%; box-sizing:border-box;
       padding:10px; border-radius:12px;
       border:1px solid var(--line);
@@ -103,20 +105,13 @@
     }
     @media(max-width:980px){ .stageWrap{ height:480px; } }
 
-    /* questo è quello che ruota quando attivi “gira” */
-    .spinOn{ animation: spin 4s linear infinite; }
-    @keyframes spin { from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
-
-    /* area in cui avviene compositing */
     .canvasArea{
       position:absolute; inset:0;
       display:grid; place-items:center;
       padding:16px;
       touch-action:none;
     }
-
-    /* frame fisso (dimensione) */
-    .frame{
+    #stageFrame{
       position:relative;
       width:min(420px, 92vw);
       height:min(520px, 120vw);
@@ -127,44 +122,78 @@
       touch-action:none;
     }
 
-    /* “composite” = persona + vestiti insieme (scala qui!) */
+    /* Fullscreen: fai diventare frame a pieno schermo */
+    #stageFrame.fullscreen{
+      width:100vw;
+      height:100vh;
+      border-radius:0;
+      border:none;
+      background:#06060c;
+    }
+    .stageWrap.fullscreen{
+      height: calc(100vh - 0px);
+      border-radius:0;
+    }
+    body.fullscreen header{ display:none; }
+    body.fullscreen main.wrap{ max-width:none; padding:0; }
+    body.fullscreen .stageWrap{ border:none; }
+    body.fullscreen .canvasArea{ padding:0; }
+
+    /* COMPOSITE */
     #composite{
       position:absolute; inset:0;
       transform-origin:center center;
       will-change:transform;
     }
 
-    /* PERSONA: MAI SCHIACCIATA */
+    /* PERSONA NATURALE */
     #modelImg{
       position:absolute;
-      inset:10px;             /* margine interno */
+      inset:10px;
       width:calc(100% - 20px);
       height:calc(100% - 20px);
-      object-fit:contain;      /* IMPORTANTISSIMO: mantiene proporzioni */
+      object-fit:contain;
       object-position:center center;
-      opacity:0.99;
-      user-select:none;
-      -webkit-user-drag:none;
       pointer-events:none;
+      z-index:1;
     }
 
-    /* VESTITI: overlay */
-    #outfitGroup{ position:absolute; inset:0; pointer-events:auto; }
+    /* VEIL */
+    #veilLayer{
+      position:absolute;
+      inset:10px;
+      width:calc(100% - 20px);
+      height:calc(100% - 20px);
+      z-index:2;
+      pointer-events:none;
+    }
+    .veilRect{
+      position:absolute;
+      border-radius:22px;
+      background:rgba(0,0,0,.35);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      opacity:0;
+      transition:opacity .12s linear;
+      filter:saturate(0.5);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+    }
+
+    /* OUTFIT */
+    #outfitGroup{ position:absolute; inset:0; z-index:3; pointer-events:none; }
 
     .cloth{
       position:absolute;
       left:50%;
       transform:translateX(-50%);
       transform-origin:center center;
-      user-select:none;
-      -webkit-user-drag:none;
       pointer-events:none;
-      opacity:0.96;
+      opacity:0.92;
       filter: drop-shadow(0 10px 25px rgba(0,0,0,.45));
       will-change:transform;
+      mix-blend-mode: multiply;
     }
-
-    /* posizioni base (poi scalate con JS) */
+    /* pos base */
     .pos-top    { top:33%; }
     .pos-jacket { top:33%; }
     .pos-bottom { top:60%; }
@@ -172,7 +201,7 @@
     .pos-dress  { top:47%; }
     .pos-shoes  { top:84%; }
 
-    .placeholderCloth{ opacity:0.25 !important; filter:none !important; }
+    .placeholderCloth{ opacity:0.25 !important; filter:none !important; mix-blend-mode: normal !important; }
 
     .hint{
       position:absolute; left:12px; top:12px; z-index:5;
@@ -185,33 +214,8 @@
       backdrop-filter: blur(8px);
     }
 
-    /* GUARDAROBA */
-    .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
-    @media(max-width:680px){ .cards{ grid-template-columns:1fr; } }
-    .item{
-      border:1px solid var(--line);
-      background:var(--card2);
-      border-radius:16px;
-      overflow:hidden;
-      display:flex; gap:12px;
-      padding:12px;
-      cursor:pointer;
-    }
-    .thumb{
-      width:84px; height:84px; border-radius:14px;
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(255,255,255,.03);
-      display:grid; place-items:center;
-      flex:0 0 auto;
-      overflow:hidden;
-    }
-    .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .meta{ flex:1 1 auto; min-width:0; }
-    .meta .t{ font-weight:900; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
-
     #errBox{
-      position:fixed; left:10px; right:10px; bottom:10px; z-index:999;
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
       border:1px solid rgba(255,110,110,.35);
       background:rgba(255,110,110,.08);
       color:rgba(255,255,255,.95);
@@ -229,28 +233,45 @@
       border-radius:14px;
     }
 
-    /* tool preview */
-    .toolGrid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    @media(max-width:680px){ .toolGrid{ grid-template-columns:1fr; } }
-    .previewBox{
-      border:1px solid rgba(255,255,255,.10);
-      background:rgba(0,0,0,.18);
-      border-radius:14px;
-      overflow:hidden;
-      min-height:180px;
-      display:grid; place-items:center;
-      position:relative;
-    }
-    .previewBox img{ width:100%; height:auto; display:block; }
-    .badge{
-      position:absolute; left:10px; top:10px;
-      font-size:12px; color:rgba(255,255,255,.9);
-      background:rgba(0,0,0,.35);
-      border:1px solid rgba(255,255,255,.12);
-      padding:6px 10px;
+    /* Wardrobe */
+    .wardbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .wardcats{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    .chip{
+      border:1px solid var(--line);
+      background:var(--card2);
+      color:var(--txt);
+      padding:8px 12px;
       border-radius:999px;
-      backdrop-filter: blur(8px);
+      cursor:pointer;
+      user-select:none;
+      font-size:12px;
     }
+    .chip.active{ background:rgba(255,213,106,.12); border-color:rgba(255,213,106,.25); }
+    .cards{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-top:12px; }
+    @media(max-width:680px){ .cards{ grid-template-columns:1fr; } }
+    .item{
+      border:1px solid var(--line);
+      background:var(--card2);
+      border-radius:16px;
+      overflow:hidden;
+      display:flex; gap:12px;
+      padding:12px;
+      align-items:center;
+    }
+    .thumb{
+      width:70px; height:70px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      display:grid; place-items:center;
+      flex:0 0 auto;
+      font-size:12px; color:var(--muted);
+      text-align:center;
+      padding:6px;
+    }
+    .meta{ flex:1 1 auto; min-width:0; }
+    .meta .t{ font-weight:900; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .meta .p{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
   </style>
 </head>
 
@@ -261,14 +282,14 @@
       <div class="row">
         <div class="brand">SC</div>
         <div>
-          <div style="font-weight:900">SerCucTech • Virtual Stylist 2D</div>
-          <div class="sub">Persona naturale (no schiacciata) + scala da taglia + vestiti auto-scale</div>
+          <div style="font-weight:900">SerCucTech • Virtual Stylist 2D PRO</div>
+          <div class="sub">Click capo → auto-fit subito • Pulsante tutto schermo</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">OK</b></span>
     </div>
 
-    <div class="tabs" role="tablist" aria-label="Sezioni app">
+    <div class="tabs">
       <div class="tab active" data-tab="studio">Studio</div>
       <div class="tab" data-tab="guardaroba">Guardaroba</div>
       <div class="tab" data-tab="guida">Guida</div>
@@ -283,16 +304,21 @@
     <div class="grid">
 
       <div class="card">
-        <h2><span>Persona + Outfit</span><span class="sub">drag = sposta ultimo capo</span></h2>
+        <h2><span>Persona + Outfit</span><span class="sub" id="viewLabel">Vista: FRONTE</span></h2>
         <div class="body">
-          <div class="stageWrap">
+          <div class="stageWrap" id="stageWrap">
             <div class="canvasArea">
-              <div class="frame">
-                <div class="hint">1) Carica persona • 2) Guardaroba • 3) Clicca un capo</div>
+              <div id="stageFrame">
+                <div class="hint" id="hintText">Click capo nel guardaroba → si adatta subito</div>
 
-                <!-- COMPOSITE: qui scalano INSIEME persona+vestiti -->
                 <div id="composite">
                   <img id="modelImg" alt="modello" />
+
+                  <div id="veilLayer">
+                    <div id="veilTorso" class="veilRect"></div>
+                    <div id="veilLegs"  class="veilRect"></div>
+                    <div id="veilFeet"  class="veilRect"></div>
+                  </div>
 
                   <div id="outfitGroup">
                     <img id="layerTop"    class="cloth pos-top"    alt="top" />
@@ -311,21 +337,52 @@
           <div style="height:10px"></div>
 
           <div class="row">
-            <button class="btn primary" id="btnUploadPerson">📷 Carica persona</button>
-            <button class="btn" id="btnClearOutfit">🧽 Svuota outfit</button>
-            <button class="btn" id="btnSpin">🔄 Gira su se stesso: OFF</button>
+            <button class="btn primary" id="btnUploadFront">📷 Persona FRONTE</button>
+            <button class="btn" id="btnUploadRight">📷 Fianco DX</button>
+            <button class="btn" id="btnUploadBack">📷 RETRO</button>
+            <button class="btn" id="btnUploadLeft">📷 Fianco SX</button>
           </div>
 
           <div style="height:10px"></div>
-          <div class="mini">
-            ✔ Persona non si deforma mai (object-fit: contain).<br/>
-            ✔ La “taglia” cambia la scala di persona + vestiti insieme.
+
+          <div class="row">
+            <button class="btn primary" id="btnTurntable">🔄 Ruota viste: OFF</button>
+            <button class="btn" id="btnFullscreen">⛶ Tutto schermo</button>
+            <button class="btn" id="btnClearOutfit">🧽 Svuota outfit</button>
+            <button class="btn danger" id="btnResetAll">🧨 Reset TUTTO</button>
           </div>
+
+          <div style="height:12px"></div>
+
+          <div class="card" style="border-radius:16px">
+            <h2><span>Sostituisci vestiti originali</span><span class="sub">A (automatico)</span></h2>
+            <div class="body">
+              <div class="row">
+                <button class="btn primary" id="btnReplaceToggle">👕 Sostituzione: OFF</button>
+                <span class="pill">Overlay capi: <b id="ovLabel">85%</b></span>
+              </div>
+
+              <label>Intensità copertura vestiti originali (0–100)</label>
+              <input id="slReplace" type="range" min="0" max="100" value="70" />
+
+              <label>Blur copertura (0–18)</label>
+              <input id="slBlur" type="range" min="0" max="18" value="10" />
+
+              <label>Opacità capi (30–100)</label>
+              <input id="slOverlay" type="range" min="30" max="100" value="85" />
+
+              <div style="height:8px"></div>
+              <div class="mini">
+                Click un capo nel guardaroba: si adatta automaticamente a profilo+altezza.
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
       <div class="card">
-        <h2><span>Taglia → scala (persona + vestiti)</span><span class="sub">auto</span></h2>
+        <h2><span>Profilo + Auto-Fit</span><span class="sub">scala + vestibilità</span></h2>
         <div class="body">
           <label>Profilo</label>
           <select id="profile">
@@ -338,119 +395,35 @@
           <label>Altezza (cm)</label>
           <input id="heightCm" type="number" min="80" max="220" value="175" />
 
-          <label>Spalle (cm) (opzionale)</label>
-          <input id="shouldersCm" type="number" min="25" max="60" value="44" />
-
-          <label>Vita (cm) (opzionale)</label>
-          <input id="waistCm" type="number" min="40" max="140" value="86" />
-
           <div style="height:10px"></div>
           <div class="row">
-            <button class="btn primary" id="btnApplyScale">✅ Applica scala</button>
+            <button class="btn primary" id="btnApplyScale">✅ Applica Auto-Fit</button>
             <span class="pill">Scala: <b id="scaleLabel">1.00×</b></span>
           </div>
 
-          <div style="height:10px"></div>
+          <div style="height:12px"></div>
           <div class="mini">
-            Regola generale: più alto = più grande. Bambini = scala più piccola.<br/>
-            I vestiti vengono ridimensionati automaticamente per tipo (TOP/PANT/SCARPE ecc.).
+            Auto-Fit = regola <b>dimensione e posizione</b> dei capi automaticamente.
           </div>
         </div>
       </div>
 
-    </div>
-
-    <div style="height:14px"></div>
-
-    <div class="card">
-      <h2><span>Upload vestito + togli sfondo</span><span class="sub">bianco → trasparente</span></h2>
-      <div class="body">
-
-        <label>Tipo capo</label>
-        <select id="uploadType">
-          <option value="top">Camicia / Maglia (TOP)</option>
-          <option value="jacket">Giacca / Felpa (GIACCA)</option>
-          <option value="bottom">Pantalone / Jeans (PANTALONE)</option>
-          <option value="skirt">Gonna (GONNA)</option>
-          <option value="dress">Vestito / Abito (ABITO)</option>
-          <option value="shoes">Scarpe (SCARPE)</option>
-        </select>
-
-        <label>Nome capo</label>
-        <input id="uploadName" type="text" placeholder="es. Camicia bianca" />
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn primary" id="btnPickCloth">⬆️ Seleziona immagine vestito</button>
-          <button class="btn" id="btnDoCut">✂️ Togli sfondo</button>
-        </div>
-
-        <label style="margin-top:10px">Forza “togli bianco”</label>
-        <input id="cutStrength" type="range" min="5" max="80" value="28" />
-
-        <div style="height:10px"></div>
-
-        <div class="toolGrid">
-          <div class="previewBox">
-            <div class="badge">PRIMA</div>
-            <img id="prevBefore" alt="prima" />
-          </div>
-          <div class="previewBox">
-            <div class="badge">DOPO (PNG trasparente)</div>
-            <img id="prevAfter" alt="dopo" />
-          </div>
-        </div>
-
-        <div style="height:10px"></div>
-
-        <div class="row">
-          <button class="btn primary" id="btnSaveToWard">✅ Salva nel guardaroba</button>
-          <button class="btn" id="btnDownloadPNG">⬇️ Scarica PNG</button>
-          <span class="pill">Ultimo capo: <b id="lastType">nessuno</b></span>
-        </div>
-
-        <div class="row" style="margin-top:10px">
-          <button class="btn" id="btnCenter">🎯 Centra ultimo capo</button>
-          <button class="btn" id="btnResetPos">↩️ Reset posizioni</button>
-        </div>
-
-        <div style="height:10px"></div>
-        <div class="mini">
-          Consiglio: immagini “catalogo” su sfondo chiaro = risultato migliore.
-        </div>
-
-      </div>
     </div>
   </section>
 
   <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba (clicca un capo → va addosso)</span><span class="sub">sempre visibile</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">click “Metti addosso” = auto-fit immediato</span></h2>
       <div class="body">
-        <div class="row">
-          <button class="btn primary" id="btnLoadDefault">📦 Carica guardaroba base</button>
-          <button class="btn" id="btnClearWard">🧹 Svuota guardaroba</button>
+        <div class="wardbar">
+          <button class="btn primary" id="btnLoadDemo">📦 Carica demo</button>
+          <button class="btn" id="btnClearWardrobe">🧽 Svuota guardaroba</button>
           <span class="pill">Capi: <b id="wardCount">0</b></span>
         </div>
 
-        <label style="margin-top:12px">Filtra per tipo</label>
-        <select id="filterType">
-          <option value="all">Tutti</option>
-          <option value="top">TOP</option>
-          <option value="jacket">GIACCA</option>
-          <option value="bottom">PANTALONE</option>
-          <option value="skirt">GONNA</option>
-          <option value="dress">ABITO</option>
-          <option value="shoes">SCARPE</option>
-        </select>
-
-        <div style="height:12px"></div>
-        <div class="cards" id="wardrobe"></div>
-
-        <div style="height:12px"></div>
-        <div class="mini">
-          Clic su una card = mette addosso e torna allo Studio.
-        </div>
+        <div class="wardcats" id="catChips"></div>
+        <div class="cards" id="wardList"></div>
       </div>
     </div>
   </section>
@@ -458,14 +431,13 @@
   <!-- GUIDA -->
   <section id="guida" class="section">
     <div class="card">
-      <h2><span>Guida</span><span class="sub">passi veloci</span></h2>
+      <h2><span>Guida</span><span class="sub">uso rapido</span></h2>
       <div class="body">
         <div class="mini">
-          <b>1)</b> Studio → Carica persona.<br/>
-          <b>2)</b> Studio → Profilo + Altezza → “Applica scala”.<br/>
-          <b>3)</b> Seleziona immagine vestito → “Togli sfondo” → “Salva nel guardaroba”.<br/>
-          <b>4)</b> Guardaroba → clicca capo → va addosso.<br/>
-          <b>5)</b> “Gira su se stesso” ruota tutto insieme.
+          1) Carica persona FRONTE (meglio anche 4 viste).<br/>
+          2) Vai su Guardaroba → Carica demo → Metti addosso (auto-fit).<br/>
+          3) In Studio attiva Sostituzione ON se vuoi coprire vestiti originali.<br/>
+          4) Pulsante “Tutto schermo” per vedere bene.
         </div>
       </div>
     </div>
@@ -474,8 +446,6 @@
 </main>
 
 <input id="filePerson" type="file" accept="image/*" style="display:none" />
-<input id="fileCloth" type="file" accept="image/*" style="display:none" />
-
 <div id="errBox"></div>
 
 <script>
@@ -491,8 +461,6 @@
     errBox.textContent = "";
     status.textContent = "OK";
   }
-  window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
-  window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
 
   // Tabs
   const tabs = [...document.querySelectorAll(".tab")];
@@ -510,43 +478,39 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_state_v4_scale";
+  const KEY = "sercuctech_vs2d_autofit_fullscreen_v1";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
-  state.personDataUrl ??= "";
-  state.wardrobe ??= [];
-  state.outfit ??= { top:"", jacket:"", bottom:"", skirt:"", dress:"", shoes:"" };
-  state.pos ??= {
-    top:{x:0,y:0}, jacket:{x:0,y:0}, bottom:{x:0,y:0}, skirt:{x:0,y:0}, dress:{x:0,y:0}, shoes:{x:0,y:0}
-  };
-  state.lastType ??= "";
-  state.scale ??= 1.0;
+
+  // person
+  state.personViews ??= { front:"", right:"", back:"", left:"" };
+
+  // outfit + transforms
+  const TYPES = ["top","jacket","bottom","skirt","dress","shoes"];
+  const VIEWS = ["front","right","back","left"];
+
+  state.outfit ??= {};
+  state.fit ??= {}; // per-type fit scale/offset
+  TYPES.forEach(t=>{
+    state.outfit[t] ??= { front:"", right:"", back:"", left:"" };
+    VIEWS.forEach(v=> state.outfit[t][v] ??= "");
+    state.fit[t] ??= { scale:1, y:0 };
+  });
+
+  // replace
+  state.replaceOn ??= false;
+  state.replaceIntensity ??= 70;
+  state.replaceBlur ??= 10;
+  state.overlayOpacity ??= 85;
+
+  // scale/profile
   state.profile ??= "uomo";
   state.heightCm ??= 175;
-  state.shouldersCm ??= 44;
-  state.waistCm ??= 86;
+  state.scale ??= 1.0;
+
+  // wardrobe
+  state.wardrobe ??= [];
 
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
-
-  // SVG placeholder
-  function svgData(type, label){
-    const map = {
-      top:    { t:"TOP",    c:"#ffd56a" },
-      jacket: { t:"GIACCA", c:"#ff9a6a" },
-      bottom: { t:"PANT",   c:"#6ab7ff" },
-      skirt:  { t:"GONNA",  c:"#b86aff" },
-      dress:  { t:"ABITO",  c:"#6affb2" },
-      shoes:  { t:"SCARPE", c:"#d0d0d0" }
-    };
-    const x = map[type] || {t:"CAPO", c:"#aaa"};
-    const text = label || x.t;
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="700" height="900">
-        <rect width="700" height="900" rx="40" fill="rgba(255,255,255,0.06)"/>
-        <rect x="26" y="26" width="648" height="848" rx="34" fill="rgba(0,0,0,0.10)" stroke="rgba(255,255,255,0.14)" stroke-width="3"/>
-        <text x="50%" y="50%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="70" fill="${x.c}" font-weight="900">${text}</text>
-      </svg>`;
-    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
-  }
 
   function fileToDataURL(file){
     return new Promise((resolve, reject)=>{
@@ -557,9 +521,20 @@
     });
   }
 
+  function svgData(label){
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="700" height="900">
+        <rect width="700" height="900" rx="40" fill="rgba(255,255,255,0.06)"/>
+        <rect x="26" y="26" width="648" height="848" rx="34" fill="rgba(0,0,0,0.12)" stroke="rgba(255,255,255,0.14)" stroke-width="3"/>
+        <text x="50%" y="50%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="60" fill="#ffd56a" font-weight="900">${label}</text>
+      </svg>`;
+    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  }
+
   // Elements
-  const composite = document.getElementById("composite");
   const modelImg = document.getElementById("modelImg");
+  const viewLabel = document.getElementById("viewLabel");
+  const composite = document.getElementById("composite");
   const layers = {
     top: document.getElementById("layerTop"),
     jacket: document.getElementById("layerJacket"),
@@ -569,485 +544,453 @@
     shoes: document.getElementById("layerShoes")
   };
 
-  const lastTypeEl = document.getElementById("lastType");
-  const wardrobeEl = document.getElementById("wardrobe");
-  const wardCount = document.getElementById("wardCount");
-  const filterType = document.getElementById("filterType");
+  // Veil
+  const veilTorso = document.getElementById("veilTorso");
+  const veilLegs  = document.getElementById("veilLegs");
+  const veilFeet  = document.getElementById("veilFeet");
 
-  // Scale controls
-  const profile = document.getElementById("profile");
-  const heightCm = document.getElementById("heightCm");
-  const shouldersCm = document.getElementById("shouldersCm");
-  const waistCm = document.getElementById("waistCm");
-  const scaleLabel = document.getElementById("scaleLabel");
+  // Stage fullscreen
+  const stageWrap = document.getElementById("stageWrap");
+  const stageFrame = document.getElementById("stageFrame");
+  const btnFullscreen = document.getElementById("btnFullscreen");
 
-  profile.value = state.profile;
-  heightCm.value = state.heightCm;
-  shouldersCm.value = state.shouldersCm;
-  waistCm.value = state.waistCm;
-
-  // base sizes for clothes (percent of frame width) – poi scalate
-  const baseW = {
-    top: 0.70,
-    jacket: 0.74,
-    bottom: 0.62,
-    skirt: 0.62,
-    dress: 0.70,
-    shoes: 0.52
-  };
-
-  function isPlaceholder(src){
-    return !src || String(src).startsWith("data:image/svg+xml");
-  }
-  function setClothClass(type, src){
-    layers[type].classList.toggle("placeholderCloth", isPlaceholder(src));
+  function setFullscreen(on){
+    document.body.classList.toggle("fullscreen", on);
+    stageWrap.classList.toggle("fullscreen", on);
+    stageFrame.classList.toggle("fullscreen", on);
+    btnFullscreen.textContent = on ? "⛶ Esci schermo" : "⛶ Tutto schermo";
+    // ridisegna veil positions
+    layoutVeil();
   }
 
-  function renderModel(){
-    if(state.personDataUrl){
-      modelImg.src = state.personDataUrl;
-    }else{
-      // placeholder persona
-      modelImg.src = svgData("top","PERSONA");
+  btnFullscreen.addEventListener("click", ()=>{
+    clearErr();
+    const on = !document.body.classList.contains("fullscreen");
+    setFullscreen(on);
+  });
+
+  // ESC to exit
+  window.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && document.body.classList.contains("fullscreen")){
+      setFullscreen(false);
     }
-    modelImg.onerror = ()=>{ modelImg.src = svgData("top","PERSONA"); };
+  });
+
+  // turntable
+  const ORDER = ["front","right","back","left"];
+  const LABELS = { front:"FRONTE", right:"FIANCO DX", back:"RETRO", left:"FIANCO SX" };
+  let curIdx = 0, spinning=false, timer=null;
+
+  function normalizeViews(v){
+    return {
+      front: v.front || "",
+      right: v.right || v.front || "",
+      back:  v.back  || v.front || "",
+      left:  v.left  || v.front || ""
+    };
   }
 
-  function applyPos(type){
-    const p = state.pos[type] || {x:0,y:0};
-    const img = layers[type];
-    // TRASLAZIONE + scala per capo (in base a taglia)
-    const s = state.scale || 1.0;
-    const clothScale = getClothScale(type);
-    img.style.transform = `translate(calc(-50% + ${p.x}px), ${p.y}px) scale(${clothScale})`;
+  function getPersonViewSrc(key){
+    const src = state.personViews[key] || state.personViews.front;
+    return src || svgData("PERSONA");
+  }
+  function getOutfitViewSrc(type, key){
+    const src = state.outfit[type]?.[key] || state.outfit[type]?.front;
+    return src || svgData(type.toUpperCase());
   }
 
-  function applyLayer(type, src){
-    clearErr();
-    state.outfit[type] = src || "";
-    state.lastType = type;
-    lastTypeEl.textContent = type;
-
-    const img = layers[type];
-    const realSrc = src || svgData(type);
-    img.src = realSrc;
-    img.style.display = "block";
-    img.onerror = ()=>{ img.src = svgData(type); setClothClass(type, img.src); };
-
-    setClothClass(type, realSrc);
-    applyPos(type);
-    save();
+  function applyOverlayOpacity(){
+    const op = Math.max(0.3, Math.min(1, (state.overlayOpacity||85)/100));
+    document.getElementById("ovLabel").textContent = Math.round(op*100) + "%";
+    Object.values(layers).forEach(img => img.style.opacity = String(op));
   }
 
-  function applyAllOutfit(){
-    Object.keys(layers).forEach(type=>{
-      const src = state.outfit[type] ? state.outfit[type] : svgData(type);
-      layers[type].src = src;
-      layers[type].style.display = "block";
-      setClothClass(type, src);
-      layers[type].onerror = ()=>{ layers[type].src = svgData(type); setClothClass(type, layers[type].src); };
-      applyPos(type);
+  function applyVeilStyles(){
+    const a = Math.max(0, Math.min(1, (state.replaceIntensity||70)/100));
+    const blur = Math.max(0, Math.min(18, state.replaceBlur||10));
+    const on = !!state.replaceOn;
+    const targetOpacity = on ? a : 0;
+
+    [veilTorso, veilLegs, veilFeet].forEach(v=>{
+      v.style.opacity = String(targetOpacity);
+      v.style.backdropFilter = `blur(${blur}px)`;
+      v.style.webkitBackdropFilter = `blur(${blur}px)`;
+      v.style.background = `rgba(0,0,0,${0.18 + 0.40*a})`;
+      v.style.filter = `saturate(${0.85 - 0.50*a})`;
     });
-    lastTypeEl.textContent = state.lastType || "nessuno";
   }
 
-  function clearOutfit(){
-    clearErr();
-    state.outfit = { top:"", jacket:"", bottom:"", skirt:"", dress:"", shoes:"" };
-    state.lastType = "";
-    lastTypeEl.textContent = "nessuno";
-    Object.keys(layers).forEach(type=>{
-      layers[type].src = svgData(type);
-      layers[type].style.display = "block";
-      state.pos[type] = {x:0,y:0};
-      setClothClass(type, layers[type].src);
-      applyPos(type);
-    });
-    save();
+  function layoutVeil(){
+    // percentages inside the inset(10px) area; best-effort
+    veilTorso.style.left = "18%";  veilTorso.style.top = "22%";
+    veilTorso.style.width = "64%"; veilTorso.style.height = "30%";
+
+    veilLegs.style.left = "22%";   veilLegs.style.top = "52%";
+    veilLegs.style.width = "56%";  veilLegs.style.height = "30%";
+
+    veilFeet.style.left = "28%";   veilFeet.style.top = "83%";
+    veilFeet.style.width = "44%";  veilFeet.style.height = "12%";
   }
 
-  // SPIN (ruota tutto insieme: composite)
-  const btnSpin = document.getElementById("btnSpin");
-  let spinning = false;
-  function setSpin(on){
-    spinning = !!on;
-    composite.classList.toggle("spinOn", spinning);
-    btnSpin.textContent = `🔄 Gira su se stesso: ${spinning ? "ON" : "OFF"}`;
-  }
-  btnSpin.addEventListener("click", ()=> setSpin(!spinning));
-
-  // SCALE LOGIC (persona + vestiti)
-  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
-
-  function computeScale(){
-    // profilo: cambia “baseline”
-    const prof = profile.value;
-    const h = Number(heightCm.value) || 175;
-    const sh = Number(shouldersCm.value) || 44;
-    const wa = Number(waistCm.value) || 86;
-
-    // baseline per profilo
-    const base = {
-      uomo:    { h:175, sh:44, wa:86 },
-      donna:   { h:165, sh:38, wa:72 },
-      bambino: { h:120, sh:30, wa:55 },
-      bambina: { h:120, sh:29, wa:54 }
-    }[prof] || { h:175, sh:44, wa:86 };
-
-    // scala principale da altezza
-    let s = h / base.h;
-
-    // micro-correzioni da spalle/vita (piccole, per non esagerare)
-    const sSh = sh / base.sh;
-    const sWa = wa / base.wa;
-    s *= (0.75 + 0.25 * sSh);
-    s *= (0.82 + 0.18 * sWa);
-
-    // limiti safe
-    s = clamp(s, 0.70, 1.35);
+  // ---- AUTO-FIT: scale+offset per tipo in base a profilo+altezza ----
+  function computeScaleFromProfileHeight(){
+    const prof = state.profile || "uomo";
+    const h = Number(state.heightCm) || 175;
+    const baseH = (prof==="uomo") ? 175 : (prof==="donna") ? 165 : 120;
+    let s = h / baseH;
+    s = Math.max(0.70, Math.min(1.35, s));
     return s;
   }
 
-  function getClothScale(type){
-    // La taglia scala tutti, ma alcuni capi si “sentono” più o meno
-    const s = state.scale || 1.0;
+  function computeFit(type){
+    // base factors (tweakable)
     const prof = state.profile || "uomo";
+    const s = computeScaleFromProfileHeight();
 
-    // bambini più “stretti” sui capi
-    const profMul = (prof === "bambino" || prof === "bambina") ? 0.92 : 1.0;
+    // Type base scale and Y offset (in %) relative to its base position
+    // We'll apply translateY in px proportional to frame height via CSS var.
+    let baseScale = 1.0;
+    let yPct = 0; // positive = down
 
-    // fattori per tipo capo
-    const typeMul = {
-      top: 1.00,
-      jacket: 1.03,
-      bottom: 1.00,
-      skirt: 1.00,
-      dress: 1.02,
-      shoes: 0.98
-    }[type] || 1.0;
+    if(type==="top"){ baseScale = 1.05; yPct = 0; }
+    if(type==="jacket"){ baseScale = 1.10; yPct = -1; }
+    if(type==="bottom"){ baseScale = 1.10; yPct = 2; }
+    if(type==="skirt"){ baseScale = 1.10; yPct = 2; }
+    if(type==="dress"){ baseScale = 1.15; yPct = 0; }
+    if(type==="shoes"){ baseScale = 1.05; yPct = 4; }
 
-    return clamp(s * profMul * typeMul, 0.60, 1.55);
+    // profile adjustments
+    if(prof==="donna"){
+      if(type==="top"){ baseScale *= 1.02; }
+      if(type==="bottom"){ baseScale *= 1.02; }
+      if(type==="dress"){ baseScale *= 1.03; }
+    }
+    if(prof==="bambino" || prof==="bambina"){
+      // kids: slightly smaller clothing relative
+      baseScale *= 0.92;
+      if(type==="shoes") baseScale *= 0.95;
+      yPct *= 0.8;
+    }
+
+    // Combine with global scale: when person is taller, clothes should scale similarly
+    const finalScale = baseScale * s;
+
+    return { scale: finalScale, yPct };
   }
 
-  function applyScale(){
-    clearErr();
-    state.profile = profile.value;
-    state.heightCm = Number(heightCm.value) || 175;
-    state.shouldersCm = Number(shouldersCm.value) || 44;
-    state.waistCm = Number(waistCm.value) || 86;
+  function applyAutoFitAll(){
+    TYPES.forEach(t => state.fit[t] = computeFit(t));
+    save();
+    applyFitToDOM();
+  }
 
-    state.scale = computeScale();
-    scaleLabel.textContent = state.scale.toFixed(2) + "×";
+  function applyFitToDOM(){
+    // yPct -> convert to px based on frame height (approx)
+    const frame = stageFrame.getBoundingClientRect();
+    const H = frame.height || 520;
 
-    // scala persona+vestiti INSIEME (composite)
-    composite.style.transform = `scale(${state.scale})`;
+    TYPES.forEach(t=>{
+      const el = layers[t];
+      const fit = state.fit[t] || { scale:1, yPct:0 };
+      const yPx = (fit.yPct/100) * H;
 
-    // ridimensiona anche larghezza capi in modo coerente
-    Object.keys(layers).forEach(type=>{
-      const img = layers[type];
-      // base width dipende dal frame: la lasciamo in % ma aggiungiamo un minimo/massimo
-      const wPct = baseW[type] || 0.65;
-      img.style.width = `calc(${Math.round(wPct*100)}% )`;
-      applyPos(type);
+      // Keep existing translateX(-50%) and add scale+translateY
+      el.style.transform = `translateX(-50%) translateY(${yPx.toFixed(1)}px) scale(${fit.scale.toFixed(3)})`;
+    });
+  }
+
+  // update on resize (fullscreen or orientation)
+  window.addEventListener("resize", ()=>{
+    layoutVeil();
+    applyFitToDOM();
+  });
+
+  function setView(idx){
+    curIdx = (idx + ORDER.length) % ORDER.length;
+    const key = ORDER[curIdx];
+
+    modelImg.src = getPersonViewSrc(key);
+    viewLabel.textContent = "Vista: " + (LABELS[key] || key);
+
+    TYPES.forEach(type=>{
+      const el = layers[type];
+      el.src = getOutfitViewSrc(type, key);
+      const isPlaceholder = !(state.outfit[type]?.front);
+      el.classList.toggle("placeholderCloth", isPlaceholder);
     });
 
-    save();
+    applyVeilStyles();
+    applyOverlayOpacity();
+    layoutVeil();
+    applyFitToDOM();
   }
 
-  document.getElementById("btnApplyScale").addEventListener("click", applyScale);
+  function startSpin(){
+    if(spinning) return;
+    spinning = true;
+    document.getElementById("btnTurntable").textContent = "🔄 Ruota viste: ON";
+    timer = setInterval(()=> setView(curIdx + 1), 900);
+  }
+  function stopSpin(){
+    spinning = false;
+    document.getElementById("btnTurntable").textContent = "🔄 Ruota viste: OFF";
+    if(timer){ clearInterval(timer); timer=null; }
+  }
 
-  // Upload person
+  document.getElementById("btnTurntable").addEventListener("click", ()=>{
+    clearErr();
+    if(!state.personViews.front) return showErr("Carica almeno la vista FRONTE della persona.");
+    spinning ? stopSpin() : startSpin();
+  });
+
+  // person upload
   const filePerson = document.getElementById("filePerson");
-  document.getElementById("btnUploadPerson").addEventListener("click", ()=> filePerson.click());
+  let pendingPersonView = "front";
+  function pickPersonView(key){
+    pendingPersonView = key;
+    filePerson.value = "";
+    filePerson.click();
+  }
+  document.getElementById("btnUploadFront").addEventListener("click", ()=> pickPersonView("front"));
+  document.getElementById("btnUploadRight").addEventListener("click", ()=> pickPersonView("right"));
+  document.getElementById("btnUploadBack").addEventListener("click", ()=> pickPersonView("back"));
+  document.getElementById("btnUploadLeft").addEventListener("click", ()=> pickPersonView("left"));
   filePerson.addEventListener("change", async ()=>{
     try{
       clearErr();
       const f = filePerson.files && filePerson.files[0];
       if(!f) return;
       const dataUrl = await fileToDataURL(f);
-      state.personDataUrl = dataUrl;
+      state.personViews[pendingPersonView] = dataUrl;
       save();
-      renderModel();
-      setTimeout(()=> applyScale(), 10);
-    }catch(e){
-      showErr(e.message || String(e));
-    }
+      setView(ORDER.indexOf(pendingPersonView));
+    }catch(e){ showErr(e.message || String(e)); }
   });
 
-  // Tool: upload cloth
-  const uploadType = document.getElementById("uploadType");
-  const uploadName = document.getElementById("uploadName");
-  const cutStrength = document.getElementById("cutStrength");
-  const prevBefore = document.getElementById("prevBefore");
-  const prevAfter = document.getElementById("prevAfter");
+  // Replace controls
+  const btnReplaceToggle = document.getElementById("btnReplaceToggle");
+  const slReplace = document.getElementById("slReplace");
+  const slBlur = document.getElementById("slBlur");
+  const slOverlay = document.getElementById("slOverlay");
 
-  const fileCloth = document.getElementById("fileCloth");
-  let tempClothOriginal = "";
-  let tempClothCut = "";
-
-  document.getElementById("btnPickCloth").addEventListener("click", ()=> fileCloth.click());
-  fileCloth.addEventListener("change", async ()=>{
-    try{
-      clearErr();
-      const f = fileCloth.files && fileCloth.files[0];
-      if(!f) return;
-      tempClothOriginal = await fileToDataURL(f);
-      tempClothCut = "";
-      prevBefore.src = tempClothOriginal;
-      prevAfter.src = "";
-    }catch(e){
-      showErr(e.message || String(e));
-    }
-  });
-
-  async function removeWhiteBg(dataUrl, strength){
-    const img = await new Promise((res, rej)=>{
-      const im = new Image();
-      im.onload = ()=>res(im);
-      im.onerror = ()=>rej(new Error("Immagine non caricabile"));
-      im.src = dataUrl;
-    });
-
-    const maxW = 900;
-    const scale = Math.min(1, maxW / img.width);
-    const w = Math.max(1, Math.round(img.width * scale));
-    const h = Math.max(1, Math.round(img.height * scale));
-
-    const c = document.createElement("canvas");
-    c.width = w; c.height = h;
-    const ctx = c.getContext("2d", { willReadFrequently:true });
-    ctx.drawImage(img, 0, 0, w, h);
-
-    const imd = ctx.getImageData(0, 0, w, h);
-    const d = imd.data;
-
-    const thr = Number(strength) || 28;
-    const soft = 18;
-    for(let i=0;i<d.length;i+=4){
-      const r = d[i], g = d[i+1], b = d[i+2];
-      const dist = Math.max(0, 255 - r) + Math.max(0, 255 - g) + Math.max(0, 255 - b);
-      const whiteness = 765 - dist;
-      const T = 765 - (thr * 9);
-      if(whiteness > T){
-        const over = whiteness - T;
-        const a = Math.max(0, 255 - Math.round((over / (soft*9)) * 255));
-        d[i+3] = Math.min(d[i+3], a);
-      }
-    }
-
-    ctx.putImageData(imd, 0, 0);
-    return c.toDataURL("image/png");
+  function refreshReplaceUI(){
+    btnReplaceToggle.textContent = state.replaceOn ? "👕 Sostituzione: ON" : "👕 Sostituzione: OFF";
+    slReplace.value = String(state.replaceIntensity ?? 70);
+    slBlur.value = String(state.replaceBlur ?? 10);
+    slOverlay.value = String(state.overlayOpacity ?? 85);
+    applyVeilStyles();
+    applyOverlayOpacity();
   }
 
-  document.getElementById("btnDoCut").addEventListener("click", async ()=>{
-    try{
-      clearErr();
-      if(!tempClothOriginal) return showErr("Prima seleziona un'immagine vestito.");
-      tempClothCut = await removeWhiteBg(tempClothOriginal, cutStrength.value);
-      prevAfter.src = tempClothCut;
-    }catch(e){
-      showErr(e.message || String(e));
-    }
+  btnReplaceToggle.addEventListener("click", ()=>{
+    state.replaceOn = !state.replaceOn;
+    save();
+    refreshReplaceUI();
+  });
+  slReplace.addEventListener("input", ()=>{
+    state.replaceIntensity = Number(slReplace.value);
+    save();
+    applyVeilStyles();
+  });
+  slBlur.addEventListener("input", ()=>{
+    state.replaceBlur = Number(slBlur.value);
+    save();
+    applyVeilStyles();
+  });
+  slOverlay.addEventListener("input", ()=>{
+    state.overlayOpacity = Number(slOverlay.value);
+    save();
+    applyOverlayOpacity();
   });
 
-  cutStrength.addEventListener("input", async ()=>{
-    if(!tempClothOriginal) return;
-    if(!prevAfter.src) return;
-    try{
-      tempClothCut = await removeWhiteBg(tempClothOriginal, cutStrength.value);
-      prevAfter.src = tempClothCut;
-    }catch{}
-  });
+  // Auto-fit controls
+  const profile = document.getElementById("profile");
+  const heightCm = document.getElementById("heightCm");
+  const scaleLabel = document.getElementById("scaleLabel");
+  profile.value = state.profile;
+  heightCm.value = state.heightCm;
 
-  // download PNG
-  document.getElementById("btnDownloadPNG").addEventListener("click", ()=>{
+  function applyAutoFit(){
     clearErr();
-    const data = tempClothCut || "";
-    if(!data) return showErr("Prima fai “Togli sfondo” per avere un PNG.");
-    const a = document.createElement("a");
-    a.href = data;
-    a.download = "sercuctech-vestito.png";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+    state.profile = profile.value;
+    state.heightCm = Number(heightCm.value) || 175;
+    state.scale = computeScaleFromProfileHeight();
+    composite.style.transform = `scale(${state.scale})`;
+    scaleLabel.textContent = state.scale.toFixed(2) + "×";
+    save();
+    applyAutoFitAll();
+  }
+  document.getElementById("btnApplyScale").addEventListener("click", applyAutoFit);
+
+  // clear outfit
+  document.getElementById("btnClearOutfit").addEventListener("click", ()=>{
+    clearErr();
+    TYPES.forEach(t=> state.outfit[t] = { front:"", right:"", back:"", left:"" });
+    save();
+    setView(curIdx);
+  });
+
+  // reset
+  document.getElementById("btnResetAll").addEventListener("click", ()=>{
+    clearErr();
+    stopSpin();
+    localStorage.removeItem(KEY);
+    location.reload();
   });
 
   // Wardrobe
-  function defaultWardrobe(){
-    return [
-      { id:"u_top",    title:"Camicia Uomo",   type:"top",    img: svgData("top","TOP") },
-      { id:"u_jacket", title:"Giacca Uomo",    type:"jacket", img: svgData("jacket","GIACCA") },
-      { id:"u_bottom", title:"Pantalone Uomo", type:"bottom", img: svgData("bottom","PANT") },
-      { id:"u_shoes",  title:"Scarpe Uomo",    type:"shoes",  img: svgData("shoes","SCARPE") },
+  const wardCount = document.getElementById("wardCount");
+  const wardList = document.getElementById("wardList");
+  const catChips = document.getElementById("catChips");
+  let activeCat = localStorage.getItem("vs2d_cat") || "Tutti";
 
-      { id:"d_top",    title:"Maglia Donna",   type:"top",    img: svgData("top","TOP") },
-      { id:"d_jacket", title:"Giacca Donna",   type:"jacket", img: svgData("jacket","GIACCA") },
-      { id:"d_skirt",  title:"Gonna Donna",    type:"skirt",  img: svgData("skirt","GONNA") },
-      { id:"d_dress",  title:"Vestito Donna",  type:"dress",  img: svgData("dress","ABITO") },
+  function uid(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
+  function categoryFromType(type){
+    if(type==="top" || type==="jacket") return "Sopra";
+    if(type==="bottom" || type==="skirt") return "Sotto";
+    if(type==="dress") return "Intero";
+    return "Accessori";
+  }
+  function getCategories(){
+    const base = ["Tutti", "Sopra", "Sotto", "Intero", "Accessori"];
+    const extra = [...new Set(state.wardrobe.map(i => i.category).filter(Boolean))];
+    extra.forEach(c=>{ if(!base.includes(c)) base.push(c); });
+    return base;
+  }
+  function renderChips(){
+    const cats = getCategories();
+    catChips.innerHTML = "";
+    cats.forEach(c=>{
+      const el = document.createElement("div");
+      el.className = "chip" + (c===activeCat ? " active" : "");
+      el.textContent = c;
+      el.addEventListener("click", ()=>{
+        activeCat = c;
+        localStorage.setItem("vs2d_cat", activeCat);
+        renderChips();
+        renderWardrobe();
+      });
+      catChips.appendChild(el);
+    });
+  }
 
-      { id:"b_top",    title:"Maglia Bambino", type:"top",    img: svgData("top","TOP") },
-      { id:"b_jacket", title:"Felpa Bambino",  type:"jacket", img: svgData("jacket","GIACCA") },
-      { id:"b_bottom", title:"Pantalone Bimbo",type:"bottom", img: svgData("bottom","PANT") },
-      { id:"b_shoes",  title:"Scarpe Bimbo",   type:"shoes",  img: svgData("shoes","SCARPE") },
-
-      { id:"bb_top",   title:"Maglia Bambina", type:"top",    img: svgData("top","TOP") },
-      { id:"bb_skirt", title:"Gonna Bambina",  type:"skirt",  img: svgData("skirt","GONNA") },
-      { id:"bb_dress", title:"Vestito Bimba",  type:"dress",  img: svgData("dress","ABITO") },
-      { id:"bb_shoes", title:"Scarpe Bimba",   type:"shoes",  img: svgData("shoes","SCARPE") }
-    ];
+  // ✅ CLICK CAPO = indossa + auto-fit immediato
+  function applyWardrobeItem(item){
+    const type = item.type;
+    state.outfit[type] = normalizeViews(item.views || {});
+    // auto-fit every time you put a garment
+    applyAutoFitAll();
+    save();
+    setView(curIdx);
+    setTab("studio");
+    // optional: ensure replace mode ON for better effect
+    // state.replaceOn = true; save(); refreshReplaceUI();
   }
 
   function renderWardrobe(){
-    wardrobeEl.innerHTML = "";
-    const list = Array.isArray(state.wardrobe) ? state.wardrobe : [];
-    wardCount.textContent = String(list.length);
+    wardCount.textContent = String(state.wardrobe.length);
+    wardList.innerHTML = "";
+    const items = state.wardrobe.filter(it => activeCat==="Tutti" ? true : (it.category===activeCat));
 
-    const ft = filterType.value;
-    const filtered = ft === "all" ? list : list.filter(x => x.type === ft);
+    if(items.length===0){
+      const empty = document.createElement("div");
+      empty.className = "mini";
+      empty.textContent = "Guardaroba vuoto. Premi “Carica demo” per provare.";
+      wardList.appendChild(empty);
+      return;
+    }
 
-    filtered.forEach(item=>{
+    items.forEach(it=>{
       const card = document.createElement("div");
       card.className = "item";
 
       const thumb = document.createElement("div");
       thumb.className = "thumb";
-      const im = document.createElement("img");
-      im.src = item.img || svgData(item.type);
-      im.onerror = ()=>{ im.src = svgData(item.type); };
-      thumb.appendChild(im);
+      thumb.textContent = (it.type || "capo").toUpperCase();
 
       const meta = document.createElement("div");
       meta.className = "meta";
+
       const t = document.createElement("div");
       t.className = "t";
-      t.textContent = item.title || "Capo";
+      t.textContent = it.name || "Capo";
+
       const s = document.createElement("div");
       s.className = "s";
-      s.textContent = (item.type || "capo").toUpperCase() + " • click = addosso";
+      const v = it.views || {};
+      const has4 = !!(v.front && v.right && v.back && v.left);
+      s.textContent = `${it.category || "Categoria"} • ${has4 ? "4 viste" : "fallback da FRONT"}`;
+
+      const p = document.createElement("div");
+      p.className = "p";
+
+      const wear = document.createElement("button");
+      wear.className = "btn primary";
+      wear.textContent = "Metti addosso";
+      wear.addEventListener("click", ()=> applyWardrobeItem(it));
+
+      const del = document.createElement("button");
+      del.className = "btn";
+      del.textContent = "Elimina";
+      del.addEventListener("click", ()=>{
+        state.wardrobe = state.wardrobe.filter(x => x.id !== it.id);
+        save();
+        renderWardrobe();
+      });
+
+      p.appendChild(wear);
+      p.appendChild(del);
 
       meta.appendChild(t);
       meta.appendChild(s);
+      meta.appendChild(p);
 
       card.appendChild(thumb);
       card.appendChild(meta);
-
-      card.addEventListener("click", ()=>{
-        applyLayer(item.type, item.img);
-        setTab("studio");
-      });
-
-      wardrobeEl.appendChild(card);
+      wardList.appendChild(card);
     });
-
-    if(filtered.length === 0){
-      const empty = document.createElement("div");
-      empty.className = "mini";
-      empty.textContent = "Nessun capo in questa categoria. Premi “Carica guardaroba base” oppure carica un capo tuo.";
-      wardrobeEl.appendChild(empty);
-    }
   }
 
-  document.getElementById("btnLoadDefault").addEventListener("click", ()=>{
+  // demo
+  function makeDemoItem(type, name){
+    const views = {
+      front: svgData(`${type.toUpperCase()} FRONT`),
+      right: svgData(`${type.toUpperCase()} DX`),
+      back:  svgData(`${type.toUpperCase()} BACK`),
+      left:  svgData(`${type.toUpperCase()} SX`)
+    };
+    return { id: uid(), name, type, category: categoryFromType(type), views };
+  }
+
+  document.getElementById("btnLoadDemo").addEventListener("click", ()=>{
     clearErr();
-    if(!Array.isArray(state.wardrobe) || state.wardrobe.length === 0){
-      state.wardrobe = defaultWardrobe();
-    }else{
-      state.wardrobe = [...defaultWardrobe(), ...state.wardrobe];
-    }
+    state.wardrobe = [
+      makeDemoItem("top","T-shirt basic (demo)"),
+      makeDemoItem("jacket","Giacca (demo)"),
+      makeDemoItem("bottom","Jeans (demo)"),
+      makeDemoItem("skirt","Gonna (demo)"),
+      makeDemoItem("dress","Abito (demo)"),
+      makeDemoItem("shoes","Sneakers (demo)")
+    ];
     save();
+    renderChips();
     renderWardrobe();
     setTab("guardaroba");
   });
 
-  document.getElementById("btnClearWard").addEventListener("click", ()=>{
+  document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
     clearErr();
     state.wardrobe = [];
     save();
     renderWardrobe();
   });
 
-  filterType.addEventListener("change", renderWardrobe);
-
-  // Save to wardrobe
-  document.getElementById("btnSaveToWard").addEventListener("click", ()=>{
-    clearErr();
-    if(!tempClothOriginal) return showErr("Prima seleziona un'immagine vestito.");
-    const type = uploadType.value;
-    const title = (uploadName.value || "").trim() || `Capo ${type.toUpperCase()}`;
-    const img = tempClothCut || tempClothOriginal;
-
-    state.wardrobe.unshift({ id:"u_"+Date.now(), title, type, img });
-    save();
-    renderWardrobe();
-    setTab("guardaroba");
-
-    // auto-indossa
-    applyLayer(type, img);
-    uploadName.value = "";
-  });
-
-  // Center + reset
-  document.getElementById("btnCenter").addEventListener("click", ()=>{
-    clearErr();
-    const t = state.lastType;
-    if(!t) return;
-    state.pos[t] = {x:0,y:0};
-    applyPos(t);
-    save();
-  });
-
-  document.getElementById("btnResetPos").addEventListener("click", ()=>{
-    clearErr();
-    Object.keys(state.pos).forEach(k=> state.pos[k] = {x:0,y:0});
-    Object.keys(layers).forEach(applyPos);
-    save();
-  });
-
-  document.getElementById("btnClearOutfit").addEventListener("click", clearOutfit);
-
-  // DRAG: sposta ultimo capo
-  const outfitGroup = document.getElementById("outfitGroup");
-  let dragging = false;
-  let startX = 0, startY = 0;
-  let baseX = 0, baseY = 0;
-
-  outfitGroup.addEventListener("pointerdown", (ev)=>{
-    if(!state.lastType) return;
-    dragging = true;
-    outfitGroup.setPointerCapture(ev.pointerId);
-    startX = ev.clientX; startY = ev.clientY;
-    const cur = state.pos[state.lastType] || {x:0,y:0};
-    baseX = cur.x; baseY = cur.y;
-  });
-
-  outfitGroup.addEventListener("pointermove", (ev)=>{
-    if(!dragging || !state.lastType) return;
-    const dx = ev.clientX - startX;
-    const dy = ev.clientY - startY;
-    state.pos[state.lastType] = { x: Math.round(baseX + dx), y: Math.round(baseY + dy) };
-    applyPos(state.lastType);
-  });
-
-  outfitGroup.addEventListener("pointerup", ()=>{
-    if(!dragging) return;
-    dragging = false;
-    save();
-  });
-  outfitGroup.addEventListener("pointercancel", ()=>{
-    if(!dragging) return;
-    dragging = false;
-    save();
-  });
-
   // INIT
-  renderModel();
-  applyAllOutfit();
+  refreshReplaceUI();
+  applyAutoFit();         // sets scale + fit
+  renderChips();
   renderWardrobe();
-  setSpin(false);
-
-  // applica scala da stato
-  scaleLabel.textContent = (state.scale || 1).toFixed(2) + "×";
-  setTimeout(()=> applyScale(), 0);
+  setView(0);
 </script>
 </body>
 </html>
