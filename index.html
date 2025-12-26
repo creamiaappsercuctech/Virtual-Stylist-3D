@@ -91,7 +91,6 @@
     textarea{ min-height:70px; resize:vertical; }
     input[type="range"]{ width:100%; }
 
-    /* STAGE (persona + capi) */
     .stageWrap{
       position:relative;
       border:1px solid rgba(255,255,255,.08);
@@ -99,7 +98,8 @@
       border-radius:18px;
       overflow:hidden;
       width:100%;
-      aspect-ratio: 3/4; /* naturale verticale */
+      aspect-ratio: 3/4;
+      touch-action: none; /* IMPORTANT: evita scroll durante drag */
     }
     @media(max-width:980px){
       .stageWrap{ aspect-ratio: 9/16; }
@@ -124,25 +124,23 @@
     .personImg{
       max-width:100%;
       max-height:100%;
-      object-fit:contain; /* NON schiaccia */
+      object-fit:contain;
       transform: translateZ(0);
       will-change: transform, opacity, filter;
       user-select:none;
       pointer-events:none;
     }
 
-    /* Garments overlays: each is absolutely positioned over stageInner */
     .garment{
       position:absolute;
-      left:50%; top:50%;
-      transform: translate(-50%,-50%);
+      left:0; top:0;
+      transform: translate(0,0);
       transform-origin:center;
-      pointer-events:auto;
-      touch-action:none;
       user-select:none;
       border:1px dashed rgba(255,213,106,.35);
       border-radius:12px;
       background:rgba(255,255,255,.01);
+      touch-action:none; /* IMPORTANT */
     }
     .garment.selected{ outline:2px solid rgba(255,213,106,.55); }
     .garment img{
@@ -153,23 +151,19 @@
       user-select:none;
       -webkit-user-drag:none;
     }
-    .handles{
-      position:absolute; inset:0;
-      pointer-events:none;
-    }
+    .handles{ position:absolute; inset:0; }
     .h{
       width:18px;height:18px;border-radius:999px;
       background:rgba(110,220,255,.92);
       position:absolute;
-      pointer-events:auto;
       border:2px solid rgba(0,0,0,.35);
       box-shadow: 0 6px 18px rgba(0,0,0,.35);
       touch-action:none;
     }
-    .h.tl{ left:-9px; top:-9px; cursor:nwse-resize; }
-    .h.tr{ right:-9px; top:-9px; cursor:nesw-resize; }
-    .h.bl{ left:-9px; bottom:-9px; cursor:nesw-resize; }
-    .h.br{ right:-9px; bottom:-9px; cursor:nwse-resize; }
+    .h.tl{ left:-9px; top:-9px; }
+    .h.tr{ right:-9px; top:-9px; }
+    .h.bl{ left:-9px; bottom:-9px; }
+    .h.br{ right:-9px; bottom:-9px; }
 
     .toolbar{
       display:flex; flex-wrap:wrap; gap:10px; align-items:center;
@@ -182,7 +176,6 @@
     }
     @media(max-width:520px){ .toolbox{ grid-template-columns:1fr; } }
 
-    /* Wardrobe */
     .filters{ display:flex; gap:10px; flex-wrap:wrap; }
     .chip{
       border:1px solid var(--line);
@@ -224,7 +217,6 @@
     .wSub{ font-size:12px; color:var(--muted); margin-top:2px; }
     .wBtns{ margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
 
-    /* Modal Cropper */
     .modal{
       position:fixed; inset:0; z-index:999;
       background:rgba(0,0,0,.55);
@@ -235,7 +227,7 @@
     .modalCard{
       width:min(980px, 100%);
       max-height: min(92vh, 980px);
-      overflow:auto; /* SCORREVOLE */
+      overflow:auto;
       border-radius:18px;
       border:1px solid rgba(255,255,255,.10);
       background:rgba(12,12,20,.96);
@@ -257,38 +249,7 @@
       cursor:pointer;
     }
     .modalBody{ padding:12px 14px; }
-    .cropStage{
-      width:100%;
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background:#05050c;
-      overflow:hidden;
-      position:relative;
-      aspect-ratio: 3/4;
-    }
-    .cropCanvas{
-      position:absolute; inset:0;
-      width:100%; height:100%;
-      display:block;
-      touch-action:none;
-    }
-    .hint{
-      position:absolute; left:10px; right:10px; top:10px;
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.12);
-      color:rgba(255,255,255,.92);
-      border-radius:14px;
-      padding:10px 12px;
-      font-size:12px;
-      backdrop-filter: blur(8px);
-    }
-    .hint b{ color:#fff; }
 
-    /* Fullscreen */
-    .fsOn header{ position:fixed; left:0; right:0; top:0; }
-    .fsOn main{ padding-top: 110px; }
-
-    /* Error box */
     #errBox{
       position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
       border:1px solid rgba(255,110,110,.35);
@@ -337,7 +298,6 @@
 
 <main class="wrap">
 
-  <!-- STUDIO -->
   <section id="studio" class="section active">
     <div class="grid">
       <div class="card">
@@ -347,7 +307,7 @@
         </h2>
         <div class="body">
           <div class="stageWrap" id="stageWrap">
-            <div class="stage" id="stage">
+            <div class="stage">
               <div class="stageInner" id="stageInner">
                 <div class="personLayer">
                   <img id="personImg" class="personImg" alt="persona" />
@@ -382,9 +342,9 @@
             </div>
           </div>
 
-          <label style="margin-top:10px">Sfoca persona (per “nascondere” vestiti originali in modo semplice)</label>
+          <label style="margin-top:10px">Sfoca persona (per “nascondere” vestiti originali)</label>
           <input id="blurPerson" type="range" min="0" max="10" step="1" value="0" />
-          <span class="sub">Nota onesta: la sostituzione realistica dei vestiti originali richiede ML/segmentazione. Qui facciamo overlay + blur opzionale.</span>
+          <span class="sub">Nota: sostituzione realistica dei vestiti originali richiede ML. Qui facciamo overlay + blur opzionale.</span>
         </div>
       </div>
 
@@ -418,10 +378,9 @@
     </div>
   </section>
 
-  <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba</span><span class="sub">carica capi (anche screenshot) → ritaglia → salva</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">carica capi → ritaglia → salva</span></h2>
       <div class="body">
         <div class="row">
           <button class="btn primary" id="btnAddGarment2">👗 Aggiungi capo</button>
@@ -444,27 +403,24 @@
         <div class="wardGrid" id="wardGrid"></div>
 
         <div style="height:12px"></div>
-        <div class="sub">
-          Suggerimento: per risultati puliti usa <b>PNG trasparente</b>. Se hai solo screenshot Amazon, usa “Rimuovi bianco” nella finestra ritaglio.
-        </div>
+        <div class="sub">Suggerimento: usa PNG trasparente. Con screenshot, ritaglia e rimuovi bianco (se presente).</div>
       </div>
     </div>
   </section>
 
-  <!-- GUIDA -->
   <section id="guida" class="section">
     <div class="card">
       <h2><span>Guida rapida</span><span class="sub">2 minuti e vai</span></h2>
       <div class="body">
         <div class="sub" style="font-size:13px; line-height:1.55">
           <b>1) Studio → Carica persona</b><br/>
-          Premi “Carica persona (4 viste)”. Se hai solo una foto, carica solo FRONTE: la app userà la stessa immagine anche nelle altre viste (con mirror dove serve).<br/><br/>
+          Carica FRONTE (minimo). Se hai 4 viste, meglio.<br/><br/>
           <b>2) Guardaroba → Aggiungi capo</b><br/>
-          Carica lo screenshot o la foto del vestito → ritaglia con le maniglie → (opzionale) “Rimuovi bianco” → salva.<br/><br/>
+          Carica immagine → salva.<br/><br/>
           <b>3) Metti addosso</b><br/>
-          Dal guardaroba premi “Metti addosso”: va subito sulla persona con auto-fit. Se serve, trascina e ridimensiona con le maniglie.<br/><br/>
+          Dal guardaroba premi “Metti addosso”, poi trascina e ridimensiona con maniglie.<br/><br/>
           <b>4) Rotazione</b><br/>
-          “Auto-gira” fa fronte→dx→retro→sx. Se hai caricato le 4 viste della persona e/o del capo, vedrai cambiare davvero immagine. Se no, usa copie/mirror.
+          Auto-gira: fronte→dx→retro→sx.
         </div>
       </div>
     </div>
@@ -522,112 +478,40 @@
   </div>
 </div>
 
-<!-- Modal: Garment cropper -->
+<!-- Modal: Garment add (semplice, senza crop per ora; puoi riaggiungere crop dopo che drag è ok) -->
 <div class="modal" id="garmentModal">
   <div class="modalCard">
     <div class="modalHead">
       <div>
-        <div style="font-weight:900">Aggiungi/Modifica capo</div>
-        <div class="sub">Ritaglio PRO (maniglie) + pulizia sfondo bianco + OCR (opzionale)</div>
+        <div style="font-weight:900">Aggiungi capo (base)</div>
+        <div class="sub">Carica PNG (meglio trasparente). Poi “Salva nel guardaroba”.</div>
       </div>
       <button class="xBtn" id="closeGarmentModal">✕</button>
     </div>
 
     <div class="modalBody">
-      <div class="row">
-        <button class="btn primary" id="btnPickGarmentImg">📷 Scegli immagine</button>
-        <input type="file" accept="image/*" id="garmentFile" style="display:none" />
-        <button class="btn" id="btnFitCrop">🔎 Adatta</button>
-        <button class="btn" id="btnNewCrop">🧩 Nuovo ritaglio</button>
-        <button class="btn bad" id="btnCropReset">↩️ Reset</button>
-      </div>
+      <label>Immagine capo</label>
+      <input type="file" accept="image/*" id="garmentFile" />
+      <label>Nome capo</label>
+      <input id="gName" type="text" placeholder="es. Vestito casual" />
+      <label>Tipo capo</label>
+      <select id="gType">
+        <option value="top">Camicia / Maglia (TOP)</option>
+        <option value="bottom">Pantalone / Gonna (BOTTOM)</option>
+        <option value="dress">Abito intero (DRESS)</option>
+        <option value="shoes">Scarpe (SHOES)</option>
+        <option value="accessory">Accessorio (ACCESSORY)</option>
+      </select>
+      <label>Vista</label>
+      <select id="gView">
+        <option value="front">FRONTE</option>
+        <option value="right">FIANCO DX</option>
+        <option value="back">RETRO</option>
+        <option value="left">FIANCO SX</option>
+      </select>
 
-      <div style="height:10px"></div>
-
-      <div class="cropStage" id="cropStage">
-        <canvas class="cropCanvas" id="cropCanvas"></canvas>
-        <div class="hint">
-          <b>Drag</b> = sposta immagine • <b>Maniglie</b> = ridimensiona ritaglio • <b>Doppio tap</b> sul capo = seleziona testo OCR (se disponibile)
-        </div>
-      </div>
-
-      <div style="height:10px"></div>
-
-      <label>Zoom immagine</label>
-      <input id="imgZoom" type="range" min="40" max="220" value="100" />
-      <div class="row">
-        <span class="pill">Zoom: <b id="imgZoomVal">100%</b></span>
-      </div>
-
-      <label>Rimuovi “bianco” (pulizia bordi da screenshot)</label>
-      <input id="whiteCut" type="range" min="0" max="100" value="35" />
-      <div class="row">
-        <span class="pill">Soglia: <b id="whiteCutVal">35</b></span>
-        <span class="pill">Sfumatura: <b id="featherVal">2</b> px</span>
-      </div>
-      <input id="feather" type="range" min="0" max="12" value="2" />
-
-      <div style="height:10px"></div>
-
-      <div class="grid" style="grid-template-columns:1fr 1fr; gap:12px">
-        <div class="card">
-          <h2><span>Dati capo</span><span class="sub">nome + tipo + (vista)</span></h2>
-          <div class="body">
-            <label>Nome capo</label>
-            <input id="gName" type="text" placeholder="es. Vestito casual" />
-
-            <div class="row" style="margin-top:8px">
-              <button class="btn" id="btnSelectName">Seleziona</button>
-              <button class="btn" id="btnCopyName">Copia</button>
-              <button class="btn" id="btnPasteName">Incolla</button>
-            </div>
-
-            <label style="margin-top:10px">Tipo capo</label>
-            <select id="gType">
-              <option value="top">Camicia / Maglia (TOP)</option>
-              <option value="bottom">Pantalone / Gonna (BOTTOM)</option>
-              <option value="dress">Abito intero (DRESS)</option>
-              <option value="shoes">Scarpe (SHOES)</option>
-              <option value="accessory">Accessorio (ACCESSORY)</option>
-            </select>
-
-            <label style="margin-top:10px">Vista che stai salvando</label>
-            <select id="gView">
-              <option value="front">FRONTE</option>
-              <option value="right">FIANCO DX</option>
-              <option value="back">RETRO</option>
-              <option value="left">FIANCO SX</option>
-            </select>
-
-            <label style="margin-top:10px">Link (opzionale)</label>
-            <input id="gLink" type="text" placeholder="link Amazon/Awin (opzionale)" />
-
-          </div>
-        </div>
-
-        <div class="card">
-          <h2><span>OCR (opzionale)</span><span class="sub">testo dalla foto</span></h2>
-          <div class="body">
-            <div class="sub">
-              OCR offline “perfetto” è pesante. Qui usiamo <b>Tesseract.js</b> via CDN (caching dal Service Worker).
-            </div>
-
-            <div class="row" style="margin-top:10px">
-              <button class="btn primary" id="btnOCR">🔤 OCR</button>
-              <button class="btn" id="btnCopyOCR">Copia testo</button>
-              <button class="btn" id="btnClearOCR">Pulisci</button>
-            </div>
-
-            <label>Testo OCR</label>
-            <textarea id="ocrText" placeholder="Qui appare il testo trovato (se OCR riesce)…"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <div style="height:12px"></div>
-
-      <div class="row" style="justify-content:space-between">
-        <span class="sub">Tip: se non vedi bene le maniglie in basso, scorri: questa finestra è <b>sempre scorrevole</b>.</span>
+      <div class="row" style="justify-content:space-between; margin-top:12px">
+        <span class="sub">Dopo salvataggio: vai in guardaroba → “Metti addosso”.</span>
         <button class="btn primary" id="btnSaveGarment">Salva nel guardaroba</button>
       </div>
     </div>
@@ -643,7 +527,7 @@
   function showErr(msg){
     errBox.style.display = "block";
     errBox.textContent = "ERRORE:\n" + msg;
-    setTimeout(()=> errBox.style.display = "none", 4200);
+    setTimeout(()=> errBox.style.display = "none", 5000);
     status.textContent = "Errore";
   }
   function showOk(msg){
@@ -654,7 +538,7 @@
   window.addEventListener("error", (e)=> showErr(e.message || String(e.error||e)));
   window.addEventListener("unhandledrejection", (e)=> showErr(String(e.reason||e)));
 
-  // ---------- Tabs ----------
+  // Tabs
   const tabs = [...document.querySelectorAll(".tab")];
   const sections = {
     studio: document.getElementById("studio"),
@@ -670,24 +554,23 @@
   tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
-  // ---------- Storage ----------
-  const KEY = "sercuctech_vs2d_pro_v1";
+  // Storage
+  const KEY = "sercuctech_vs2d_pro_v2_dragfix";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
   state.person ??= { front:null, right:null, back:null, left:null };
-  state.wardrobe ??= []; // items: {id,name,type,link,views:{front,right,back,left},createdAt}
-  state.scene ??= { applied: [] }; // applied overlays: {id,itemId,type,view,rect, z, scale}
-
+  state.wardrobe ??= [];
+  state.scene ??= { applied: [], currentView:"front", blurPerson:0, globalScale:100 };
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
 
-  // ---------- Views & rotation ----------
+  // Views
   const VIEWS = ["front","right","back","left"];
   const VIEW_LABEL = {front:"FRONTE", right:"FIANCO DX", back:"RETRO", left:"FIANCO SX"};
   let currentView = state.scene.currentView || "front";
   let spinning = false;
   let spinTimer = null;
-
   const viewLabel = document.getElementById("viewLabel");
   const spinLabel = document.getElementById("spinLabel");
+
   function setView(v){
     currentView = v;
     state.scene.currentView = v;
@@ -696,7 +579,6 @@
     renderPerson();
     renderApplied();
   }
-
   document.getElementById("btnPrev").addEventListener("click", ()=>{
     const idx = VIEWS.indexOf(currentView);
     setView(VIEWS[(idx - 1 + VIEWS.length) % VIEWS.length]);
@@ -705,7 +587,6 @@
     const idx = VIEWS.indexOf(currentView);
     setView(VIEWS[(idx + 1) % VIEWS.length]);
   });
-
   function stopSpin(){
     spinning = false;
     spinLabel.textContent = "OFF";
@@ -725,7 +606,7 @@
     if(spinning) stopSpin(); else startSpin();
   });
 
-  // ---------- Fullscreen ----------
+  // Fullscreen
   const btnFullscreen = document.getElementById("btnFullscreen");
   const stageWrap = document.getElementById("stageWrap");
   function isFs(){ return document.fullscreenElement || document.webkitFullscreenElement; }
@@ -733,25 +614,19 @@
     try{
       if(!isFs()){
         await (stageWrap.requestFullscreen?.() || stageWrap.webkitRequestFullscreen?.());
-        document.body.classList.add("fsOn");
       }else{
         await (document.exitFullscreen?.() || document.webkitExitFullscreen?.());
-        document.body.classList.remove("fsOn");
       }
     }catch(e){ showErr("Fullscreen non disponibile: " + e); }
   }
   btnFullscreen.addEventListener("click", toggleFs);
-  document.addEventListener("fullscreenchange", ()=>{ if(!isFs()) document.body.classList.remove("fsOn"); });
 
-  // ---------- Person render ----------
+  // Person render
   const personImg = document.getElementById("personImg");
   function pickPersonForView(v){
-    // If missing, fall back to front; for left/right if missing we mirror front
     const p = state.person || {};
-    const chosen = p[v] || p.front || null;
-    return chosen;
+    return p[v] || p.front || null;
   }
-
   function renderPerson(){
     const src = pickPersonForView(currentView);
     if(!src){
@@ -762,17 +637,10 @@
     }
     personImg.src = src;
     personImg.style.opacity = "1";
-
-    // mirror if view is left and only front exists
-    const onlyFront = state.person.front && !state.person.left && !state.person.right && !state.person.back;
-    let mirror = false;
-    if(onlyFront && (currentView === "left" || currentView === "right")) mirror = true;
-    personImg.style.transform = mirror ? "scaleX(-1)" : "none";
-
     status.textContent = "OK";
   }
 
-  // Blur person
+  // Blur
   const blurPerson = document.getElementById("blurPerson");
   blurPerson.value = String(state.scene.blurPerson ?? 0);
   function applyBlur(){
@@ -784,13 +652,11 @@
   blurPerson.addEventListener("input", applyBlur);
   applyBlur();
 
-  // ---------- Scene overlay system ----------
+  // Scene
   const garmentLayer = document.getElementById("garmentLayer");
   let selectedOverlayId = null;
-
   function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
 
-  // Presets: rect in normalized stage coords [0..1] (x,y,w,h) for each type
   const FIT_PRESET = {
     top:     { x:.22, y:.18, w:.56, h:.42 },
     bottom:  { x:.23, y:.50, w:.54, h:.46 },
@@ -811,106 +677,57 @@
   globalScale.addEventListener("input", applyGlobalScale);
   applyGlobalScale();
 
-  function stageRect(){
-    const inner = document.getElementById("stageInner");
-    return inner.getBoundingClientRect();
-  }
+  const stageInner = document.getElementById("stageInner");
+  function stageRect(){ return stageInner.getBoundingClientRect(); }
+  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
   function normToPxRect(n){
     const r = stageRect();
+    return { x:n.x*r.width, y:n.y*r.height, w:n.w*r.width, h:n.h*r.height };
+  }
+  function pxToNormRect(px){
+    const r = stageRect();
     return {
-      x: n.x * r.width,
-      y: n.y * r.height,
-      w: n.w * r.width,
-      h: n.h * r.height,
+      x: clamp(px.x / r.width, 0, 1),
+      y: clamp(px.y / r.height, 0, 1),
+      w: clamp(px.w / r.width, 0.05, 1),
+      h: clamp(px.h / r.height, 0.05, 1),
     };
   }
-  function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+  function overlayImageFor(item, view){
+    return item.views?.[view] || item.views?.front || null;
+  }
 
   function applyItemToScene(itemId){
     const item = state.wardrobe.find(x => x.id === itemId);
     if(!item){ showErr("Capo non trovato."); return; }
 
-    // Create or replace overlay for this type? (top/bottom/dress/shoes/accessory)
-    // If dress is applied, we remove top+bottom (to avoid confusion)
     if(item.type === "dress"){
       state.scene.applied = state.scene.applied.filter(o => !["top","bottom"].includes(o.type));
     } else if(item.type === "top" || item.type === "bottom"){
-      // if a dress exists, remove it
       state.scene.applied = state.scene.applied.filter(o => o.type !== "dress");
     }
-
-    // Remove old overlay of same type to "replace"
     state.scene.applied = state.scene.applied.filter(o => o.type !== item.type);
 
     const preset = FIT_PRESET[item.type] || FIT_PRESET.top;
     const scale = (state.scene.globalScale || 100) / 100;
     const rect = { ...preset };
-    // scale around center in normalized space
     const cx = rect.x + rect.w/2, cy = rect.y + rect.h/2;
-    rect.w = rect.w * scale; rect.h = rect.h * scale;
+    rect.w *= scale; rect.h *= scale;
     rect.x = cx - rect.w/2; rect.y = cy - rect.h/2;
 
-    const overlay = {
+    state.scene.applied.push({
       id: uid(),
       itemId: item.id,
       type: item.type,
       z: Date.now(),
-      rect, // normalized
-    };
-    state.scene.applied.push(overlay);
+      rect
+    });
     save();
     renderApplied();
     setTab("studio");
     showOk(`✅ "${item.name || "Capo"}" messo addosso`);
-  }
-
-  function removeAllApplied(){
-    state.scene.applied = [];
-    selectedOverlayId = null;
-    save();
-    renderApplied();
-  }
-
-  function resetFit(){
-    // reset each overlay to preset position
-    state.scene.applied.forEach(o => {
-      const preset = FIT_PRESET[o.type] || FIT_PRESET.top;
-      o.rect = { ...preset };
-    });
-    save();
-    renderApplied();
-    showOk("↩️ Posizioni ripristinate");
-  }
-
-  document.getElementById("btnClearOutfit").addEventListener("click", removeAllApplied);
-  document.getElementById("btnResetFit").addEventListener("click", resetFit);
-
-  // Bring front/back
-  document.getElementById("btnBringFront").addEventListener("click", ()=>{
-    const o = state.scene.applied.find(x => x.id === selectedOverlayId);
-    if(!o) return;
-    o.z = Date.now();
-    save(); renderApplied();
-  });
-  document.getElementById("btnSendBack").addEventListener("click", ()=>{
-    const o = state.scene.applied.find(x => x.id === selectedOverlayId);
-    if(!o) return;
-    o.z = 1; // lowest
-    save(); renderApplied();
-  });
-  document.getElementById("btnDeleteSelected").addEventListener("click", ()=>{
-    if(!selectedOverlayId) return;
-    state.scene.applied = state.scene.applied.filter(x => x.id !== selectedOverlayId);
-    selectedOverlayId = null;
-    save(); renderApplied();
-  });
-
-  // Render overlays for current view
-  function overlayImageFor(item, view){
-    // item.views can have view-specific cropped images
-    const v = item.views?.[view] || item.views?.front || null;
-    return v;
   }
 
   function renderApplied(){
@@ -920,7 +737,6 @@
     applied.forEach(o=>{
       const item = state.wardrobe.find(x => x.id === o.itemId);
       if(!item) return;
-
       const imgSrc = overlayImageFor(item, currentView);
       if(!imgSrc) return;
 
@@ -929,11 +745,10 @@
       el.dataset.id = o.id;
 
       const px = normToPxRect(o.rect);
+      el.style.left = px.x + "px";
+      el.style.top  = px.y + "px";
       el.style.width  = px.w + "px";
       el.style.height = px.h + "px";
-      el.style.left   = (px.x) + "px";
-      el.style.top    = (px.y) + "px";
-      el.style.transform = "translate(0,0)";
 
       const img = document.createElement("img");
       img.src = imgSrc;
@@ -950,112 +765,162 @@
       });
       el.appendChild(handles);
 
-      // select on tap
       el.addEventListener("pointerdown", (e)=>{
         selectedOverlayId = o.id;
         save();
         renderApplied();
+        e.preventDefault();
         e.stopPropagation();
       });
 
-      makeDraggableResizable(el, o.id);
-
+      makeDragResizeStable(el, o.id);
       garmentLayer.appendChild(el);
     });
   }
 
-  // Drag/resize overlay -> updates normalized rect
-  function makeDraggableResizable(el, overlayId){
-    let mode = null; // "move" or "resize"
+  // ✅ DRAG/RESIZE STABILE SU ANDROID: niente setPointerCapture obbligatorio.
+  function makeDragResizeStable(el, overlayId){
+    let mode = null; // "move" | "resize"
     let handle = null;
     let startX=0, startY=0;
     let startRect=null;
 
-    function getOverlay(){
-      return state.scene.applied.find(x=> x.id === overlayId);
-    }
+    function getOverlay(){ return state.scene.applied.find(x=> x.id === overlayId); }
 
-    function pxToNormRect(px){
-      const r = stageRect();
-      return {
-        x: clamp(px.x / r.width, 0, 1),
-        y: clamp(px.y / r.height, 0, 1),
-        w: clamp(px.w / r.width, 0.05, 1),
-        h: clamp(px.h / r.height, 0.05, 1),
-      };
-    }
-
-    el.addEventListener("pointerdown", (e)=>{
-      const h = e.target?.dataset?.handle;
-      startX = e.clientX; startY = e.clientY;
+    function onDown(e){
       const o = getOverlay();
       if(!o) return;
-      const px = normToPxRect(o.rect);
-      startRect = px;
 
-      if(h){
-        mode="resize"; handle=h;
-      }else{
-        mode="move"; handle=null;
-      }
-      el.setPointerCapture(e.pointerId);
+      const h = e.target?.dataset?.handle;
+      mode = h ? "resize" : "move";
+      handle = h || null;
+
+      startX = e.clientX;
+      startY = e.clientY;
+      startRect = normToPxRect(o.rect);
+
+      // blocca scroll
       e.preventDefault();
       e.stopPropagation();
-    });
 
-    el.addEventListener("pointermove", (e)=>{
-      if(!mode) return;
+      // listener globali finché trascini
+      window.addEventListener("pointermove", onMove, {passive:false});
+      window.addEventListener("pointerup", onUp, {passive:false});
+      window.addEventListener("pointercancel", onUp, {passive:false});
+    }
+
+    function onMove(e){
+      if(!mode || !startRect) return;
+
+      const o = getOverlay();
+      if(!o) return;
+
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
 
       let px = {...startRect};
       if(mode==="move"){
-        px.x = px.x + dx;
-        px.y = px.y + dy;
-      }else if(mode==="resize"){
+        px.x += dx;
+        px.y += dy;
+      }else{
         const minSize = 40;
         if(handle==="tl"){
-          px.x = px.x + dx; px.y = px.y + dy;
-          px.w = px.w - dx; px.h = px.h - dy;
+          px.x += dx; px.y += dy;
+          px.w -= dx; px.h -= dy;
         }else if(handle==="tr"){
-          px.y = px.y + dy;
-          px.w = px.w + dx; px.h = px.h - dy;
+          px.y += dy;
+          px.w += dx; px.h -= dy;
         }else if(handle==="bl"){
-          px.x = px.x + dx;
-          px.w = px.w - dx; px.h = px.h + dy;
+          px.x += dx;
+          px.w -= dx; px.h += dy;
         }else if(handle==="br"){
-          px.w = px.w + dx; px.h = px.h + dy;
+          px.w += dx; px.h += dy;
         }
         px.w = Math.max(minSize, px.w);
         px.h = Math.max(minSize, px.h);
       }
 
-      // clamp in stage
+      // clamp nello stage
       const r = stageRect();
       px.x = clamp(px.x, 0, r.width - px.w);
       px.y = clamp(px.y, 0, r.height - px.h);
 
-      const o = getOverlay();
-      if(!o) return;
       o.rect = pxToNormRect(px);
       save();
-      renderApplied();
-      e.preventDefault();
-    });
 
-    el.addEventListener("pointerup", ()=>{ mode=null; handle=null; startRect=null; });
-    el.addEventListener("pointercancel", ()=>{ mode=null; handle=null; startRect=null; });
+      // aggiornamento rapido senza rerender completo
+      el.style.left = px.x + "px";
+      el.style.top  = px.y + "px";
+      el.style.width  = px.w + "px";
+      el.style.height = px.h + "px";
+
+      e.preventDefault();
+    }
+
+    function onUp(e){
+      mode=null; handle=null; startRect=null;
+
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+
+      // un ultimo render per sincronizzare classi/ordine
+      renderApplied();
+      e.preventDefault?.();
+    }
+
+    // IMPORTANTE: pointerdown su el e su maniglie (bubbling)
+    el.addEventListener("pointerdown", onDown, {passive:false});
   }
 
-  // ---------- Wardrobe ----------
+  // Buttons
+  document.getElementById("btnClearOutfit").addEventListener("click", ()=>{
+    state.scene.applied = [];
+    selectedOverlayId = null;
+    save();
+    renderApplied();
+  });
+  document.getElementById("btnResetFit").addEventListener("click", ()=>{
+    state.scene.applied.forEach(o=>{
+      const preset = FIT_PRESET[o.type] || FIT_PRESET.top;
+      o.rect = {...preset};
+    });
+    save();
+    renderApplied();
+    showOk("↩️ Posizioni ripristinate");
+  });
+  document.getElementById("btnBringFront").addEventListener("click", ()=>{
+    const o = state.scene.applied.find(x=> x.id === selectedOverlayId);
+    if(!o) return;
+    o.z = Date.now(); save(); renderApplied();
+  });
+  document.getElementById("btnSendBack").addEventListener("click", ()=>{
+    const o = state.scene.applied.find(x=> x.id === selectedOverlayId);
+    if(!o) return;
+    o.z = 1; save(); renderApplied();
+  });
+  document.getElementById("btnDeleteSelected").addEventListener("click", ()=>{
+    if(!selectedOverlayId) return;
+    state.scene.applied = state.scene.applied.filter(x=> x.id !== selectedOverlayId);
+    selectedOverlayId = null;
+    save(); renderApplied();
+  });
+
+  stageInner.addEventListener("pointerdown", ()=>{
+    selectedOverlayId = null; save(); renderApplied();
+  }, {passive:true});
+
+  // Wardrobe
   const wardGrid = document.getElementById("wardGrid");
   const wardCount = document.getElementById("wardCount");
   let wardFilter = "all";
-
   function typeLabel(t){
     return t==="top"?"Sopra":t==="bottom"?"Sotto":t==="dress"?"Intero":t==="shoes"?"Scarpe":"Accessori";
   }
-
+  function countViews(it){
+    const v = it.views || {};
+    return ["front","right","back","left"].filter(k => !!v[k]).length;
+  }
   function renderWardrobe(){
     wardGrid.innerHTML = "";
     wardCount.textContent = String(state.wardrobe.length);
@@ -1064,7 +929,7 @@
     if(list.length === 0){
       const empty = document.createElement("div");
       empty.className = "sub";
-      empty.textContent = "Nessun capo in questa categoria. Premi “Aggiungi capo”.";
+      empty.textContent = "Nessun capo. Premi “Aggiungi capo”.";
       wardGrid.appendChild(empty);
       return;
     }
@@ -1077,9 +942,8 @@
       thumb.className = "wThumb";
       const timg = document.createElement("img");
       const src = it.views?.front || it.views?.right || it.views?.back || it.views?.left || "";
-      if(src) timg.src = src;
+      if(src){ timg.src = src; thumb.appendChild(timg); }
       else thumb.textContent = "NO IMG";
-      if(src) thumb.appendChild(timg);
 
       const meta = document.createElement("div");
       meta.className = "wMeta";
@@ -1090,7 +954,7 @@
 
       const sub = document.createElement("div");
       sub.className = "wSub";
-      sub.textContent = `${typeLabel(it.type)} • 4 viste: ${countViews(it)}/4`;
+      sub.textContent = `${typeLabel(it.type)} • viste: ${countViews(it)}/4`;
 
       const btns = document.createElement("div");
       btns.className = "wBtns";
@@ -1100,24 +964,16 @@
       wear.textContent = "Metti addosso";
       wear.addEventListener("click", ()=> applyItemToScene(it.id));
 
-      const open = document.createElement("button");
-      open.className = "btn";
-      open.textContent = "Apri link";
-      open.disabled = !it.link;
-      open.addEventListener("click", ()=>{ if(it.link) window.open(it.link, "_blank"); });
-
       const del = document.createElement("button");
       del.className = "btn bad";
       del.textContent = "Elimina";
       del.addEventListener("click", ()=>{
         state.wardrobe = state.wardrobe.filter(x => x.id !== it.id);
-        // remove from scene if applied
         state.scene.applied = state.scene.applied.filter(o => o.itemId !== it.id);
         save(); renderWardrobe(); renderApplied();
       });
 
       btns.appendChild(wear);
-      btns.appendChild(open);
       btns.appendChild(del);
 
       meta.appendChild(title);
@@ -1130,11 +986,6 @@
     });
   }
 
-  function countViews(it){
-    const v = it.views || {};
-    return ["front","right","back","left"].filter(k => !!v[k]).length;
-  }
-
   // filters
   const chips = [...document.querySelectorAll(".chip")];
   chips.forEach(c=>{
@@ -1145,7 +996,7 @@
     });
   });
 
-  // demo wardrobe (placeholder images using simple SVG so no 404)
+  // Demo
   function svgData(label){
     const s = encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">
@@ -1158,41 +1009,40 @@
         <rect width="100%" height="100%" fill="#0b0b12"/>
         <rect x="32" y="32" width="448" height="448" rx="40" fill="url(#g)" stroke="rgba(255,255,255,.12)"/>
         <text x="50%" y="50%" fill="rgba(255,255,255,.85)" font-family="system-ui" font-size="44" text-anchor="middle" dominant-baseline="middle" font-weight="800">${label}</text>
-        <text x="50%" y="78%" fill="rgba(255,255,255,.55)" font-family="system-ui" font-size="22" text-anchor="middle" dominant-baseline="middle">demo</text>
       </svg>
     `);
     return `data:image/svg+xml;charset=utf-8,${s}`;
   }
-
   document.getElementById("btnLoadDemo").addEventListener("click", ()=>{
     state.wardrobe = [
-      {id:uid(), name:"T-shirt basic", type:"top", link:"", createdAt:Date.now(), views:{front:svgData("TOP"), right:svgData("TOP DX"), back:svgData("TOP R"), left:svgData("TOP SX")}},
-      {id:uid(), name:"Jeans", type:"bottom", link:"", createdAt:Date.now()-1, views:{front:svgData("PANT"), right:svgData("PANT DX"), back:svgData("PANT R"), left:svgData("PANT SX")}},
-      {id:uid(), name:"Vestito", type:"dress", link:"", createdAt:Date.now()-2, views:{front:svgData("DRESS"), right:svgData("DRESS DX"), back:svgData("DRESS R"), left:svgData("DRESS SX")}},
-      {id:uid(), name:"Sneakers", type:"shoes", link:"", createdAt:Date.now()-3, views:{front:svgData("SHOES"), right:svgData("SHOES DX"), back:svgData("SHOES R"), left:svgData("SHOES SX")}},
-      {id:uid(), name:"Borsa", type:"accessory", link:"", createdAt:Date.now()-4, views:{front:svgData("BAG"), right:svgData("BAG DX"), back:svgData("BAG R"), left:svgData("BAG SX")}},
+      {id:uid(), name:"T-shirt basic", type:"top", createdAt:Date.now(), views:{front:svgData("TOP")}},
+      {id:uid(), name:"Jeans", type:"bottom", createdAt:Date.now()-1, views:{front:svgData("PANT")}},
+      {id:uid(), name:"Vestito", type:"dress", createdAt:Date.now()-2, views:{front:svgData("DRESS")}}
     ];
     save(); renderWardrobe();
     showOk("📦 Demo caricata");
   });
-
   document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
     state.wardrobe = [];
     state.scene.applied = [];
     save(); renderWardrobe(); renderApplied();
   });
 
-  // ---------- Person modal ----------
+  // Modals
   const personModal = document.getElementById("personModal");
-  const closePersonModal = document.getElementById("closePersonModal");
-  const btnLoadPerson = document.getElementById("btnLoadPerson");
-  const btnSavePerson = document.getElementById("btnSavePerson");
-  const btnClearPerson = document.getElementById("btnClearPerson");
-
-  btnLoadPerson.addEventListener("click", ()=>{ personModal.classList.add("open"); });
-  closePersonModal.addEventListener("click", ()=> personModal.classList.remove("open"));
+  document.getElementById("btnLoadPerson").addEventListener("click", ()=> personModal.classList.add("open"));
+  document.getElementById("closePersonModal").addEventListener("click", ()=> personModal.classList.remove("open"));
   personModal.addEventListener("click", (e)=>{ if(e.target===personModal) personModal.classList.remove("open"); });
 
+  const garmentModal = document.getElementById("garmentModal");
+  function openGarmentModal(){ garmentModal.classList.add("open"); }
+  document.getElementById("btnAddGarment").addEventListener("click", openGarmentModal);
+  document.getElementById("btnAddGarment2").addEventListener("click", openGarmentModal);
+  document.getElementById("closeGarmentModal").addEventListener("click", ()=> garmentModal.classList.remove("open"));
+  garmentModal.addEventListener("click", (e)=>{ if(e.target===garmentModal) garmentModal.classList.remove("open"); });
+  document.getElementById("btnGoWardrobe").addEventListener("click", ()=> setTab("guardaroba"));
+
+  // Helpers
   function fileToDataURL(file){
     return new Promise((resolve,reject)=>{
       const fr = new FileReader();
@@ -1202,17 +1052,15 @@
     });
   }
 
-  btnSavePerson.addEventListener("click", async ()=>{
+  // Save person
+  document.getElementById("btnSavePerson").addEventListener("click", async ()=>{
     try{
       const f = document.getElementById("personFront").files[0];
       const r = document.getElementById("personRight").files[0];
       const b = document.getElementById("personBack").files[0];
       const l = document.getElementById("personLeft").files[0];
 
-      if(!f && !state.person.front){
-        showErr("Carica almeno la foto FRONTE.");
-        return;
-      }
+      if(!f && !state.person.front){ showErr("Carica almeno FRONTE."); return; }
 
       if(f) state.person.front = await fileToDataURL(f);
       if(r) state.person.right = await fileToDataURL(r);
@@ -1225,417 +1073,28 @@
       showOk("✅ Persona salvata");
     }catch(e){ showErr("Errore salvataggio persona: " + e); }
   });
-
-  btnClearPerson.addEventListener("click", ()=>{
+  document.getElementById("btnClearPerson").addEventListener("click", ()=>{
     state.person = {front:null,right:null,back:null,left:null};
-    save();
-    renderPerson();
-    showOk("🧼 Persona rimossa");
+    save(); renderPerson(); showOk("🧼 Persona rimossa");
   });
 
-  // ---------- Garment modal & cropper ----------
-  const garmentModal = document.getElementById("garmentModal");
-  const closeGarmentModal = document.getElementById("closeGarmentModal");
-  const btnAddGarment = document.getElementById("btnAddGarment");
-  const btnAddGarment2 = document.getElementById("btnAddGarment2");
-  const btnGoWardrobe = document.getElementById("btnGoWardrobe");
-
-  btnGoWardrobe.addEventListener("click", ()=> setTab("guardaroba"));
-  btnAddGarment.addEventListener("click", ()=> openGarmentModal());
-  btnAddGarment2.addEventListener("click", ()=> openGarmentModal());
-  closeGarmentModal.addEventListener("click", ()=> garmentModal.classList.remove("open"));
-  garmentModal.addEventListener("click", (e)=>{ if(e.target===garmentModal) garmentModal.classList.remove("open"); });
-
-  const garmentFile = document.getElementById("garmentFile");
-  const btnPickGarmentImg = document.getElementById("btnPickGarmentImg");
-  btnPickGarmentImg.addEventListener("click", ()=> garmentFile.click());
-
-  const cropCanvas = document.getElementById("cropCanvas");
-  const cropStage  = document.getElementById("cropStage");
-  const ctx = cropCanvas.getContext("2d");
-
-  let srcImg = new Image();
-  let imgLoaded = false;
-
-  // image transform in cropper
-  let imgX=0, imgY=0, imgScale=1; // image placement in stage pixels
-  let crop = { x:0.18, y:0.18, w:0.64, h:0.64 }; // normalized [0..1]
-  let dragging = null; // "img" or handle id
-  let start = null;
-
-  // handles positions in normalized crop
-  const handles = ["tl","tr","bl","br"];
-
-  function resizeCropCanvas(){
-    const r = cropStage.getBoundingClientRect();
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    cropCanvas.width = Math.round(r.width * dpr);
-    cropCanvas.height = Math.round(r.height * dpr);
-    cropCanvas.style.width = r.width + "px";
-    cropCanvas.style.height = r.height + "px";
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    drawCropper();
-  }
-  window.addEventListener("resize", resizeCropCanvas);
-
-  function openGarmentModal(){
-    garmentModal.classList.add("open");
-    setTimeout(resizeCropCanvas, 50);
-    // reset form fields
-    document.getElementById("gName").value = "";
-    document.getElementById("gLink").value = "";
-    document.getElementById("ocrText").value = "";
-    // keep type/view from last selection
-  }
-
-  garmentFile.addEventListener("change", async ()=>{
-    const f = garmentFile.files[0];
-    if(!f) return;
-    const data = await fileToDataURL(f);
-    await loadSourceImage(data);
-    showOk("📷 Immagine caricata (usa maniglie per ritaglio)");
-  });
-
-  async function loadSourceImage(dataUrl){
-    imgLoaded = false;
-    await new Promise((resolve,reject)=>{
-      srcImg = new Image();
-      srcImg.onload = ()=>{ imgLoaded = true; resolve(); };
-      srcImg.onerror = reject;
-      srcImg.src = dataUrl;
-    });
-
-    // fit image to stage
-    const r = cropStage.getBoundingClientRect();
-    const sx = r.width / srcImg.width;
-    const sy = r.height / srcImg.height;
-    imgScale = Math.min(sx, sy) * 1.0;
-    imgX = (r.width - srcImg.width * imgScale) / 2;
-    imgY = (r.height - srcImg.height * imgScale) / 2;
-
-    // default crop centered
-    crop = { x:0.18, y:0.18, w:0.64, h:0.64 };
-
-    // zoom slider
-    document.getElementById("imgZoom").value = "100";
-    document.getElementById("imgZoomVal").textContent = "100%";
-
-    drawCropper();
-  }
-
-  function drawCropper(){
-    const r = cropStage.getBoundingClientRect();
-    ctx.clearRect(0,0,r.width,r.height);
-
-    // background
-    ctx.fillStyle = "#05050c";
-    ctx.fillRect(0,0,r.width,r.height);
-
-    if(imgLoaded){
-      ctx.drawImage(srcImg, imgX, imgY, srcImg.width*imgScale, srcImg.height*imgScale);
-    }else{
-      // placeholder text
-      ctx.fillStyle = "rgba(255,255,255,.55)";
-      ctx.font = "700 16px system-ui";
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText("Scegli un’immagine per iniziare", r.width/2, r.height/2);
-      return;
-    }
-
-    // dim outside crop
-    const cx = crop.x * r.width;
-    const cy = crop.y * r.height;
-    const cw = crop.w * r.width;
-    const ch = crop.h * r.height;
-
-    ctx.save();
-    ctx.fillStyle = "rgba(0,0,0,.48)";
-    ctx.beginPath();
-    ctx.rect(0,0,r.width,r.height);
-    ctx.rect(cx,cy,cw,ch);
-    ctx.fill("evenodd");
-    ctx.restore();
-
-    // crop rect
-    ctx.strokeStyle = "rgba(110,220,255,.95)";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(cx,cy,cw,ch);
-
-    // handles
-    const hs = 10;
-    function dot(x,y){
-      ctx.fillStyle = "rgba(110,220,255,.95)";
-      ctx.beginPath();
-      ctx.arc(x,y,hs,0,Math.PI*2);
-      ctx.fill();
-      ctx.strokeStyle="rgba(0,0,0,.35)";
-      ctx.lineWidth=2;
-      ctx.stroke();
-    }
-    dot(cx,cy);
-    dot(cx+cw,cy);
-    dot(cx,cy+ch);
-    dot(cx+cw,cy+ch);
-  }
-
-  function hitTestHandle(px,py){
-    const r = cropStage.getBoundingClientRect();
-    const cx = crop.x * r.width;
-    const cy = crop.y * r.height;
-    const cw = crop.w * r.width;
-    const ch = crop.h * r.height;
-    const pts = {
-      tl:[cx,cy], tr:[cx+cw,cy], bl:[cx,cy+ch], br:[cx+cw,cy+ch]
-    };
-    const rad = 18;
-    for(const k of handles){
-      const [x,y] = pts[k];
-      const d = Math.hypot(px-x,py-y);
-      if(d<=rad) return k;
-    }
-    // inside crop? (for dragging crop) not needed: we drag image, crop handles resize
-    return null;
-  }
-
-  function clampCrop(){
-    crop.w = clamp(crop.w, 0.10, 0.98);
-    crop.h = clamp(crop.h, 0.10, 0.98);
-    crop.x = clamp(crop.x, 0.01, 0.99 - crop.w);
-    crop.y = clamp(crop.y, 0.01, 0.99 - crop.h);
-  }
-
-  cropCanvas.addEventListener("pointerdown", (e)=>{
-    const r = cropStage.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-
-    const h = hitTestHandle(x,y);
-    dragging = h ? ("handle:"+h) : "img";
-    start = { x, y, imgX, imgY, crop:{...crop} };
-    cropCanvas.setPointerCapture(e.pointerId);
-    e.preventDefault();
-  });
-
-  cropCanvas.addEventListener("pointermove", (e)=>{
-    if(!dragging || !start) return;
-    const r = cropStage.getBoundingClientRect();
-    const x = e.clientX - r.left;
-    const y = e.clientY - r.top;
-    const dx = x - start.x;
-    const dy = y - start.y;
-
-    if(dragging==="img"){
-      imgX = start.imgX + dx;
-      imgY = start.imgY + dy;
-    }else{
-      const which = dragging.split(":")[1];
-      const nx = dx / r.width;
-      const ny = dy / r.height;
-      crop = {...start.crop};
-
-      if(which==="tl"){
-        crop.x += nx; crop.y += ny;
-        crop.w -= nx; crop.h -= ny;
-      }else if(which==="tr"){
-        crop.y += ny;
-        crop.w += nx; crop.h -= ny;
-      }else if(which==="bl"){
-        crop.x += nx;
-        crop.w -= nx; crop.h += ny;
-      }else if(which==="br"){
-        crop.w += nx; crop.h += ny;
-      }
-      clampCrop();
-    }
-    drawCropper();
-    e.preventDefault();
-  });
-
-  cropCanvas.addEventListener("pointerup", ()=>{ dragging=null; start=null; });
-  cropCanvas.addEventListener("pointercancel", ()=>{ dragging=null; start=null; });
-
-  document.getElementById("btnFitCrop").addEventListener("click", ()=>{
-    // expand crop to fit visible content center
-    crop = { x:0.08, y:0.08, w:0.84, h:0.84 };
-    clampCrop();
-    drawCropper();
-  });
-  document.getElementById("btnNewCrop").addEventListener("click", ()=>{
-    crop = { x:0.18, y:0.18, w:0.64, h:0.64 };
-    clampCrop();
-    drawCropper();
-  });
-  document.getElementById("btnCropReset").addEventListener("click", ()=>{
-    if(!imgLoaded) return;
-    loadSourceImage(srcImg.src);
-  });
-
-  // zoom
-  const imgZoom = document.getElementById("imgZoom");
-  const imgZoomVal = document.getElementById("imgZoomVal");
-  imgZoom.addEventListener("input", ()=>{
-    const r = cropStage.getBoundingClientRect();
-    const z = Number(imgZoom.value) / 100;
-    imgZoomVal.textContent = `${imgZoom.value}%`;
-
-    // scale around stage center
-    const cx = r.width/2;
-    const cy = r.height/2;
-    const oldScale = imgScale;
-    const newScale = oldScale * (z / (state._lastZoom || 1));
-    state._lastZoom = z;
-
-    imgX = cx - (cx - imgX) * (newScale/oldScale);
-    imgY = cy - (cy - imgY) * (newScale/oldScale);
-    imgScale = newScale;
-    drawCropper();
-  });
-
-  // white cut + feather
-  const whiteCut = document.getElementById("whiteCut");
-  const whiteCutVal = document.getElementById("whiteCutVal");
-  const feather = document.getElementById("feather");
-  const featherVal = document.getElementById("featherVal");
-  whiteCut.addEventListener("input", ()=> whiteCutVal.textContent = whiteCut.value);
-  feather.addEventListener("input", ()=> featherVal.textContent = feather.value);
-  whiteCutVal.textContent = whiteCut.value;
-  featherVal.textContent = feather.value;
-
-  // select/copy/paste name
-  const gName = document.getElementById("gName");
-  document.getElementById("btnSelectName").addEventListener("click", ()=>{ gName.focus(); gName.select(); });
-  document.getElementById("btnCopyName").addEventListener("click", async ()=>{
-    try{ await navigator.clipboard.writeText(gName.value || ""); showOk("📋 Copiato"); }catch{ showErr("Clipboard non disponibile"); }
-  });
-  document.getElementById("btnPasteName").addEventListener("click", async ()=>{
-    try{ const t = await navigator.clipboard.readText(); gName.value = t || ""; showOk("📋 Incollato"); }catch{ showErr("Incolla non disponibile (permessi)"); }
-  });
-
-  // ---------- OCR (optional) ----------
-  const btnOCR = document.getElementById("btnOCR");
-  const ocrText = document.getElementById("ocrText");
-  document.getElementById("btnCopyOCR").addEventListener("click", async ()=>{
-    try{ await navigator.clipboard.writeText(ocrText.value || ""); showOk("📋 Testo copiato"); }catch{ showErr("Clipboard non disponibile"); }
-  });
-  document.getElementById("btnClearOCR").addEventListener("click", ()=>{ ocrText.value=""; });
-
-  async function loadTesseract(){
-    if(window.Tesseract) return window.Tesseract;
-    // load from CDN
-    await new Promise((resolve,reject)=>{
-      const s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-    return window.Tesseract;
-  }
-
-  function getCroppedCanvas(){
-    // produce cropped image from source with background cleaning
-    if(!imgLoaded) return null;
-
-    const r = cropStage.getBoundingClientRect();
-    const cx = crop.x * r.width;
-    const cy = crop.y * r.height;
-    const cw = crop.w * r.width;
-    const ch = crop.h * r.height;
-
-    // map crop rect (stage coords) into source image coords:
-    // stage pixel -> source pixel using imgX/imgY/imgScale
-    const sx = (cx - imgX) / imgScale;
-    const sy = (cy - imgY) / imgScale;
-    const sw = cw / imgScale;
-    const sh = ch / imgScale;
-
-    const out = document.createElement("canvas");
-    out.width = Math.max(2, Math.round(sw));
-    out.height = Math.max(2, Math.round(sh));
-    const octx = out.getContext("2d");
-
-    // draw
-    octx.drawImage(srcImg, sx, sy, sw, sh, 0, 0, out.width, out.height);
-
-    // clean white background
-    const cut = Number(whiteCut.value); // 0..100
-    const featherPx = Number(feather.value);
-
-    if(cut > 0){
-      const imgData = octx.getImageData(0,0,out.width,out.height);
-      const d = imgData.data;
-      const thr = 255 - Math.round((cut/100) * 140); // 255..115 approx
-      for(let i=0;i<d.length;i+=4){
-        const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
-        if(a===0) continue;
-        // if near-white => make transparent
-        const maxc = Math.max(r,g,b);
-        const minc = Math.min(r,g,b);
-        const isWhiteish = (minc > thr) && (maxc > thr);
-        if(isWhiteish){
-          d[i+3] = 0;
-        }
-      }
-      imgData.data.set(d);
-      octx.putImageData(imgData,0,0);
-
-      // feather edges by drawing with shadow blur onto new canvas
-      if(featherPx > 0){
-        const out2 = document.createElement("canvas");
-        out2.width = out.width; out2.height = out.height;
-        const c2 = out2.getContext("2d");
-        c2.clearRect(0,0,out2.width,out2.height);
-        c2.filter = `blur(${featherPx}px)`;
-        c2.drawImage(out,0,0);
-        c2.filter = "none";
-        // keep alpha from blurred (soft)
-        const tmp = document.createElement("canvas");
-        tmp.width = out.width; tmp.height = out.height;
-        tmp.getContext("2d").drawImage(out2,0,0);
-        // Replace out with softened edges
-        out.width = out.width; // reset
-        out.getContext("2d").drawImage(tmp,0,0);
-      }
-    }
-
-    return out;
-  }
-
-  btnOCR.addEventListener("click", async ()=>{
-    try{
-      const c = getCroppedCanvas();
-      if(!c){ showErr("Prima carica un’immagine capo."); return; }
-      ocrText.value = "OCR in corso…";
-      const T = await loadTesseract();
-      const res = await T.recognize(c, "ita+eng");
-      ocrText.value = (res?.data?.text || "").trim();
-      showOk("✅ OCR completato");
-    }catch(e){
-      showErr("OCR non riuscito. Suggerimento: fai zoom e ritaglia meglio. Dettagli: " + e);
-    }
-  });
-
-  // ---------- Save garment ----------
+  // Save garment (base)
   document.getElementById("btnSaveGarment").addEventListener("click", async ()=>{
     try{
-      const c = getCroppedCanvas();
-      if(!c){ showErr("Prima carica un’immagine capo."); return; }
+      const f = document.getElementById("garmentFile").files[0];
+      if(!f){ showErr("Carica immagine capo."); return; }
+      const data = await fileToDataURL(f);
 
       const name = (document.getElementById("gName").value || "").trim() || "Capo";
       const type = document.getElementById("gType").value;
       const view = document.getElementById("gView").value;
-      const link = (document.getElementById("gLink").value || "").trim();
 
-      const dataUrl = c.toDataURL("image/png"); // PNG con trasparenza
-
-      // Find existing item by name+type? We keep it simple: if same name+type exists, update view.
       let item = state.wardrobe.find(x => x.name === name && x.type === type);
       if(!item){
-        item = { id: uid(), name, type, link, createdAt: Date.now(), views: {front:null,right:null,back:null,left:null} };
+        item = { id: uid(), name, type, createdAt: Date.now(), views:{front:null,right:null,back:null,left:null} };
         state.wardrobe.unshift(item);
       }
-      item.link = link;
-      item.views[view] = dataUrl;
+      item.views[view] = data;
 
       save();
       renderWardrobe();
@@ -1644,41 +1103,15 @@
     }catch(e){ showErr("Errore salvataggio capo: " + e); }
   });
 
-  // ---------- Navigation buttons ----------
-  document.getElementById("btnGoWardrobe").addEventListener("click", ()=> setTab("guardaroba"));
-  document.getElementById("btnAddGarment2").addEventListener("click", openGarmentModal);
-  document.getElementById("btnAddGarment").addEventListener("click", openGarmentModal);
-
-  // ---------- Init ----------
-  state.scene.applied ??= [];
-  save();
+  // Init
   renderWardrobe();
   renderPerson();
-  renderApplied();
   setView(state.scene.currentView || "front");
+  renderApplied();
   status.textContent = "OK";
-
-  // Close modals on ESC
-  window.addEventListener("keydown", (e)=>{
-    if(e.key==="Escape"){
-      personModal.classList.remove("open");
-      garmentModal.classList.remove("open");
-    }
-  });
-
-  // ---------- FIX: stage click clears selection ----------
-  document.getElementById("stageInner").addEventListener("pointerdown", ()=>{
-    selectedOverlayId = null; save(); renderApplied();
-  });
-
-  // Auto open cropper resize
-  const ro = new ResizeObserver(()=>{ if(garmentModal.classList.contains("open")) resizeCropCanvas(); });
-  ro.observe(cropStage);
-
 })();
 </script>
 
-<!-- PWA: service worker -->
 <script>
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
