@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SerCucTech TryMe • Vetrina</title>
+  <link rel="stylesheet" href="./assets/app.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">SC</div>
+    <div>
+      <div class="title" id="tName">Vetrina</div>
+      <div class="sub">Prova i capi caricati da SerCucTech</div>
+      <div class="pill" id="pStatus">Stato: —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="grid2">
+      <div>
+        <div class="canvasHost" id="host">
+          <canvas id="cv"></canvas>
+          <div class="water">SerCucTech TryMe</div>
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn" id="btnRotate">🔁 Rotazione</button>
+          <button class="btn ok" id="btnAuto">▶️ Auto</button>
+          <button class="btn danger" id="btnStop">⏹ Stop</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="title" style="font-size:16px">Capi disponibili</div>
+        <div id="gList" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="./config.js"></script>
+<script src="./assets/db.js"></script>
+<script>
+const $ = (q,el=document)=>el.querySelector(q);
+const qs = new URLSearchParams(location.search);
+const personId = qs.get("id");
+
+let DATA = { people:[], garments:[], assign:{} };
+let person=null;
+let viewOrder=["FRONT","RIGHT","BACK","LEFT"];
+let viewIndex=0;
+let autoTimer=null;
+
+const cv=$("#cv");
+const ctx=cv.getContext("2d");
+let worn=null;
+
+function setPill(ok, txt){
+  $("#pStatus").textContent = "Stato: " + txt;
+}
+
+function resize(){
+  const host=$("#host").getBoundingClientRect();
+  const dpr=Math.max(1,Math.min(3,devicePixelRatio||1));
+  cv.width=Math.floor(host.width*dpr);
+  cv.height=Math.floor(host.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  draw();
+}
+addEventListener("resize", resize);
+
+function fitContain(iw,ih,bw,bh){
+  const r=Math.min(bw/iw,bh/ih);
+  const w=iw*r,h=ih*r;
+  return {x:(bw-w)/2,y:(bh-h)/2,w,h};
+}
+
+async function load(){
+  if(!personId){
+    setPill(false,"Manca id");
+    $("#gList").innerHTML = `<div class="pill">Link non valido: manca ?id=...</div>`;
+    return;
+  }
+
+  DATA = await DB.dbGetAll();
+  person = DATA.people.find(p=>p.id===personId);
+  if(!person){
+    setPill(false,"Persona non trovata");
+    $("#gList").innerHTML = `<div class="pill">Persona non trovata. Contatta SerCucTech.</div>`;
+    return;
+  }
+
+  $("#tName").textContent = "Vetrina • " + (person.name||person.id);
+
+  if(window.APP_CONFIG?.requirePinOnVetrina){
+    const pin = prompt("Inserisci PIN per entrare:");
+    if(!pin){ setPill(false,"PIN richiesto"); return; }
+    const h = await DB.sha256(pin.trim());
+    if(h !== person.pinHash){
+      setPill(false,"PIN errato");
+      return;
+    }
+  }
+
+  setPill(true, DB.isOnlineMode() ? "OK (online)" : "OK (locale)");
+  renderGarments();
+  resize();
+}
+
+function currentView(){ return viewOrder[viewIndex]||"FRONT"; }
+
+async function draw(){
+  const host=$("#host").getBoundingClientRect();
+  const w=host.width,h=host.height;
+
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle="#05070b";
+  ctx.fillRect(0,0,w,h);
+
+  // PERSON
+  const v=currentView();
+  const src = person.views?.[v] || person.views?.FRONT;
+  if(src){
+    const img = await loadImg(src);
+    const fit=fitContain(img.naturalWidth,img.naturalHeight,w,h);
+    ctx.drawImage(img,fit.x,fit.y,fit.w,fit.h);
+  }else{
+    ctx.fillStyle="rgba(255,255,255,.08)";
+    ctx.fillRect(20,20,w-40,h-40);
+    ctx.fillStyle="rgba(255,255,255,.65)";
+    ctx.font="800 16px system-ui";
+    ctx.fillText("Foto persona non disponibile",40,60);
+  }
+
+  // WORN
+  if(worn){
+    const g = DATA.garments.find(x=>x.id===worn);
+    const gv = g?.views?.[v] || g?.views?.FRONT;
+    if(gv){
+      const img = await loadImg(gv);
+      // auto fit centrale
+      const fit=fitContain(img.naturalWidth,img.naturalHeight,w*0.7,h*0.8);
+      ctx.drawImage(img, (w-fit.w)/2, (h-fit.h)/2, fit.w, fit.h);
+    }
+  }
+}
+
+const cache=new Map();
+function loadImg(src){
+  if(cache.has(src)) return cache.get(src);
+  const p = new Promise((resolve,reject)=>{
+    const img=new Image();
+    img.onload=()=>resolve(img);
+    img.onerror=reject;
+    img.src=src;
+  });
+  cache.set(src,p);
+  return p;
+}
+
+function renderGarments(){
+  const box=$("#gList");
+  const ids = DATA.assign[personId] || [];
+  const list = ids.map(id=>DATA.garments.find(g=>g.id===id)).filter(Boolean);
+
+  if(!list.length){
+    box.innerHTML = `<div class="pill">Nessun capo assegnato.</div>`;
+    return;
+  }
+  box.innerHTML = "";
+  for(const g of list){
+    const div=document.createElement("div");
+    div.className="card";
+    div.style.marginTop="10px";
+    div.innerHTML = `
+      <b>${g.name||"Senza nome"}</b>
+      <div class="sub">Tipo: ${g.type||""}</div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary">Metti addosso</button>
+        <button class="btn danger">Togli</button>
+      </div>
+    `;
+    const [bWear,bOff]=div.querySelectorAll("button");
+    bWear.onclick=()=>{ worn=g.id; draw(); };
+    bOff.onclick=()=>{ if(worn===g.id) worn=null; draw(); };
+    box.appendChild(div);
+  }
+}
+
+$("#btnRotate").addEventListener("click", ()=>{ viewIndex=(viewIndex+1)%4; draw(); });
+$("#btnAuto").addEventListener("click", ()=>{
+  if(autoTimer) return;
+  autoTimer=setInterval(()=>{ viewIndex=(viewIndex+1)%4; draw(); }, 900);
+});
+$("#btnStop").addEventListener("click", ()=>{ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; } });
+
+load();
+</script>
+</body>
+</html>
