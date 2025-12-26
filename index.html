@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 2D PRO (Auto Fit + Fullscreen)</title>
+  <title>SerCucTech • Virtual Stylist 2D PRO (Upload + Crop + AutoFit)</title>
   <meta name="theme-color" content="#0b0b12" />
   <style>
     :root{
@@ -82,7 +82,7 @@
       border-color:rgba(255,110,110,.25);
     }
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
-    select, input[type="range"], input[type="number"]{
+    select, input[type="range"], input[type="number"], input[type="text"]{
       width:100%; box-sizing:border-box;
       padding:10px; border-radius:12px;
       border:1px solid var(--line);
@@ -122,54 +122,34 @@
       touch-action:none;
     }
 
-    /* Fullscreen: fai diventare frame a pieno schermo */
+    /* Fullscreen */
     #stageFrame.fullscreen{
-      width:100vw;
-      height:100vh;
-      border-radius:0;
-      border:none;
-      background:#06060c;
+      width:100vw; height:100vh; border-radius:0; border:none; background:#06060c;
     }
-    .stageWrap.fullscreen{
-      height: calc(100vh - 0px);
-      border-radius:0;
-    }
+    .stageWrap.fullscreen{ height: calc(100vh - 0px); border-radius:0; }
     body.fullscreen header{ display:none; }
     body.fullscreen main.wrap{ max-width:none; padding:0; }
     body.fullscreen .stageWrap{ border:none; }
     body.fullscreen .canvasArea{ padding:0; }
 
     /* COMPOSITE */
-    #composite{
-      position:absolute; inset:0;
-      transform-origin:center center;
-      will-change:transform;
-    }
+    #composite{ position:absolute; inset:0; transform-origin:center center; will-change:transform; }
 
     /* PERSONA NATURALE */
     #modelImg{
-      position:absolute;
-      inset:10px;
-      width:calc(100% - 20px);
-      height:calc(100% - 20px);
-      object-fit:contain;
-      object-position:center center;
-      pointer-events:none;
-      z-index:1;
+      position:absolute; inset:10px;
+      width:calc(100% - 20px); height:calc(100% - 20px);
+      object-fit:contain; object-position:center;
+      pointer-events:none; z-index:1;
     }
 
     /* VEIL */
     #veilLayer{
-      position:absolute;
-      inset:10px;
-      width:calc(100% - 20px);
-      height:calc(100% - 20px);
-      z-index:2;
-      pointer-events:none;
+      position:absolute; inset:10px; width:calc(100% - 20px); height:calc(100% - 20px);
+      z-index:2; pointer-events:none;
     }
     .veilRect{
-      position:absolute;
-      border-radius:22px;
+      position:absolute; border-radius:22px;
       background:rgba(0,0,0,.35);
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
@@ -181,10 +161,8 @@
 
     /* OUTFIT */
     #outfitGroup{ position:absolute; inset:0; z-index:3; pointer-events:none; }
-
     .cloth{
-      position:absolute;
-      left:50%;
+      position:absolute; left:50%;
       transform:translateX(-50%);
       transform-origin:center center;
       pointer-events:none;
@@ -193,7 +171,6 @@
       will-change:transform;
       mix-blend-mode: multiply;
     }
-    /* pos base */
     .pos-top    { top:33%; }
     .pos-jacket { top:33%; }
     .pos-bottom { top:60%; }
@@ -214,17 +191,6 @@
       backdrop-filter: blur(8px);
     }
 
-    #errBox{
-      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
-      border:1px solid rgba(255,110,110,.35);
-      background:rgba(255,110,110,.08);
-      color:rgba(255,255,255,.95);
-      border-radius:14px;
-      padding:10px 12px;
-      display:none;
-      white-space:pre-wrap;
-      font-size:12px;
-    }
     .mini{
       font-size:12px; color:var(--muted);
       border:1px dashed rgba(255,255,255,.12);
@@ -267,11 +233,70 @@
       font-size:12px; color:var(--muted);
       text-align:center;
       padding:6px;
+      overflow:hidden;
     }
+    .thumb img{ width:100%; height:100%; object-fit:cover; opacity:.95; border-radius:12px; }
     .meta{ flex:1 1 auto; min-width:0; }
     .meta .t{ font-weight:900; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .meta .s{ font-size:12px; color:var(--muted); margin-top:2px; }
     .meta .p{ margin-top:8px; display:flex; gap:8px; flex-wrap:wrap; }
+
+    /* Crop modal */
+    .modal{
+      position:fixed; inset:0; z-index:9998;
+      background:rgba(0,0,0,.62);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:14px;
+    }
+    .modal.open{ display:flex; }
+    .modalCard{
+      width:min(720px, 100%);
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(11,11,18,.96);
+      border-radius:18px;
+      overflow:hidden;
+    }
+    .modalHead{
+      padding:12px 14px;
+      display:flex; justify-content:space-between; align-items:center;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .modalBody{ padding:12px 14px; }
+    .cropWrap{
+      display:grid; grid-template-columns: 1fr 1fr; gap:12px;
+    }
+    @media(max-width:820px){ .cropWrap{ grid-template-columns:1fr; } }
+    .cropStage{
+      border:1px solid rgba(255,255,255,.10);
+      background:#070710;
+      border-radius:16px;
+      overflow:hidden;
+      position:relative;
+      height:360px;
+    }
+    canvas{ display:block; width:100%; height:100%; }
+    .modalFoot{
+      padding:12px 14px;
+      border-top:1px solid rgba(255,255,255,.08);
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center; justify-content:flex-end;
+    }
+    .kpi{
+      display:flex; gap:8px; flex-wrap:wrap;
+      color:var(--muted); font-size:12px;
+    }
+
+    #errBox{
+      position:fixed; left:10px; right:10px; bottom:10px; z-index:9999;
+      border:1px solid rgba(255,110,110,.35);
+      background:rgba(255,110,110,.08);
+      color:rgba(255,255,255,.95);
+      border-radius:14px;
+      padding:10px 12px;
+      display:none;
+      white-space:pre-wrap;
+      font-size:12px;
+    }
   </style>
 </head>
 
@@ -283,7 +308,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 2D PRO</div>
-          <div class="sub">Click capo → auto-fit subito • Pulsante tutto schermo</div>
+          <div class="sub">Upload capi + ritaglio • Click capo → auto-fit subito • Tutto schermo</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">OK</b></span>
@@ -309,7 +334,7 @@
           <div class="stageWrap" id="stageWrap">
             <div class="canvasArea">
               <div id="stageFrame">
-                <div class="hint" id="hintText">Click capo nel guardaroba → si adatta subito</div>
+                <div class="hint" id="hintText">1) Carica persona 2) Guardaroba 3) Metti addosso</div>
 
                 <div id="composite">
                   <img id="modelImg" alt="modello" />
@@ -355,14 +380,14 @@
           <div style="height:12px"></div>
 
           <div class="card" style="border-radius:16px">
-            <h2><span>Sostituisci vestiti originali</span><span class="sub">A (automatico)</span></h2>
+            <h2><span>Sostituisci vestiti originali</span><span class="sub">copertura (demo)</span></h2>
             <div class="body">
               <div class="row">
                 <button class="btn primary" id="btnReplaceToggle">👕 Sostituzione: OFF</button>
                 <span class="pill">Overlay capi: <b id="ovLabel">85%</b></span>
               </div>
 
-              <label>Intensità copertura vestiti originali (0–100)</label>
+              <label>Copertura vestiti originali (0–100)</label>
               <input id="slReplace" type="range" min="0" max="100" value="70" />
 
               <label>Blur copertura (0–18)</label>
@@ -370,11 +395,6 @@
 
               <label>Opacità capi (30–100)</label>
               <input id="slOverlay" type="range" min="30" max="100" value="85" />
-
-              <div style="height:8px"></div>
-              <div class="mini">
-                Click un capo nel guardaroba: si adatta automaticamente a profilo+altezza.
-              </div>
             </div>
           </div>
 
@@ -403,7 +423,7 @@
 
           <div style="height:12px"></div>
           <div class="mini">
-            Auto-Fit = regola <b>dimensione e posizione</b> dei capi automaticamente.
+            Auto-Fit è una stima. Se vuoi precisione “vera” serve calibrazione + segmentazione (ML).
           </div>
         </div>
       </div>
@@ -414,12 +434,19 @@
   <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba</span><span class="sub">click “Metti addosso” = auto-fit immediato</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">Upload + Crop • poi “Metti addosso”</span></h2>
       <div class="body">
         <div class="wardbar">
-          <button class="btn primary" id="btnLoadDemo">📦 Carica demo</button>
-          <button class="btn" id="btnClearWardrobe">🧽 Svuota guardaroba</button>
+          <button class="btn primary" id="btnAddGarment">➕ Aggiungi capo</button>
+          <button class="btn" id="btnLoadDemo">📦 Carica demo</button>
+          <button class="btn" id="btnClearWardrobe">🧽 Svuota</button>
           <span class="pill">Capi: <b id="wardCount">0</b></span>
+        </div>
+
+        <div style="height:8px"></div>
+        <div class="mini">
+          Consiglio: usa immagini capo su sfondo semplice o PNG trasparente.
+          Puoi caricare solo FRONT, oppure 4 viste.
         </div>
 
         <div class="wardcats" id="catChips"></div>
@@ -434,10 +461,10 @@
       <h2><span>Guida</span><span class="sub">uso rapido</span></h2>
       <div class="body">
         <div class="mini">
-          1) Carica persona FRONTE (meglio anche 4 viste).<br/>
-          2) Vai su Guardaroba → Carica demo → Metti addosso (auto-fit).<br/>
-          3) In Studio attiva Sostituzione ON se vuoi coprire vestiti originali.<br/>
-          4) Pulsante “Tutto schermo” per vedere bene.
+          1) Studio → carica persona (almeno FRONTE).<br/>
+          2) Guardaroba → “Aggiungi capo” → scegli tipo + nome → carica FRONT (poi DX/RETRO/SX se vuoi).<br/>
+          3) Nel crop: regola zoom e trascina per centrare, poi “Salva”.<br/>
+          4) Clic “Metti addosso” → torna in Studio già vestito.
         </div>
       </div>
     </div>
@@ -445,7 +472,64 @@
 
 </main>
 
+<!-- hidden inputs -->
 <input id="filePerson" type="file" accept="image/*" style="display:none" />
+<input id="fileGarment" type="file" accept="image/*" style="display:none" />
+
+<!-- Crop modal -->
+<div class="modal" id="cropModal" aria-hidden="true">
+  <div class="modalCard">
+    <div class="modalHead">
+      <div style="font-weight:900">Ritaglio capo (prima di salvarlo)</div>
+      <button class="btn" id="btnCropClose">✖</button>
+    </div>
+    <div class="modalBody">
+      <div class="cropWrap">
+        <div>
+          <div class="sub">Trascina per spostare • Zoom per ingrandire</div>
+          <div style="height:8px"></div>
+          <div class="cropStage">
+            <canvas id="cropCanvas"></canvas>
+          </div>
+          <label>Zoom</label>
+          <input id="cropZoom" type="range" min="1" max="3" value="1.2" step="0.01" />
+        </div>
+        <div>
+          <div class="sub">Dati capo</div>
+          <label>Nome capo</label>
+          <input id="garName" type="text" placeholder="es. Camicia blu" />
+          <label>Tipo capo</label>
+          <select id="garType">
+            <option value="top">Camicia / Maglia (TOP)</option>
+            <option value="jacket">Giacca / Cappotto (JACKET)</option>
+            <option value="bottom">Pantaloni (BOTTOM)</option>
+            <option value="skirt">Gonna (SKIRT)</option>
+            <option value="dress">Abito intero (DRESS)</option>
+            <option value="shoes">Scarpe (SHOES)</option>
+          </select>
+          <label>Vista che stai caricando</label>
+          <select id="garView">
+            <option value="front">FRONTE</option>
+            <option value="right">FIANCO DX</option>
+            <option value="back">RETRO</option>
+            <option value="left">FIANCO SX</option>
+          </select>
+
+          <div style="height:10px"></div>
+          <div class="mini">
+            Se carichi solo FRONT, le altre viste useranno FRONT come fallback.
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modalFoot">
+      <div class="kpi" id="cropInfo"></div>
+      <button class="btn" id="btnCropAgain">🔁 Cambia immagine</button>
+      <button class="btn primary" id="btnCropSave">💾 Salva nel guardaroba</button>
+    </div>
+  </div>
+</div>
+
 <div id="errBox"></div>
 
 <script>
@@ -478,7 +562,7 @@
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
   // Storage
-  const KEY = "sercuctech_vs2d_autofit_fullscreen_v1";
+  const KEY = "sercuctech_vs2d_upload_crop_v1";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
 
   // person
@@ -493,7 +577,7 @@
   TYPES.forEach(t=>{
     state.outfit[t] ??= { front:"", right:"", back:"", left:"" };
     VIEWS.forEach(v=> state.outfit[t][v] ??= "");
-    state.fit[t] ??= { scale:1, y:0 };
+    state.fit[t] ??= { scale:1, yPct:0 };
   });
 
   // replace
@@ -526,10 +610,12 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="700" height="900">
         <rect width="700" height="900" rx="40" fill="rgba(255,255,255,0.06)"/>
         <rect x="26" y="26" width="648" height="848" rx="34" fill="rgba(0,0,0,0.12)" stroke="rgba(255,255,255,0.14)" stroke-width="3"/>
-        <text x="50%" y="50%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="60" fill="#ffd56a" font-weight="900">${label}</text>
+        <text x="50%" y="50%" text-anchor="middle" font-family="system-ui,Segoe UI,Roboto" font-size="54" fill="#ffd56a" font-weight="900">${label}</text>
       </svg>`;
     return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
+
+  function uid(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
 
   // Elements
   const modelImg = document.getElementById("modelImg");
@@ -548,56 +634,6 @@
   const veilTorso = document.getElementById("veilTorso");
   const veilLegs  = document.getElementById("veilLegs");
   const veilFeet  = document.getElementById("veilFeet");
-
-  // Stage fullscreen
-  const stageWrap = document.getElementById("stageWrap");
-  const stageFrame = document.getElementById("stageFrame");
-  const btnFullscreen = document.getElementById("btnFullscreen");
-
-  function setFullscreen(on){
-    document.body.classList.toggle("fullscreen", on);
-    stageWrap.classList.toggle("fullscreen", on);
-    stageFrame.classList.toggle("fullscreen", on);
-    btnFullscreen.textContent = on ? "⛶ Esci schermo" : "⛶ Tutto schermo";
-    // ridisegna veil positions
-    layoutVeil();
-  }
-
-  btnFullscreen.addEventListener("click", ()=>{
-    clearErr();
-    const on = !document.body.classList.contains("fullscreen");
-    setFullscreen(on);
-  });
-
-  // ESC to exit
-  window.addEventListener("keydown", (e)=>{
-    if(e.key === "Escape" && document.body.classList.contains("fullscreen")){
-      setFullscreen(false);
-    }
-  });
-
-  // turntable
-  const ORDER = ["front","right","back","left"];
-  const LABELS = { front:"FRONTE", right:"FIANCO DX", back:"RETRO", left:"FIANCO SX" };
-  let curIdx = 0, spinning=false, timer=null;
-
-  function normalizeViews(v){
-    return {
-      front: v.front || "",
-      right: v.right || v.front || "",
-      back:  v.back  || v.front || "",
-      left:  v.left  || v.front || ""
-    };
-  }
-
-  function getPersonViewSrc(key){
-    const src = state.personViews[key] || state.personViews.front;
-    return src || svgData("PERSONA");
-  }
-  function getOutfitViewSrc(type, key){
-    const src = state.outfit[type]?.[key] || state.outfit[type]?.front;
-    return src || svgData(type.toUpperCase());
-  }
 
   function applyOverlayOpacity(){
     const op = Math.max(0.3, Math.min(1, (state.overlayOpacity||85)/100));
@@ -621,18 +657,57 @@
   }
 
   function layoutVeil(){
-    // percentages inside the inset(10px) area; best-effort
     veilTorso.style.left = "18%";  veilTorso.style.top = "22%";
     veilTorso.style.width = "64%"; veilTorso.style.height = "30%";
-
     veilLegs.style.left = "22%";   veilLegs.style.top = "52%";
     veilLegs.style.width = "56%";  veilLegs.style.height = "30%";
-
     veilFeet.style.left = "28%";   veilFeet.style.top = "83%";
     veilFeet.style.width = "44%";  veilFeet.style.height = "12%";
   }
 
-  // ---- AUTO-FIT: scale+offset per tipo in base a profilo+altezza ----
+  // Stage fullscreen
+  const stageWrap = document.getElementById("stageWrap");
+  const stageFrame = document.getElementById("stageFrame");
+  const btnFullscreen = document.getElementById("btnFullscreen");
+  function setFullscreen(on){
+    document.body.classList.toggle("fullscreen", on);
+    stageWrap.classList.toggle("fullscreen", on);
+    stageFrame.classList.toggle("fullscreen", on);
+    btnFullscreen.textContent = on ? "⛶ Esci schermo" : "⛶ Tutto schermo";
+    layoutVeil();
+  }
+  btnFullscreen.addEventListener("click", ()=>{
+    clearErr();
+    setFullscreen(!document.body.classList.contains("fullscreen"));
+  });
+  window.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && document.body.classList.contains("fullscreen")) setFullscreen(false);
+  });
+
+  // Views + turntable
+  const ORDER = ["front","right","back","left"];
+  const LABELS = { front:"FRONTE", right:"FIANCO DX", back:"RETRO", left:"FIANCO SX" };
+  let curIdx = 0, spinning=false, timer=null;
+
+  function normalizeViews(v){
+    return {
+      front: v.front || "",
+      right: v.right || v.front || "",
+      back:  v.back  || v.front || "",
+      left:  v.left  || v.front || ""
+    };
+  }
+
+  function getPersonViewSrc(key){
+    const src = state.personViews[key] || state.personViews.front;
+    return src || svgData("PERSONA");
+  }
+  function getOutfitViewSrc(type, key){
+    const src = state.outfit[type]?.[key] || state.outfit[type]?.front;
+    return src || svgData(type.toUpperCase());
+  }
+
+  // AUTO FIT
   function computeScaleFromProfileHeight(){
     const prof = state.profile || "uomo";
     const h = Number(state.heightCm) || 175;
@@ -641,16 +716,10 @@
     s = Math.max(0.70, Math.min(1.35, s));
     return s;
   }
-
   function computeFit(type){
-    // base factors (tweakable)
     const prof = state.profile || "uomo";
     const s = computeScaleFromProfileHeight();
-
-    // Type base scale and Y offset (in %) relative to its base position
-    // We'll apply translateY in px proportional to frame height via CSS var.
-    let baseScale = 1.0;
-    let yPct = 0; // positive = down
+    let baseScale = 1.0, yPct = 0;
 
     if(type==="top"){ baseScale = 1.05; yPct = 0; }
     if(type==="jacket"){ baseScale = 1.10; yPct = -1; }
@@ -659,47 +728,35 @@
     if(type==="dress"){ baseScale = 1.15; yPct = 0; }
     if(type==="shoes"){ baseScale = 1.05; yPct = 4; }
 
-    // profile adjustments
     if(prof==="donna"){
-      if(type==="top"){ baseScale *= 1.02; }
-      if(type==="bottom"){ baseScale *= 1.02; }
-      if(type==="dress"){ baseScale *= 1.03; }
+      if(type==="top") baseScale *= 1.02;
+      if(type==="bottom") baseScale *= 1.02;
+      if(type==="dress") baseScale *= 1.03;
     }
     if(prof==="bambino" || prof==="bambina"){
-      // kids: slightly smaller clothing relative
       baseScale *= 0.92;
       if(type==="shoes") baseScale *= 0.95;
       yPct *= 0.8;
     }
-
-    // Combine with global scale: when person is taller, clothes should scale similarly
     const finalScale = baseScale * s;
-
     return { scale: finalScale, yPct };
   }
-
   function applyAutoFitAll(){
     TYPES.forEach(t => state.fit[t] = computeFit(t));
     save();
     applyFitToDOM();
   }
-
   function applyFitToDOM(){
-    // yPct -> convert to px based on frame height (approx)
     const frame = stageFrame.getBoundingClientRect();
     const H = frame.height || 520;
-
     TYPES.forEach(t=>{
       const el = layers[t];
       const fit = state.fit[t] || { scale:1, yPct:0 };
       const yPx = (fit.yPct/100) * H;
-
-      // Keep existing translateX(-50%) and add scale+translateY
       el.style.transform = `translateX(-50%) translateY(${yPx.toFixed(1)}px) scale(${fit.scale.toFixed(3)})`;
     });
   }
 
-  // update on resize (fullscreen or orientation)
   window.addEventListener("resize", ()=>{
     layoutVeil();
     applyFitToDOM();
@@ -743,7 +800,7 @@
     spinning ? stopSpin() : startSpin();
   });
 
-  // person upload
+  // Person upload
   const filePerson = document.getElementById("filePerson");
   let pendingPersonView = "front";
   function pickPersonView(key){
@@ -755,6 +812,7 @@
   document.getElementById("btnUploadRight").addEventListener("click", ()=> pickPersonView("right"));
   document.getElementById("btnUploadBack").addEventListener("click", ()=> pickPersonView("back"));
   document.getElementById("btnUploadLeft").addEventListener("click", ()=> pickPersonView("left"));
+
   filePerson.addEventListener("change", async ()=>{
     try{
       clearErr();
@@ -767,7 +825,7 @@
     }catch(e){ showErr(e.message || String(e)); }
   });
 
-  // Replace controls
+  // Replace UI
   const btnReplaceToggle = document.getElementById("btnReplaceToggle");
   const slReplace = document.getElementById("slReplace");
   const slBlur = document.getElementById("slBlur");
@@ -781,7 +839,6 @@
     applyVeilStyles();
     applyOverlayOpacity();
   }
-
   btnReplaceToggle.addEventListener("click", ()=>{
     state.replaceOn = !state.replaceOn;
     save();
@@ -803,7 +860,7 @@
     applyOverlayOpacity();
   });
 
-  // Auto-fit controls
+  // Auto-fit UI
   const profile = document.getElementById("profile");
   const heightCm = document.getElementById("heightCm");
   const scaleLabel = document.getElementById("scaleLabel");
@@ -822,7 +879,6 @@
   }
   document.getElementById("btnApplyScale").addEventListener("click", applyAutoFit);
 
-  // clear outfit
   document.getElementById("btnClearOutfit").addEventListener("click", ()=>{
     clearErr();
     TYPES.forEach(t=> state.outfit[t] = { front:"", right:"", back:"", left:"" });
@@ -830,7 +886,6 @@
     setView(curIdx);
   });
 
-  // reset
   document.getElementById("btnResetAll").addEventListener("click", ()=>{
     clearErr();
     stopSpin();
@@ -844,7 +899,6 @@
   const catChips = document.getElementById("catChips");
   let activeCat = localStorage.getItem("vs2d_cat") || "Tutti";
 
-  function uid(){ return Math.random().toString(16).slice(2) + "-" + Date.now().toString(16); }
   function categoryFromType(type){
     if(type==="top" || type==="jacket") return "Sopra";
     if(type==="bottom" || type==="skirt") return "Sotto";
@@ -874,17 +928,14 @@
     });
   }
 
-  // ✅ CLICK CAPO = indossa + auto-fit immediato
+  // Click capo = indossa
   function applyWardrobeItem(item){
     const type = item.type;
     state.outfit[type] = normalizeViews(item.views || {});
-    // auto-fit every time you put a garment
     applyAutoFitAll();
     save();
     setView(curIdx);
     setTab("studio");
-    // optional: ensure replace mode ON for better effect
-    // state.replaceOn = true; save(); refreshReplaceUI();
   }
 
   function renderWardrobe(){
@@ -895,7 +946,7 @@
     if(items.length===0){
       const empty = document.createElement("div");
       empty.className = "mini";
-      empty.textContent = "Guardaroba vuoto. Premi “Carica demo” per provare.";
+      empty.textContent = "Guardaroba vuoto. Premi “Aggiungi capo” oppure “Carica demo”.";
       wardList.appendChild(empty);
       return;
     }
@@ -906,7 +957,13 @@
 
       const thumb = document.createElement("div");
       thumb.className = "thumb";
-      thumb.textContent = (it.type || "capo").toUpperCase();
+      if(it.views?.front){
+        const im = document.createElement("img");
+        im.src = it.views.front;
+        thumb.appendChild(im);
+      } else {
+        thumb.textContent = (it.type || "capo").toUpperCase();
+      }
 
       const meta = document.createElement("div");
       meta.className = "meta";
@@ -936,6 +993,7 @@
         state.wardrobe = state.wardrobe.filter(x => x.id !== it.id);
         save();
         renderWardrobe();
+        renderChips();
       });
 
       p.appendChild(wear);
@@ -951,7 +1009,7 @@
     });
   }
 
-  // demo
+  // Demo wardrobe
   function makeDemoItem(type, name){
     const views = {
       front: svgData(`${type.toUpperCase()} FRONT`),
@@ -961,7 +1019,6 @@
     };
     return { id: uid(), name, type, category: categoryFromType(type), views };
   }
-
   document.getElementById("btnLoadDemo").addEventListener("click", ()=>{
     clearErr();
     state.wardrobe = [
@@ -977,17 +1034,317 @@
     renderWardrobe();
     setTab("guardaroba");
   });
-
   document.getElementById("btnClearWardrobe").addEventListener("click", ()=>{
     clearErr();
     state.wardrobe = [];
     save();
+    renderChips();
     renderWardrobe();
   });
 
-  // INIT
+  // ===== UPLOAD + CROP CAPO =====
+  const btnAddGarment = document.getElementById("btnAddGarment");
+  const fileGarment = document.getElementById("fileGarment");
+
+  // modal controls
+  const cropModal = document.getElementById("cropModal");
+  const cropCanvas = document.getElementById("cropCanvas");
+  const cropZoom = document.getElementById("cropZoom");
+  const cropInfo = document.getElementById("cropInfo");
+  const garName = document.getElementById("garName");
+  const garType = document.getElementById("garType");
+  const garView = document.getElementById("garView");
+
+  const btnCropClose = document.getElementById("btnCropClose");
+  const btnCropAgain = document.getElementById("btnCropAgain");
+  const btnCropSave = document.getElementById("btnCropSave");
+
+  let cropImg = new Image();
+  let cropImgLoaded = false;
+  let cropState = { zoom:1.2, cx:0, cy:0, down:false, lastX:0, lastY:0 };
+  let pendingGarment = { id:null, name:"", type:"top", view:"front" };
+
+  function openCropModal(){
+    cropModal.classList.add("open");
+    cropModal.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    resizeCropCanvas();
+    drawCrop();
+  }
+  function closeCropModal(){
+    cropModal.classList.remove("open");
+    cropModal.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+
+  function resizeCropCanvas(){
+    const rect = cropCanvas.getBoundingClientRect();
+    // set internal resolution proportional (sharp)
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    cropCanvas.width = Math.max(300, Math.floor(rect.width * dpr));
+    cropCanvas.height = Math.max(300, Math.floor(rect.height * dpr));
+  }
+
+  function drawCrop(){
+    const ctx = cropCanvas.getContext("2d");
+    const w = cropCanvas.width, h = cropCanvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    // background
+    ctx.fillStyle = "rgba(255,255,255,0.02)";
+    ctx.fillRect(0,0,w,h);
+
+    if(!cropImgLoaded){
+      ctx.fillStyle="rgba(255,255,255,0.55)";
+      ctx.font = `${Math.floor(w/18)}px system-ui`;
+      ctx.textAlign="center";
+      ctx.fillText("Carica immagine…", w/2, h/2);
+      return;
+    }
+
+    const zoom = cropState.zoom;
+    const imgW = cropImg.naturalWidth;
+    const imgH = cropImg.naturalHeight;
+
+    // Fit image to canvas then zoom
+    const fit = Math.min(w / imgW, h / imgH) * zoom;
+    const drawW = imgW * fit;
+    const drawH = imgH * fit;
+
+    // center + offset
+    const x = (w - drawW)/2 + cropState.cx;
+    const y = (h - drawH)/2 + cropState.cy;
+
+    ctx.drawImage(cropImg, x, y, drawW, drawH);
+
+    // Crop guide (central rounded rectangle)
+    const pad = Math.min(w,h) * 0.12;
+    const cw = w - pad*2;
+    const ch = h - pad*2;
+
+    ctx.save();
+    // darken outside
+    ctx.fillStyle = "rgba(0,0,0,0.40)";
+    ctx.beginPath();
+    ctx.rect(0,0,w,h);
+    ctx.roundRect(pad, pad, cw, ch, 18);
+    ctx.fill("evenodd");
+
+    // border
+    ctx.strokeStyle = "rgba(255,213,106,0.75)";
+    ctx.lineWidth = Math.max(2, Math.floor(w/250));
+    ctx.beginPath();
+    ctx.roundRect(pad, pad, cw, ch, 18);
+    ctx.stroke();
+    ctx.restore();
+
+    cropInfo.textContent = `Zoom ${zoom.toFixed(2)} • Tipo ${garType.value.toUpperCase()} • Vista ${garView.value.toUpperCase()}`;
+  }
+
+  // roundRect polyfill for older
+  if(!CanvasRenderingContext2D.prototype.roundRect){
+    CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
+      const rr = Math.min(r, w/2, h/2);
+      this.beginPath();
+      this.moveTo(x+rr,y);
+      this.arcTo(x+w,y,x+w,y+h,rr);
+      this.arcTo(x+w,y+h,x,y+h,rr);
+      this.arcTo(x,y+h,x,y,rr);
+      this.arcTo(x,y,x+w,y,rr);
+      this.closePath();
+      return this;
+    }
+  }
+
+  function pickGarment(){
+    fileGarment.value="";
+    fileGarment.click();
+  }
+
+  btnAddGarment.addEventListener("click", ()=>{
+    clearErr();
+    // default values
+    garName.value = "";
+    garType.value = "top";
+    garView.value = "front";
+    cropZoom.value = "1.2";
+    cropState = { zoom:1.2, cx:0, cy:0, down:false, lastX:0, lastY:0 };
+    pendingGarment = { id:uid(), name:"", type:"top", view:"front" };
+    pickGarment();
+  });
+
+  fileGarment.addEventListener("change", async ()=>{
+    try{
+      clearErr();
+      const f = fileGarment.files && fileGarment.files[0];
+      if(!f) return;
+
+      const dataUrl = await fileToDataURL(f);
+      cropImgLoaded = false;
+      cropImg = new Image();
+      cropImg.onload = ()=>{
+        cropImgLoaded = true;
+        openCropModal();
+        drawCrop();
+      };
+      cropImg.onerror = ()=> showErr("Immagine capo non valida.");
+      cropImg.src = dataUrl;
+    }catch(e){ showErr(e.message || String(e)); }
+  });
+
+  cropZoom.addEventListener("input", ()=>{
+    cropState.zoom = Number(cropZoom.value);
+    drawCrop();
+  });
+
+  window.addEventListener("resize", ()=>{
+    if(cropModal.classList.contains("open")){
+      resizeCropCanvas();
+      drawCrop();
+    }
+  });
+
+  // drag on crop canvas
+  cropCanvas.addEventListener("pointerdown", (e)=>{
+    cropState.down = true;
+    cropState.lastX = e.clientX;
+    cropState.lastY = e.clientY;
+    cropCanvas.setPointerCapture(e.pointerId);
+  });
+  cropCanvas.addEventListener("pointerup", ()=>{ cropState.down = false; });
+  cropCanvas.addEventListener("pointermove", (e)=>{
+    if(!cropState.down) return;
+    const dx = e.clientX - cropState.lastX;
+    const dy = e.clientY - cropState.lastY;
+    cropState.lastX = e.clientX;
+    cropState.lastY = e.clientY;
+
+    // scale movement by DPR ratio
+    const rect = cropCanvas.getBoundingClientRect();
+    const dpr = cropCanvas.width / rect.width;
+    cropState.cx += dx * dpr;
+    cropState.cy += dy * dpr;
+    drawCrop();
+  });
+
+  btnCropClose.addEventListener("click", ()=> closeCropModal());
+  cropModal.addEventListener("click", (e)=>{
+    if(e.target === cropModal) closeCropModal();
+  });
+
+  btnCropAgain.addEventListener("click", ()=>{
+    clearErr();
+    pickGarment();
+  });
+
+  btnCropSave.addEventListener("click", ()=>{
+    try{
+      clearErr();
+      if(!cropImgLoaded) return showErr("Prima carica l'immagine del capo.");
+
+      const name = garName.value.trim() || "Capo";
+      const type = garType.value;
+      const view = garView.value;
+
+      // export crop area to PNG
+      const out = document.createElement("canvas");
+      const outSize = 1024; // good quality
+      out.width = outSize;
+      out.height = outSize;
+      const ctx = out.getContext("2d");
+
+      // compute current draw transform (same as drawCrop)
+      const w = cropCanvas.width, h = cropCanvas.height;
+      const zoom = cropState.zoom;
+      const imgW = cropImg.naturalWidth, imgH = cropImg.naturalHeight;
+      const fit = Math.min(w / imgW, h / imgH) * zoom;
+      const drawW = imgW * fit;
+      const drawH = imgH * fit;
+      const x = (w - drawW)/2 + cropState.cx;
+      const y = (h - drawH)/2 + cropState.cy;
+
+      // crop guide rect
+      const pad = Math.min(w,h) * 0.12;
+      const cx = pad, cy = pad, cw = w - pad*2, ch = h - pad*2;
+
+      // Map crop rect area from cropCanvas to source image via current transform.
+      // We'll render by drawing the cropCanvas visible image into output by reverse mapping.
+      // Approach: draw whole image into an intermediate at same transform, then sample.
+      const tmp = document.createElement("canvas");
+      tmp.width = w; tmp.height = h;
+      const tctx = tmp.getContext("2d");
+      tctx.clearRect(0,0,w,h);
+      tctx.drawImage(cropImg, x, y, drawW, drawH);
+
+      // draw crop area into output, scaled to 1024
+      ctx.clearRect(0,0,outSize,outSize);
+      ctx.drawImage(tmp, cx, cy, cw, ch, 0, 0, outSize, outSize);
+
+      const png = out.toDataURL("image/png", 0.92);
+
+      // upsert item in wardrobe by id
+      let item = state.wardrobe.find(i => i.id === pendingGarment.id);
+      if(!item){
+        item = { id: pendingGarment.id, name, type, category: categoryFromType(type), views: { front:"", right:"", back:"", left:"" } };
+        state.wardrobe.unshift(item);
+      } else {
+        item.name = name;
+        item.type = type;
+        item.category = categoryFromType(type);
+        item.views ??= { front:"", right:"", back:"", left:"" };
+      }
+
+      item.views[view] = png;
+
+      // if only front exists, keep others fallback later (normalizeViews handles it)
+      save();
+      closeCropModal();
+      renderChips();
+      renderWardrobe();
+      setTab("guardaroba");
+    }catch(e){ showErr(e.message || String(e)); }
+  });
+
+  // Init studio
+  function refreshReplaceUI(){
+    btnReplaceToggle.textContent = state.replaceOn ? "👕 Sostituzione: ON" : "👕 Sostituzione: OFF";
+    slReplace.value = String(state.replaceIntensity ?? 70);
+    slBlur.value = String(state.replaceBlur ?? 10);
+    slOverlay.value = String(state.overlayOpacity ?? 85);
+    applyVeilStyles();
+    applyOverlayOpacity();
+  }
+
+  function applyAutoFit(){
+    clearErr();
+    state.profile = profile.value;
+    state.heightCm = Number(heightCm.value) || 175;
+    state.scale = computeScaleFromProfileHeight();
+    composite.style.transform = `scale(${state.scale})`;
+    scaleLabel.textContent = state.scale.toFixed(2) + "×";
+    save();
+    applyAutoFitAll();
+  }
+
+  function applyAutoFitAll(){
+    TYPES.forEach(t => state.fit[t] = computeFit(t));
+    save();
+    applyFitToDOM();
+  }
+
+  // Apply ward item
+  function applyWardrobeItem(item){
+    const type = item.type;
+    state.outfit[type] = normalizeViews(item.views || {});
+    applyAutoFitAll();
+    save();
+    setView(curIdx);
+    setTab("studio");
+  }
+
+  // Bind replace listeners after functions exist
   refreshReplaceUI();
-  applyAutoFit();         // sets scale + fit
+  applyAutoFit();
   renderChips();
   renderWardrobe();
   setView(0);
