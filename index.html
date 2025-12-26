@@ -1,700 +1,2017 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>SerCucTech • TryMe 2D PRO</title>
-  <link rel="manifest" href="./manifest.json" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>SerCucTech • Virtual Stylist 2D PRO</title>
+
+  <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b0f14" />
+
   <style>
     :root{
-      --bg:#0b0f14; --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.08);
-      --txt:#e9eef5; --muted:rgba(233,238,245,.72);
-      --acc:#d1b15b; --bad:#ff5b6a; --ok:#39d98a; --line:rgba(255,255,255,.12);
-      --r:18px;
+      --bg:#0b0f14;
+      --card:#0f1620;
+      --card2:#101b26;
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92);
+      --muted:rgba(255,255,255,.65);
+      --gold:#c7a55a;
+      --red:#ff4d4d;
+      --ok:#36d399;
+      --cyan:#2dd4bf;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:20px;
+      --r2:16px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;background:radial-gradient(1200px 600px at 20% 0%,rgba(209,177,91,.10),transparent 55%),var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;}
     a{color:inherit}
-    .wrap{max-width:980px;margin:0 auto;padding:18px 14px 80px}
-    .top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-    .logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(180deg,rgba(209,177,91,.85),rgba(209,177,91,.25));display:grid;place-items:center;font-weight:800}
-    h1{margin:0;font-size:20px;line-height:1.1}
-    .sub{margin:3px 0 0;color:var(--muted);font-size:13px}
-    .status{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);font-size:13px}
-    .dot{width:10px;height:10px;border-radius:50%;background:var(--ok)}
-    .tabs{display:flex;gap:10px;margin:14px 0}
-    .tab{flex:1;text-align:center;padding:12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);cursor:pointer;user-select:none}
-    .tab.on{background:linear-gradient(180deg,rgba(209,177,91,.22),rgba(255,255,255,.06));border-color:rgba(209,177,91,.35)}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
-    @media(min-width:860px){.grid{grid-template-columns:1.2fr .8fr}}
-    .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-    .card h2{margin:0;padding:14px 14px 8px;font-size:16px}
-    .card p{margin:0;padding:0 14px 14px;color:var(--muted);font-size:13px}
-    .tools{display:flex;flex-wrap:wrap;gap:10px;padding:14px}
-    .btn{appearance:none;border:none;cursor:pointer;border-radius:14px;padding:12px 14px;background:var(--panel2);color:var(--txt);border:1px solid var(--line);display:inline-flex;align-items:center;gap:10px}
-    .btn.acc{background:linear-gradient(180deg,rgba(209,177,91,.25),rgba(255,255,255,.08));border-color:rgba(209,177,91,.35)}
-    .btn.bad{background:rgba(255,91,106,.12);border-color:rgba(255,91,106,.25)}
-    .btn.small{padding:9px 12px;border-radius:12px;font-size:13px}
-    .row{display:flex;gap:10px;flex-wrap:wrap}
-    .viewer{position:relative;background:#070a0f;border-top:1px solid var(--line)}
-    .stage{
+    .wrap{max-width:980px; margin:0 auto; padding:18px 14px 40px;}
+    .top{
+      display:flex; gap:12px; align-items:center; margin-bottom:12px;
+    }
+    .logo{
+      width:48px;height:48px;border-radius:14px;
+      background: radial-gradient(circle at 30% 30%, #9bdc8a, #0b0f14 70%);
+      display:flex; align-items:center; justify-content:center;
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      font-weight:900;
+      color:#101b26;
+    }
+    .hgroup{line-height:1.2}
+    .title{font-size:20px; font-weight:800}
+    .sub{font-size:13px; color:var(--muted)}
+    .status{
+      margin-left:auto;
+      display:flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--stroke);
+      font-size:13px;
+    }
+    .dot{width:10px;height:10px;border-radius:999px;background:var(--ok); box-shadow:0 0 0 4px rgba(54,211,153,.15)}
+    .dot.err{background:var(--red); box-shadow:0 0 0 4px rgba(255,77,77,.12)}
+
+    .tabs{
+      display:flex; gap:10px; justify-content:center;
+      margin:12px 0 14px;
+    }
+    .tab{
+      flex:0 0 auto;
+      padding:10px 16px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      background:rgba(199,165,90,.12);
+      border-color: rgba(199,165,90,.45);
+      box-shadow: 0 10px 30px rgba(199,165,90,.08);
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border:1px solid var(--stroke);
+      border-radius: var(--r);
+      padding:14px;
+      box-shadow: var(--shadow);
+    }
+
+    .row{display:flex; gap:12px; flex-wrap:wrap;}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding:12px 14px;
+      border-radius: 16px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color:var(--text);
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+      min-width: 150px;
+    }
+    .btn.primary{background: rgba(199,165,90,.18); border-color: rgba(199,165,90,.5);}
+    .btn.danger{background: rgba(255,77,77,.14); border-color: rgba(255,77,77,.35);}
+    .btn.ok{background: rgba(54,211,153,.12); border-color: rgba(54,211,153,.35);}
+    .btn.small{padding:10px 12px; min-width:auto; border-radius:14px; font-weight:800;}
+    .btn:active{transform: translateY(1px);}
+
+    .grid2{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media (max-width:860px){
+      .grid2{grid-template-columns: 1fr;}
+    }
+
+    .previewWrap{
+      border-radius: 18px;
+      overflow:hidden;
+      border:1px solid var(--stroke);
+      background: rgba(0,0,0,.3);
+    }
+    .canvasHost{
       position:relative;
       width:100%;
-      aspect-ratio:3/4;
-      max-height:78vh;
-      margin:0 auto;
-      overflow:hidden;
-      touch-action:none;
-      background:#070a0f;
+      aspect-ratio: 9/16;
+      max-height: 72vh;
+      background:#05070b;
     }
-    .layer{
-      position:absolute;inset:0;
-      display:block;
-      width:100%;height:100%;
-      object-fit:contain; /* persona naturale, NON schiacciata */
-      transform-origin:center center;
-      user-select:none;
-      -webkit-user-drag:none;
-      pointer-events:none;
-    }
-    .overlayWrap{position:absolute;inset:0;pointer-events:auto;touch-action:none}
-    .garmentBox{
+    canvas{display:block; width:100%; height:100%;}
+    .water{
       position:absolute;
-      left:20%;top:20%;
-      width:50%;height:60%;
-      transform-origin:center center;
-      touch-action:none;
-      cursor:grab;
-      filter: drop-shadow(0 10px 22px rgba(0,0,0,.35));
+      left:12px; bottom:10px;
+      font-size:12px;
+      opacity:.55;
+      padding:6px 10px;
+      border-radius:999px;
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(6px);
     }
-    .garmentImg{
-      width:100%;height:100%;
-      object-fit:contain;
-      display:block;
+
+    .overlayControls{
+      position:absolute;
+      left:10px; right:10px; bottom:10px;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
       pointer-events:none;
     }
-    .handles{position:absolute;inset:0;pointer-events:none}
-    .h{
-      width:18px;height:18px;border-radius:50%;
-      background:rgba(77,208,225,.95);
-      position:absolute;pointer-events:auto;
-      border:2px solid rgba(0,0,0,.35);
+    .overlayControls .btn{pointer-events:auto; background:rgba(0,0,0,.28);}
+
+    .pill{
+      display:inline-flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius: 999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .sectionTitle{
+      display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+      margin: 2px 0 10px;
+    }
+    .sectionTitle h3{margin:0; font-size:16px}
+    .sectionTitle .hint{color:var(--muted); font-size:13px}
+
+    .sliderRow{display:flex; align-items:center; gap:10px; margin-top:10px;}
+    input[type="range"]{width:100%;}
+    .kbd{
+      font-size:12px; color:var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+
+    .filters{display:flex; gap:10px; flex-wrap:wrap;}
+    .chip{
+      padding:10px 14px; border-radius:999px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.04);
+      font-weight:800;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip.active{background: rgba(199,165,90,.14); border-color: rgba(199,165,90,.45);}
+
+    .list{display:grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap:12px;}
+    .item{
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background: rgba(255,255,255,.03);
+      overflow:hidden;
+    }
+    .thumb{
+      background: rgba(0,0,0,.35);
+      aspect-ratio: 1/1;
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+    }
+    .thumb img{max-width:100%; max-height:100%; display:block;}
+    .badge{
+      position:absolute; left:10px; top:10px;
+      padding:6px 10px; border-radius:999px;
+      background: rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:12px; font-weight:900;
+    }
+    .meta{padding:10px;}
+    .meta .name{font-weight:900; margin-bottom:4px;}
+    .meta .small{color:var(--muted); font-size:12px; display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+    .meta .actions{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+    .meta .actions .btn{flex:1; min-width:auto; padding:10px 12px; border-radius:14px;}
+
+    /* MODAL */
+    .modalBack{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.62);
+      display:none;
+      align-items:center; justify-content:center;
+      padding:12px;
+      z-index: 9999;
+    }
+    .modal{
+      width:min(980px, 100%);
+      max-height: 92vh;
+      overflow:auto;
+      background: rgba(15,22,32,.92);
+      border:1px solid var(--stroke);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+    .modalHeader{
+      position:sticky; top:0;
+      display:flex; justify-content:space-between; align-items:center;
+      gap:10px;
+      padding:14px 14px 10px;
+      background: rgba(15,22,32,.92);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      z-index:2;
+    }
+    .modalHeader .t{font-weight:950; font-size:16px;}
+    .xbtn{
+      width:40px; height:40px; border-radius:14px;
+      border:1px solid var(--stroke);
+      background: rgba(255,255,255,.05);
+      color:var(--text);
+      font-weight:900;
+      cursor:pointer;
+    }
+    .modalBody{padding:14px;}
+    .cropGrid{
+      display:grid; grid-template-columns: 1.2fr .8fr; gap:14px;
+    }
+    @media(max-width:860px){
+      .cropGrid{grid-template-columns: 1fr;}
+    }
+    .cropStage{
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background: rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .cropStage .stageHost{
+      position:relative;
+      width:100%;
+      aspect-ratio: 9/16;
+      max-height: 68vh;
+      background:#05070b;
       touch-action:none;
     }
-    .h.tl{left:-9px;top:-9px}
-    .h.tr{right:-9px;top:-9px}
-    .h.bl{left:-9px;bottom:-9px}
-    .h.br{right:-9px;bottom:-9px}
-    .hud{
-      position:absolute;left:10px;top:10px;right:10px;
-      display:flex;flex-wrap:wrap;gap:8px;
-      padding:10px;border-radius:16px;
-      background:rgba(0,0,0,.35);
+    .helpBubble{
+      position:absolute;
+      left:10px; right:10px; top:10px;
+      padding:10px 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.14);
+      font-size:13px;
+      color: rgba(255,255,255,.85);
+      backdrop-filter: blur(6px);
+    }
+
+    .formBlock{
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      background: rgba(255,255,255,.03);
+      padding:12px;
+    }
+    label{display:block; font-size:13px; color:var(--muted); margin:10px 0 6px;}
+    input[type="text"], select, textarea{
+      width:100%;
+      padding:12px 12px;
+      border-radius: 14px;
       border:1px solid rgba(255,255,255,.12);
-      backdrop-filter: blur(8px);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      outline:none;
     }
-    .hud .pill{display:inline-flex;align-items:center;gap:8px;padding:9px 10px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:13px;color:var(--txt)}
-    .range{width:min(360px,100%);display:flex;align-items:center;gap:10px}
-    input[type=range]{width:100%}
-    .list{padding:14px;display:grid;gap:10px}
-    .item{
-      display:grid;grid-template-columns:64px 1fr auto;gap:10px;
-      align-items:center;
-      padding:10px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+    textarea{min-height:88px; resize:vertical;}
+    .tinyRow{display:flex; gap:8px; flex-wrap:wrap;}
+    .tinyRow .btn{min-width:auto; padding:10px 12px;}
+    .note{font-size:12px; color:var(--muted); margin-top:8px; line-height:1.35;}
+    .errBox{
+      margin-top:10px;
+      padding:10px 12px;
+      border-radius: 16px;
+      border:1px solid rgba(255,77,77,.35);
+      background: rgba(255,77,77,.10);
+      color: rgba(255,255,255,.90);
+      font-weight:800;
+      display:none;
     }
-    .thumb{width:64px;height:64px;border-radius:14px;background:#06080c;border:1px solid rgba(255,255,255,.10);overflow:hidden;display:grid;place-items:center}
-    .thumb img{width:100%;height:100%;object-fit:cover}
-    .meta{min-width:0}
-    .meta b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .meta small{color:var(--muted)}
-    .toast{position:fixed;left:14px;right:14px;bottom:18px;padding:12px 14px;border-radius:16px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(10px);display:none}
-    .toast.on{display:block}
-    .fs{
-      position:fixed;inset:0;background:#000;z-index:9999;display:none;align-items:center;justify-content:center;
-      padding:10px;
+
+    /* Scene editor handles for worn item */
+    .sceneHint{
+      margin-top:10px;
+      font-size:13px;
+      color: var(--muted);
     }
-    .fs.on{display:flex}
-    .fs .stage{max-width:980px;max-height:92vh;width:100%}
-    .fsTop{position:fixed;left:10px;top:10px;z-index:10000;display:none}
-    .fs.on + .fsTop, .fs.on ~ .fsTop{display:block}
-    .smallNote{padding:0 14px 14px;color:var(--muted);font-size:12px}
-    .sep{height:1px;background:var(--line);margin:0}
+
+    /* Fullscreen safe padding */
+    .fsActive .wrap{max-width:none; padding: 10px;}
   </style>
 </head>
+
 <body>
-  <div class="wrap">
-    <div class="top">
-      <div class="logo">SC</div>
-      <div style="flex:1">
-        <h1>SerCucTech • TryMe 2D PRO</h1>
-        <div class="sub">Persona 4 viste • Guardaroba • Editor capi • Rotazione • Fullscreen • OCR (opzionale)</div>
-      </div>
-      <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusTxt">OK</span></div>
+<div class="wrap" id="appRoot">
+
+  <div class="top">
+    <div class="logo">SC</div>
+    <div class="hgroup">
+      <div class="title">SerCucTech • Virtual Stylist 2D PRO</div>
+      <div class="sub">Persona 4 viste • Guardaroba • Ritaglio PRO • Rotazione • Fullscreen • OCR (opzionale)</div>
     </div>
-
-    <div class="tabs">
-      <div class="tab on" data-tab="studio">Studio</div>
-      <div class="tab" data-tab="guardaroba">Guardaroba</div>
-      <div class="tab" data-tab="guida">Guida</div>
+    <div class="status" id="statusPill">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">OK</span>
     </div>
+  </div>
 
-    <div class="grid">
-      <!-- LEFT -->
-      <div class="card" id="studioCard">
-        <h2>Persona vestita + Rotazione</h2>
-        <p>Carica fino a 4 viste (fronte → dx → retro → sx). Poi scegli un capo nel Guardaroba e “Metti addosso”.</p>
-        <div class="viewer">
-          <div class="stage" id="stage">
-            <img class="layer" id="personImg" alt="">
-            <div class="overlayWrap" id="overlayWrap">
-              <div class="garmentBox" id="garmentBox" style="display:none;">
-                <img class="garmentImg" id="garmentImg" alt="">
-                <div class="handles">
-                  <div class="h tl" data-h="tl"></div>
-                  <div class="h tr" data-h="tr"></div>
-                  <div class="h bl" data-h="bl"></div>
-                  <div class="h br" data-h="br"></div>
-                </div>
-              </div>
-            </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="studio">Studio</div>
+    <div class="tab" data-tab="wardrobe">Guardaroba</div>
+    <div class="tab" data-tab="guide">Guida</div>
+  </div>
 
-            <div class="hud">
-              <div class="pill">📷 Persona: <b id="viewName" style="margin-left:6px;font-weight:700">—</b></div>
-              <button class="btn small" id="btnLoadPerson">📷 Carica persona (4 viste)</button>
-              <button class="btn small" id="btnRotate">↻ Rotazione</button>
-              <button class="btn small" id="btnAuto">▶ Auto</button>
-              <button class="btn small" id="btnStop">⏸ Stop</button>
-              <button class="btn small" id="btnFullscreen">⛶ Fullscreen</button>
-              <button class="btn small bad" id="btnClearOutfit">🧹 Pulisci capi</button>
-              <div class="range">
-                <span class="pill">Scala capi</span>
-                <input type="range" id="globalScale" min="60" max="180" value="100">
-                <span class="pill" id="globalScaleLbl">100%</span>
-              </div>
+  <!-- STUDIO -->
+  <section id="tab-studio" class="card">
+    <div class="grid2">
+      <div>
+        <div class="sectionTitle">
+          <h3>Persona vestita + Rotazione</h3>
+          <div class="hint">fronte → fianco dx → retro → fianco sx</div>
+        </div>
+
+        <div class="previewWrap">
+          <div class="canvasHost" id="mainCanvasHost">
+            <canvas id="mainCanvas"></canvas>
+            <div class="water">SerCucTech TryMe</div>
+
+            <div class="overlayControls">
+              <div class="btn primary small" id="btnLoadPerson">📸 Carica persona (4 viste)</div>
+              <div class="btn small" id="btnRotateOnce">🔁 Rotazione</div>
+              <div class="btn ok small" id="btnAuto">▶️ Auto</div>
+              <div class="btn danger small" id="btnStop">⏹ Stop</div>
+              <div class="btn small" id="btnFullscreen">⛶ Fullscreen</div>
+              <div class="btn small" id="btnMask">🧽 Gomma (togli vestiti)</div>
             </div>
           </div>
-          <div class="smallNote">
-            Tip: trascina il capo per spostarlo • usa le 4 maniglie per ridimensionare • slider per scala generale.
+        </div>
+
+        <div class="sliderRow">
+          <div class="kbd">Scala capi</div>
+          <input id="globalScale" type="range" min="60" max="160" value="100" />
+          <div class="kbd"><span id="globalScaleLbl">100%</span></div>
+        </div>
+
+        <div class="sceneHint">
+          ✋ <b>Modifica capi in scena:</b> vai su <b>Guardaroba</b> → metti addosso → poi in Studio puoi <b>trascinare</b> il capo e ridimensionare.  
+          🧽 <b>Gomma</b> serve per “cancellare” a mano pantaloni/giacca nella foto (soluzione senza AI).
+        </div>
+
+      </div>
+
+      <div>
+        <div class="sectionTitle">
+          <h3>Selezione capo in scena</h3>
+          <div class="hint">porta avanti / dietro / elimina</div>
+        </div>
+
+        <div class="card" style="background: rgba(255,255,255,.03);">
+          <div class="pill" style="margin-bottom:10px;">Capo selezionato: <b id="selItemName" style="color:var(--text)">—</b></div>
+
+          <div class="sliderRow">
+            <div class="kbd">Zoom capo</div>
+            <input id="selScale" type="range" min="30" max="220" value="100" />
+            <div class="kbd"><span id="selScaleLbl">100%</span></div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="btn small" id="btnBringFront">⬆️ Porta avanti</div>
+            <div class="btn small" id="btnSendBack">⬇️ Porta dietro</div>
+            <div class="btn danger small" id="btnDeleteSel">🗑 Elimina</div>
+          </div>
+
+          <div class="sliderRow" style="margin-top:12px;">
+            <div class="kbd">Opacità</div>
+            <input id="selOpacity" type="range" min="40" max="100" value="100" />
+            <div class="kbd"><span id="selOpacityLbl">100%</span></div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="btn small" id="btnResetSel">↩ Reset capo</div>
+            <div class="btn small" id="btnClearAllWorn">🧹 Pulisci capi</div>
           </div>
         </div>
-      </div>
 
-      <!-- RIGHT -->
-      <div class="card" id="rightCard">
-        <h2>Azioni rapide</h2>
-        <p>Apri Admin per creare persone/vetrine e caricare capi. Oppure gestisci il tuo guardaroba qui.</p>
-        <div class="tools">
-          <a class="btn acc" href="./admin.html">🔒 Vai in ADMIN (tu)</a>
-          <button class="btn" id="btnOpenMyWardrobe">👕 Gestisci Guardaroba</button>
-          <button class="btn" id="btnExport">⬇️ Esporta dati (backup)</button>
-          <button class="btn" id="btnImport">⬆️ Importa dati</button>
-          <input type="file" id="importFile" accept="application/json" style="display:none">
+        <div class="card" style="margin-top:12px; background: rgba(255,255,255,.03);">
+          <div class="sectionTitle">
+            <h3>Viste persona</h3>
+            <div class="hint">carica 4 foto per rotazione realistica</div>
+          </div>
+
+          <div class="row">
+            <div class="pill">FRONTE: <b id="pFront">—</b></div>
+            <div class="pill">DX: <b id="pRight">—</b></div>
+            <div class="pill">RETRO: <b id="pBack">—</b></div>
+            <div class="pill">SX: <b id="pLeft">—</b></div>
+          </div>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="btn small" id="btnClearPerson">🗑 Svuota persona</div>
+          </div>
         </div>
-        <div class="sep"></div>
-        <div class="list" id="wardrobeList">
-          <div style="color:var(--muted);font-size:13px">Nessun capo ancora. Vai in “Guardaroba” o in “Admin” per aggiungerli.</div>
-        </div>
+
       </div>
     </div>
+  </section>
 
-    <!-- GUARDAROBA TAB -->
-    <div class="card" id="wardrobeCard" style="display:none;margin-top:12px">
-      <h2>Guardaroba (clicca un capo → va addosso)</h2>
-      <p>Qui vedi i capi che hai salvato. Puoi filtrarli e vestirli subito.</p>
-      <div class="tools">
-        <button class="btn acc" id="btnAddItem">➕ Aggiungi capo (Editor PRO)</button>
-        <button class="btn" id="btnLoadDemo">📦 Carica demo</button>
-        <button class="btn bad" id="btnWipeWardrobe">🧹 Svuota guardaroba</button>
-      </div>
-      <div class="tools" style="padding-top:0">
-        <div class="row">
-          <button class="btn small" data-filter="all">Tutti</button>
-          <button class="btn small" data-filter="top">Sopra</button>
-          <button class="btn small" data-filter="bottom">Sotto</button>
-          <button class="btn small" data-filter="dress">Intero</button>
-          <button class="btn small" data-filter="accessory">Accessori</button>
-        </div>
-      </div>
-      <div class="list" id="wardrobeListFull"></div>
+  <!-- WARDROBE -->
+  <section id="tab-wardrobe" class="card" style="display:none;">
+    <div class="sectionTitle">
+      <h3>Guardaroba</h3>
+      <div class="hint">clic “Metti addosso” = auto-fit immediato</div>
     </div>
 
-    <!-- GUIDA TAB -->
-    <div class="card" id="guideCard" style="display:none;margin-top:12px">
-      <h2>Guida semplice</h2>
-      <div class="list" style="color:var(--muted);font-size:14px;line-height:1.45">
-        <div><b style="color:var(--txt)">1)</b> Vai in <b style="color:var(--txt)">Admin</b> e crea una persona/vetrina con PIN.</div>
-        <div><b style="color:var(--txt)">2)</b> In Admin carica i capi (anche screenshot Amazon/Zalando) e ritaglia pulito.</div>
-        <div><b style="color:var(--txt)">3)</b> Apri la <b style="color:var(--txt)">vetrina</b> della persona, inserisci PIN, carica le 4 viste della persona.</div>
-        <div><b style="color:var(--txt)">4)</b> Scegli un capo nel guardaroba e premi <b style="color:var(--txt)">Metti addosso</b>.</div>
-        <div><b style="color:var(--txt)">5)</b> Usa <b style="color:var(--txt)">Rotazione</b> e <b style="color:var(--txt)">Fullscreen</b>.</div>
-        <div style="margin-top:8px;font-size:13px">
-          ⚠️ Sicurezza: su GitHub Pages il PIN è “deterrente”, non blindato. Per sicurezza vera serve backend/auth (Supabase).
+    <div class="row" style="margin-bottom:10px;">
+      <div class="btn primary" id="btnAddCloth">👗 Aggiungi capo</div>
+      <div class="btn" id="btnLoadDemo">📦 Carica demo</div>
+      <div class="btn danger" id="btnClearWardrobe">🧹 Svuota guardaroba</div>
+    </div>
+
+    <div class="filters" style="margin-bottom:10px;">
+      <div class="chip active" data-filter="ALL">Tutti</div>
+      <div class="chip" data-filter="TOP">Sopra</div>
+      <div class="chip" data-filter="BOTTOM">Sotto</div>
+      <div class="chip" data-filter="DRESS">Intero</div>
+      <div class="chip" data-filter="SHOES">Scarpe</div>
+      <div class="chip" data-filter="ACCESSORY">Accessori</div>
+    </div>
+
+    <div class="pill" style="margin-bottom:10px;">Capi: <b id="wardrobeCount">0</b></div>
+    <div class="list" id="wardrobeList"></div>
+  </section>
+
+  <!-- GUIDE -->
+  <section id="tab-guide" class="card" style="display:none;">
+    <h3 style="margin-top:0;">Guida (super semplice)</h3>
+    <ol style="line-height:1.6; color:rgba(255,255,255,.86);">
+      <li><b>Studio</b> → <b>Carica persona (4 viste)</b>. Se hai solo 1 foto, carica almeno FRONTE.</li>
+      <li><b>Guardaroba</b> → <b>Aggiungi capo</b> → scegli screenshot/immagine → <b>ritaglia</b> solo il capo (maniglie + drag + zoom).</li>
+      <li>Salva. Poi in lista premi <b>Metti addosso</b> e torna in Studio: il capo va sulla persona.</li>
+      <li>Se vuoi <b>gonna al posto pantaloni</b>: in Studio premi <b>Gomma</b> e cancella a mano i pantaloni, poi metti la gonna.</li>
+      <li><b>Rotazione</b>: usa “Rotazione” per scatto, oppure “Auto/Stop”.</li>
+      <li><b>Fullscreen</b>: per vedere meglio la persona vestita.</li>
+    </ol>
+    <div class="card" style="background: rgba(255,255,255,.03);">
+      <b>Consiglio foto persona:</b> luce buona, distanza 2–3m, corpo intero, telefono dritto.
+    </div>
+  </section>
+
+</div>
+
+<!-- Hidden inputs -->
+<input id="personInputFront" type="file" accept="image/*" hidden />
+<input id="personInputRight" type="file" accept="image/*" hidden />
+<input id="personInputBack" type="file" accept="image/*" hidden />
+<input id="personInputLeft" type="file" accept="image/*" hidden />
+<input id="clothInput" type="file" accept="image/*" hidden />
+
+<!-- MODAL: Add/Edit cloth with PRO crop editor -->
+<div class="modalBack" id="clothModalBack" aria-hidden="true">
+  <div class="modal">
+    <div class="modalHeader">
+      <div>
+        <div class="t">Aggiungi/Modifica capo</div>
+        <div class="sub" style="margin-top:2px;">Ritaglio regolabile + OCR (opzionale) + salva nel guardaroba</div>
+      </div>
+      <button class="xbtn" id="clothModalClose">✕</button>
+    </div>
+
+    <div class="modalBody">
+      <div class="cropGrid">
+        <div class="cropStage">
+          <div class="stageHost" id="cropStageHost">
+            <canvas id="cropCanvas"></canvas>
+            <div class="helpBubble">Drag = sposta immagine • Maniglie = ridimensiona ritaglio • Zoom = slider sotto</div>
+          </div>
+          <div style="padding:12px;">
+            <div class="row">
+              <div class="btn small" id="btnChooseImage">📷 Scegli immagine</div>
+              <div class="btn small" id="btnFit">🔎 Adatta</div>
+              <div class="btn small" id="btnNewCrop">🧩 Nuovo ritaglio</div>
+              <div class="btn danger small" id="btnResetCrop">↩ Reset</div>
+            </div>
+
+            <div class="sliderRow" style="margin-top:10px;">
+              <div class="kbd">Zoom</div>
+              <input id="cropZoom" type="range" min="40" max="260" value="100" />
+              <div class="kbd"><span id="cropZoomLbl">100%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="formBlock">
+          <div class="pill" style="margin-bottom:10px;">Anteprima ritaglio (trasparente)</div>
+          <div style="border:1px solid rgba(255,255,255,.12); border-radius:16px; overflow:hidden; background:rgba(0,0,0,.35);">
+            <canvas id="cropPreview" style="width:100%; aspect-ratio:1/1;"></canvas>
+          </div>
+
+          <label>Dati capo</label>
+          <label style="margin-top:10px;">Nome capo</label>
+          <div class="tinyRow">
+            <input id="clothName" type="text" placeholder="es. Vestito casual" />
+            <button class="btn small" id="btnSelectText">Seleziona</button>
+            <button class="btn small" id="btnCopyText">Copia</button>
+            <button class="btn small" id="btnPasteText">Incolla</button>
+          </div>
+
+          <label style="margin-top:10px;">Tipo capo</label>
+          <select id="clothType">
+            <option value="TOP">Camicia / Maglia (TOP)</option>
+            <option value="BOTTOM">Pantalone / Gonna (BOTTOM)</option>
+            <option value="DRESS">Abito intero (DRESS)</option>
+            <option value="SHOES">Scarpe (SHOES)</option>
+            <option value="ACCESSORY">Accessorio (ACCESSORY)</option>
+          </select>
+
+          <label style="margin-top:10px;">Vista che stai caricando</label>
+          <select id="clothView">
+            <option value="FRONT">FRONTE</option>
+            <option value="RIGHT">FIANCO DX</option>
+            <option value="BACK">RETRO</option>
+            <option value="LEFT">FIANCO SX</option>
+          </select>
+
+          <label style="margin-top:10px;">Note / Link (facoltativo)</label>
+          <textarea id="clothNote" placeholder="Puoi incollare link Amazon/Zalando o note..."></textarea>
+
+          <div class="row" style="margin-top:10px;">
+            <div class="btn small" id="btnOCR">🧠 OCR (opzionale)</div>
+            <div class="btn ok small" id="btnSaveCloth">💾 Salva nel guardaroba</div>
+          </div>
+
+          <div class="note">
+            Tip: fai screenshot del prodotto (Amazon/Zalando) e ritaglia solo il capo.  
+            Se vedi bordi bianchi: ritaglia più stretto, oppure usa “Gomma” in Studio per mascherare.
+          </div>
+
+          <div class="errBox" id="modalError"></div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="fs" id="fs">
-    <div class="stage" id="fsStage"></div>
-  </div>
-  <div class="fsTop" id="fsTop" style="position:fixed;left:10px;top:10px;z-index:10000">
-    <button class="btn small acc" id="btnExitFullscreen">⛶ Esci</button>
-  </div>
+<script src="./config.js"></script>
+<script>
+/* =========================
+   UTIL & STORAGE
+========================= */
+const CFG = window.APP_CONFIG || { storagePrefix:"sercuctech_tryme_" };
 
-  <div class="toast" id="toast"></div>
+const $ = (q, el=document) => el.querySelector(q);
+const $$ = (q, el=document) => Array.from(el.querySelectorAll(q));
 
-  <input type="file" id="personFiles" accept="image/*" multiple style="display:none">
+const KEYS = {
+  PERSON: CFG.storagePrefix + "person_v1",
+  WARDROBE: CFG.storagePrefix + "wardrobe_v1",
+  WORN: CFG.storagePrefix + "worn_v1",
+  MASK: CFG.storagePrefix + "mask_v1"
+};
 
-  <script src="./config.js"></script>
-  <script>
-    // PWA
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
+function setStatus(ok=true, msg="OK"){
+  $("#statusText").textContent = msg;
+  $("#statusDot").classList.toggle("err", !ok);
+}
+
+function nowId(prefix="id"){
+  return prefix + "_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+}
+
+function safeJsonParse(s, fallback){
+  try { return JSON.parse(s); } catch(e){ return fallback; }
+}
+
+function loadLS(key, fallback){
+  const v = localStorage.getItem(key);
+  if (!v) return fallback;
+  return safeJsonParse(v, fallback);
+}
+function saveLS(key, obj){
+  localStorage.setItem(key, JSON.stringify(obj));
+}
+
+function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+function imgFromSrc(src){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=> resolve(img);
+    img.onerror = reject;
+    img.crossOrigin = "anonymous";
+    img.src = src;
+  });
+}
+
+/* =========================
+   APP STATE
+========================= */
+const state = {
+  tab: "studio",
+  filter: "ALL",
+  person: loadLS(KEYS.PERSON, { FRONT:null, RIGHT:null, BACK:null, LEFT:null }),
+  wardrobe: loadLS(KEYS.WARDROBE, { items: [] }),
+  worn: loadLS(KEYS.WORN, { items: [] }), // items with transforms per view
+  globalScale: 1,
+  viewOrder: ["FRONT","RIGHT","BACK","LEFT"],
+  currentViewIndex: 0,
+  autoTimer: null,
+
+  // scene selection
+  selectedWornId: null,
+
+  // mask
+  maskEnabled: false,
+  maskBrush: 24, // px
+  maskOpacity: 1.0,
+
+  // crop modal editing
+  crop: {
+    open:false,
+    editingItemId:null,
+    sourceImg:null,
+    sourceSrc:null,
+    imgX:0, imgY:0,
+    imgScale:1,
+    cropRect: { x:60, y:120, w:240, h:320 },
+    dragMode: null, // "img" | "crop" | "handle:tl/tr/bl/br"
+    pointer: { active:false, startX:0, startY:0, lastX:0, lastY:0 },
+    tempName:"",
+    tempType:"TOP",
+    tempView:"FRONT",
+    tempNote:"",
+    ocrReady:false
+  },
+
+  // cache
+  _imgCache: new Map()
+};
+
+/* =========================
+   TABS
+========================= */
+$$(".tab").forEach(t=>{
+  t.addEventListener("click", ()=>{
+    $$(".tab").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    state.tab = t.dataset.tab;
+    $("#tab-studio").style.display = state.tab==="studio" ? "" : "none";
+    $("#tab-wardrobe").style.display = state.tab==="wardrobe" ? "" : "none";
+    $("#tab-guide").style.display = state.tab==="guide" ? "" : "none";
+    if(state.tab==="wardrobe") renderWardrobe();
+    drawMain();
+  });
+});
+
+/* =========================
+   CANVASES (MAIN)
+========================= */
+const mainCanvas = $("#mainCanvas");
+const mainCtx = mainCanvas.getContext("2d");
+
+function resizeCanvasToHost(canvas, host){
+  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  const rect = host.getBoundingClientRect();
+  const w = Math.max(10, Math.floor(rect.width));
+  const h = Math.max(10, Math.floor(rect.height));
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  canvas.style.width = w+"px";
+  canvas.style.height = h+"px";
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { w, h, dpr };
+}
+
+function getCurrentView(){
+  return state.viewOrder[state.currentViewIndex] || "FRONT";
+}
+
+async function getPersonImg(view){
+  const src = state.person?.[view];
+  if(!src) return null;
+  if(state._imgCache.has(src)) return state._imgCache.get(src);
+  const img = await imgFromSrc(src);
+  state._imgCache.set(src, img);
+  return img;
+}
+
+async function getClothImg(dataUrl){
+  if(!dataUrl) return null;
+  if(state._imgCache.has(dataUrl)) return state._imgCache.get(dataUrl);
+  const img = await imgFromSrc(dataUrl);
+  state._imgCache.set(dataUrl, img);
+  return img;
+}
+
+function fitContain(imgW, imgH, boxW, boxH){
+  const r = Math.min(boxW / imgW, boxH / imgH);
+  const w = imgW * r, h = imgH * r;
+  const x = (boxW - w)/2;
+  const y = (boxH - h)/2;
+  return { x,y,w,h,scale:r };
+}
+
+let maskCanvas = document.createElement("canvas");
+let maskCtx = maskCanvas.getContext("2d");
+
+function ensureMaskSize(w,h){
+  if(maskCanvas.width !== w || maskCanvas.height !== h){
+    maskCanvas.width = w;
+    maskCanvas.height = h;
+    maskCtx.clearRect(0,0,w,h);
+    // try load stored mask
+    const saved = loadLS(KEYS.MASK, null);
+    if(saved && saved.dataUrl){
+      const img = new Image();
+      img.onload = ()=> {
+        maskCtx.clearRect(0,0,w,h);
+        maskCtx.drawImage(img,0,0,w,h);
+      };
+      img.src = saved.dataUrl;
+    }
+  }
+}
+
+function saveMask(){
+  try{
+    const dataUrl = maskCanvas.toDataURL("image/png");
+    saveLS(KEYS.MASK, { dataUrl });
+  }catch(e){}
+}
+
+async function drawMain(){
+  try{
+    const host = $("#mainCanvasHost");
+    const { w, h } = resizeCanvasToHost(mainCanvas, host);
+
+    mainCtx.clearRect(0,0,w,h);
+    mainCtx.fillStyle = "#05070b";
+    mainCtx.fillRect(0,0,w,h);
+
+    const view = getCurrentView();
+
+    // PERSON
+    const pImg = await getPersonImg(view) || await getPersonImg("FRONT");
+    let personBox = { x:0, y:0, w:w, h:h };
+    let personFit = null;
+
+    if(pImg){
+      personFit = fitContain(pImg.naturalWidth, pImg.naturalHeight, w, h);
+      mainCtx.drawImage(pImg, personFit.x, personFit.y, personFit.w, personFit.h);
+    }else{
+      // placeholder
+      mainCtx.fillStyle = "rgba(255,255,255,.08)";
+      mainCtx.fillRect(20,20,w-40,h-40);
+      mainCtx.fillStyle = "rgba(255,255,255,.6)";
+      mainCtx.font = "700 16px system-ui";
+      mainCtx.fillText("Carica una persona (4 viste)", 40, 60);
     }
 
-    const $ = (s, r=document) => r.querySelector(s);
-    const $$ = (s, r=document) => [...r.querySelectorAll(s)];
-
-    const toast = (msg, bad=false) => {
-      const t = $("#toast");
-      t.textContent = msg;
-      t.style.borderColor = bad ? "rgba(255,91,106,.35)" : "rgba(57,217,138,.25)";
-      t.classList.add("on");
-      clearTimeout(toast._tm);
-      toast._tm = setTimeout(()=>t.classList.remove("on"), 2300);
-    };
-
-    const setStatus = (ok, msg) => {
-      $("#dot").style.background = ok ? "var(--ok)" : "var(--bad)";
-      $("#statusTxt").textContent = msg || (ok ? "OK" : "Errore");
-    };
-
-    // Storage base
-    const STORE_KEY = "sercuctech_tryme_store_v1";
-    function loadStore(){
-      try{
-        const raw = localStorage.getItem(STORE_KEY);
-        if(!raw) return { wardrobe: [], people: {}, lastPersonView: 0, outfit: null, globalScale: 1 };
-        return JSON.parse(raw);
-      }catch(e){
-        return { wardrobe: [], people: {}, lastPersonView: 0, outfit: null, globalScale: 1 };
-      }
-    }
-    function saveStore(s){ localStorage.setItem(STORE_KEY, JSON.stringify(s)); }
-
-    let store = loadStore();
-
-    // Tabs
-    $$(".tab").forEach(t=>{
-      t.addEventListener("click", ()=>{
-        $$(".tab").forEach(x=>x.classList.remove("on"));
-        t.classList.add("on");
-        const tab = t.dataset.tab;
-        $("#studioCard").style.display = tab==="studio" ? "" : "none";
-        $("#rightCard").style.display = tab==="studio" ? "" : "none";
-        $("#wardrobeCard").style.display = tab==="guardaroba" ? "" : "none";
-        $("#guideCard").style.display = tab==="guida" ? "" : "none";
-        if(tab==="guardaroba") renderWardrobeFull();
-        if(tab==="studio") renderWardrobeMini();
-      });
-    });
-
-    // Person 4 views
-    const person = { views: [null,null,null,null], idx: store.lastPersonView||0 };
-    const viewLabels = ["fronte","dx","retro","sx"];
-
-    function showPersonView(i){
-      person.idx = (i+4)%4;
-      store.lastPersonView = person.idx;
-      saveStore(store);
-      const src = person.views[person.idx];
-      $("#personImg").src = src || "";
-      $("#viewName").textContent = src ? viewLabels[person.idx] : "—";
+    // MASK (erase layer)
+    if(personFit){
+      ensureMaskSize(w,h);
+      // apply mask by drawing a transparent “hole” over person.
+      mainCtx.save();
+      // draw mask as alpha cut:
+      // We store mask as black strokes; composite destination-out.
+      mainCtx.globalCompositeOperation = "destination-out";
+      mainCtx.drawImage(maskCanvas, 0, 0, w, h);
+      mainCtx.restore();
     }
 
-    function askLoadPerson(){
-      $("#personFiles").click();
-    }
+    // WORN ITEMS
+    const globalS = state.globalScale;
+    const worn = state.worn.items || [];
+    for(const wi of worn){
+      const vData = (wi.views && wi.views[view]) || (wi.views && wi.views["FRONT"]) || null;
+      if(!vData || !vData.dataUrl) continue;
 
-    $("#btnLoadPerson").addEventListener("click", askLoadPerson);
+      const img = await getClothImg(vData.dataUrl);
+      if(!img) continue;
 
-    $("#personFiles").addEventListener("change", async (e)=>{
-      try{
-        const files = [...e.target.files||[]].slice(0,4);
-        if(!files.length) return;
-        // ordina: se 1 foto -> copia su tutte le viste
-        const dataUrls = [];
-        for(const f of files){
-          dataUrls.push(await fileToDataURL(f));
+      const t = vData.transform || { x: w*0.25, y: h*0.2, s: 1, o: 1 };
+      const scale = t.s * globalS;
+      const drawW = img.naturalWidth * scale;
+      const drawH = img.naturalHeight * scale;
+
+      mainCtx.save();
+      mainCtx.globalAlpha = (t.o ?? 1);
+
+      // draw with top-left anchor
+      mainCtx.drawImage(img, t.x, t.y, drawW, drawH);
+
+      // selection rectangle
+      if(state.selectedWornId === wi.id){
+        mainCtx.strokeStyle = "rgba(45,212,191,.9)";
+        mainCtx.lineWidth = 2;
+        mainCtx.setLineDash([8,6]);
+        mainCtx.strokeRect(t.x, t.y, drawW, drawH);
+        mainCtx.setLineDash([]);
+
+        // handles
+        const hs = 10;
+        const pts = [
+          [t.x, t.y], [t.x+drawW, t.y], [t.x, t.y+drawH], [t.x+drawW, t.y+drawH]
+        ];
+        mainCtx.fillStyle = "rgba(45,212,191,.95)";
+        for(const [px,py] of pts){
+          mainCtx.beginPath();
+          mainCtx.arc(px,py,hs,0,Math.PI*2);
+          mainCtx.fill();
         }
-        if(dataUrls.length===1){
-          person.views = [dataUrls[0],dataUrls[0],dataUrls[0],dataUrls[0]];
-        }else{
-          person.views = [dataUrls[0]||null, dataUrls[1]||null, dataUrls[2]||null, dataUrls[3]||null];
-          // se mancano viste, riempi con la prima
-          const base = person.views[0];
-          for(let i=0;i<4;i++) if(!person.views[i]) person.views[i]=base;
-        }
-        showPersonView(0);
-        toast("Persona caricata (4 viste).");
-        setStatus(true,"OK");
-      }catch(err){
-        console.error(err);
-        setStatus(false,"Errore");
-        toast("Errore caricamento persona.", true);
-      }finally{
-        e.target.value="";
       }
-    });
 
-    // Rotation
-    let autoTimer = null;
-    $("#btnRotate").addEventListener("click", ()=> {
-      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
-      showPersonView(person.idx+1);
-      applyOutfitToView();
-    });
-    $("#btnAuto").addEventListener("click", ()=>{
-      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
-      clearInterval(autoTimer);
-      autoTimer = setInterval(()=>{
-        showPersonView(person.idx+1);
-        applyOutfitToView();
-      }, 1100);
-      toast("Auto-rotazione attiva.");
-    });
-    $("#btnStop").addEventListener("click", ()=>{
-      clearInterval(autoTimer); autoTimer=null;
-      toast("Stop.");
-    });
+      mainCtx.restore();
+    }
 
-    // Fullscreen
-    const fs = $("#fs");
-    const fsStage = $("#fsStage");
-    $("#btnFullscreen").addEventListener("click", ()=>{
-      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
-      // sposta stage in fullscreen
-      fsStage.innerHTML = "";
-      fsStage.appendChild($("#stage").cloneNode(true));
-      fs.classList.add("on");
-      // nel clone non abbiamo handlers: è solo “vista”. quindi ok.
-      toast("Fullscreen.");
-    });
-    $("#btnExitFullscreen").addEventListener("click", ()=>{
-      fs.classList.remove("on");
-      fsStage.innerHTML="";
-    });
+    // update UI view badges
+    $("#pFront").textContent = state.person.FRONT ? "OK" : "—";
+    $("#pRight").textContent = state.person.RIGHT ? "OK" : "—";
+    $("#pBack").textContent = state.person.BACK ? "OK" : "—";
+    $("#pLeft").textContent = state.person.LEFT ? "OK" : "—";
 
-    // Outfit state
-    const outfit = {
-      itemId: null,
-      // per view: pos/size/rot (semplice)
-      perView: [
-        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
-        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
-        {x:0.20,y:0.18,w:0.55,h:0.62,r:0},
-        {x:0.20,y:0.18,w:0.55,h:0.62,r:0}
-      ]
+    updateSelectionUI();
+    setStatus(true,"OK");
+  }catch(e){
+    console.error(e);
+    setStatus(false,"Errore");
+  }
+}
+
+window.addEventListener("resize", ()=> drawMain());
+
+/* =========================
+   PERSON UPLOAD (4 views)
+========================= */
+$("#btnLoadPerson").addEventListener("click", async ()=>{
+  // sequential prompt
+  await pickPersonView("FRONT");
+  await pickPersonView("RIGHT");
+  await pickPersonView("BACK");
+  await pickPersonView("LEFT");
+  saveLS(KEYS.PERSON, state.person);
+  drawMain();
+});
+
+async function pickPersonView(view){
+  return new Promise((resolve)=>{
+    const inputMap = {
+      FRONT: $("#personInputFront"),
+      RIGHT: $("#personInputRight"),
+      BACK: $("#personInputBack"),
+      LEFT: $("#personInputLeft")
     };
-
-    // Global scale
-    const gs = $("#globalScale");
-    gs.value = Math.round((store.globalScale||1)*100);
-    $("#globalScaleLbl").textContent = gs.value + "%";
-    gs.addEventListener("input", ()=>{
-      store.globalScale = Number(gs.value)/100;
-      $("#globalScaleLbl").textContent = gs.value + "%";
-      saveStore(store);
-      applyGarmentBox();
-    });
-
-    $("#btnClearOutfit").addEventListener("click", ()=>{
-      outfit.itemId=null;
-      $("#garmentBox").style.display="none";
-      toast("Outfit pulito.");
-    });
-
-    function getWardrobe(){ return store.wardrobe || []; }
-
-    function renderWardrobeMini(){
-      const list = $("#wardrobeList");
-      const items = getWardrobe().slice().reverse().slice(0,6);
-      if(!items.length){
-        list.innerHTML = `<div style="color:var(--muted);font-size:13px">Nessun capo ancora. Vai in “Guardaroba” o in “Admin” per aggiungerli.</div>`;
-        return;
+    const inp = inputMap[view];
+    inp.value = "";
+    inp.onchange = async ()=>{
+      if(inp.files && inp.files[0]){
+        const dataUrl = await fileToDataURL(inp.files[0]);
+        state.person[view] = dataUrl;
+        saveLS(KEYS.PERSON, state.person);
       }
-      list.innerHTML = items.map(it=>itemRowHTML(it, true)).join("");
-      list.querySelectorAll("[data-act='wear']").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.dataset.id;
-          wearItem(id);
-        });
-      });
+      resolve();
+    };
+    inp.click();
+  });
+}
+
+$("#btnClearPerson").addEventListener("click", ()=>{
+  state.person = { FRONT:null, RIGHT:null, BACK:null, LEFT:null };
+  saveLS(KEYS.PERSON, state.person);
+  // clear mask too
+  localStorage.removeItem(KEYS.MASK);
+  maskCtx.clearRect(0,0,maskCanvas.width, maskCanvas.height);
+  drawMain();
+});
+
+/* =========================
+   ROTATION
+========================= */
+$("#btnRotateOnce").addEventListener("click", ()=>{
+  state.currentViewIndex = (state.currentViewIndex + 1) % state.viewOrder.length;
+  drawMain();
+});
+
+$("#btnAuto").addEventListener("click", ()=>{
+  if(state.autoTimer) return;
+  state.autoTimer = setInterval(()=>{
+    state.currentViewIndex = (state.currentViewIndex + 1) % state.viewOrder.length;
+    drawMain();
+  }, 900);
+});
+
+$("#btnStop").addEventListener("click", ()=>{
+  if(state.autoTimer){
+    clearInterval(state.autoTimer);
+    state.autoTimer = null;
+  }
+});
+
+/* =========================
+   FULLSCREEN
+========================= */
+$("#btnFullscreen").addEventListener("click", async ()=>{
+  const host = $("#mainCanvasHost");
+  try{
+    if(!document.fullscreenElement){
+      await host.requestFullscreen?.();
+      document.body.classList.add("fsActive");
+    }else{
+      await document.exitFullscreen?.();
+      document.body.classList.remove("fsActive");
     }
+  }catch(e){
+    // fallback: do nothing
+  }
+  drawMain();
+});
 
-    function renderWardrobeFull(filter="all"){
-      const list = $("#wardrobeListFull");
-      const items = getWardrobe().slice().reverse().filter(it=>{
-        if(filter==="all") return true;
-        return it.group===filter;
-      });
-      if(!items.length){
-        list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:14px">Nessun capo in questa categoria.</div>`;
-        return;
-      }
-      list.innerHTML = items.map(it=>itemRowHTML(it, false)).join("");
-      list.querySelectorAll("[data-act='wear']").forEach(btn=>{
-        btn.addEventListener("click", ()=> wearItem(btn.dataset.id));
-      });
-      list.querySelectorAll("[data-act='del']").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id = btn.dataset.id;
-          store.wardrobe = getWardrobe().filter(x=>x.id!==id);
-          saveStore(store);
-          renderWardrobeFull(filter);
-          renderWardrobeMini();
-          toast("Capo eliminato.");
-        });
-      });
-    }
+/* =========================
+   GLOBAL SCALE
+========================= */
+$("#globalScale").addEventListener("input",(e)=>{
+  const v = Number(e.target.value);
+  state.globalScale = v/100;
+  $("#globalScaleLbl").textContent = v+"%";
+  drawMain();
+});
 
-    $$("#wardrobeCard [data-filter]").forEach(b=>{
-      b.addEventListener("click", ()=>renderWardrobeFull(b.dataset.filter));
-    });
+/* =========================
+   WARDROBE RENDER + FILTERS
+========================= */
+$$(".chip").forEach(ch=>{
+  ch.addEventListener("click", ()=>{
+    $$(".chip").forEach(x=>x.classList.remove("active"));
+    ch.classList.add("active");
+    state.filter = ch.dataset.filter;
+    renderWardrobe();
+  });
+});
 
-    function itemRowHTML(it, mini){
-      const img = (it.views && it.views[0]) ? it.views[0] : it.image;
-      return `
-        <div class="item">
-          <div class="thumb">${img ? `<img src="${img}" alt="">` : "—"}</div>
-          <div class="meta">
-            <b>${escapeHtml(it.name||"Senza nome")}</b>
-            <small>${labelGroup(it.group)} • ${it.views ? `${countViews(it.views)} viste` : "1 vista"}</small>
-          </div>
-          <div class="row" style="justify-content:flex-end">
-            <button class="btn small acc" data-act="wear" data-id="${it.id}">Metti addosso</button>
-            ${mini ? "" : `<button class="btn small bad" data-act="del" data-id="${it.id}">Elimina</button>`}
-          </div>
+function renderWardrobe(){
+  const list = $("#wardrobeList");
+  list.innerHTML = "";
+  const items = (state.wardrobe.items || []).slice().reverse();
+
+  const filtered = items.filter(it=>{
+    if(state.filter==="ALL") return true;
+    return it.type === state.filter;
+  });
+
+  $("#wardrobeCount").textContent = String(filtered.length);
+
+  if(filtered.length===0){
+    const empty = document.createElement("div");
+    empty.className = "card";
+    empty.style.background = "rgba(255,255,255,.03)";
+    empty.innerHTML = `<b>Guardaroba vuoto.</b><div class="sub" style="margin-top:6px;">Premi “Aggiungi capo” e carica uno screenshot Amazon/Zalando, poi ritaglia il capo e salva.</div>`;
+    list.appendChild(empty);
+    return;
+  }
+
+  for(const it of filtered){
+    const card = document.createElement("div");
+    card.className = "item";
+
+    const front = it.views?.FRONT || null;
+    const thumbUrl = front?.dataUrl || it.views?.RIGHT?.dataUrl || it.views?.BACK?.dataUrl || it.views?.LEFT?.dataUrl || null;
+
+    card.innerHTML = `
+      <div class="thumb">
+        <div class="badge">${it.type}</div>
+        ${thumbUrl ? `<img src="${thumbUrl}" alt="">` : `<div style="color:rgba(255,255,255,.55);font-weight:900;">Nessuna immagine</div>`}
+      </div>
+      <div class="meta">
+        <div class="name">${escapeHtml(it.name || "Senza nome")}</div>
+        <div class="small">
+          <span>${viewsCount(it) } viste</span>
+          <span>${new Date(it.createdAt||Date.now()).toLocaleDateString()}</span>
         </div>
-      `;
-    }
-    function countViews(v){ return (v||[]).filter(Boolean).length || 1; }
-    function labelGroup(g){
-      return g==="top"?"Sopra":g==="bottom"?"Sotto":g==="dress"?"Intero":g==="accessory"?"Accessori":"—";
-    }
-    function escapeHtml(s){
-      return String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-    }
+        <div class="actions">
+          <button class="btn primary" data-act="wear" data-id="${it.id}">Metti addosso</button>
+          <button class="btn" data-act="edit" data-id="${it.id}">Modifica</button>
+          <button class="btn danger" data-act="del" data-id="${it.id}">Elimina</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+  }
 
-    function wearItem(id){
-      const it = getWardrobe().find(x=>x.id===id);
-      if(!it) return toast("Capo non trovato.", true);
-      if(!person.views[person.idx]) return toast("Carica prima la persona.", true);
+  list.querySelectorAll("button[data-act]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      const id = b.dataset.id;
+      const act = b.dataset.act;
+      if(act==="wear") wearItem(id);
+      if(act==="edit") openClothModal(id);
+      if(act==="del") deleteCloth(id);
+    });
+  });
+}
 
-      outfit.itemId = id;
-      // scegli immagine giusta per vista corrente
-      const vImg = (it.views && it.views[person.idx]) ? it.views[person.idx] : (it.views && it.views[0]) ? it.views[0] : it.image;
-      $("#garmentImg").src = vImg || "";
-      $("#garmentBox").style.display = vImg ? "block" : "none";
+function viewsCount(it){
+  const v = it.views || {};
+  return ["FRONT","RIGHT","BACK","LEFT"].filter(k=>v[k] && v[k].dataUrl).length;
+}
+function escapeHtml(s){
+  return String(s||"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
 
-      // reset posizione vista se mai
-      applyGarmentBox();
-      toast(`Indossato: ${it.name || "capo"}`);
-    }
-
-    function applyOutfitToView(){
-      if(!outfit.itemId) return;
-      const it = getWardrobe().find(x=>x.id===outfit.itemId);
-      if(!it) return;
-      const vImg = (it.views && it.views[person.idx]) ? it.views[person.idx] : (it.views && it.views[0]) ? it.views[0] : it.image;
-      $("#garmentImg").src = vImg || "";
-      $("#garmentBox").style.display = vImg ? "block" : "none";
-      applyGarmentBox();
-    }
-
-    function applyGarmentBox(){
-      const b = $("#garmentBox");
-      if(b.style.display==="none") return;
-      const pv = outfit.perView[person.idx];
-      const scale = store.globalScale || 1;
-
-      b.style.left = (pv.x*100)+"%";
-      b.style.top  = (pv.y*100)+"%";
-      b.style.width = (pv.w*100*scale)+"%";
-      b.style.height= (pv.h*100*scale)+"%";
-      b.style.transform = `rotate(${pv.r||0}deg)`;
-    }
-
-    // Drag + resize (NO setPointerCapture -> evita InvalidStateError)
-    (function garmentInteractions(){
-      const box = $("#garmentBox");
-      const wrap = $("#overlayWrap");
-      let mode = null; // "move" o handle
-      let start = null;
-
-      function getRel(e){
-        const rect = $("#stage").getBoundingClientRect();
-        const x = (e.clientX - rect.left) / rect.width;
-        const y = (e.clientY - rect.top) / rect.height;
-        return {x,y,rect};
-      }
-
-      wrap.addEventListener("pointerdown", (e)=>{
-        if(box.style.display==="none") return;
-        const t = e.target;
-        const isHandle = t.classList.contains("h");
-        const isBox = t === box || box.contains(t);
-        if(!isHandle && !isBox) return;
-
-        e.preventDefault();
-        mode = isHandle ? t.dataset.h : "move";
-        const pv = outfit.perView[person.idx];
-        const rel = getRel(e);
-        start = { mode, pv: {...pv}, rel, cx: rel.x, cy: rel.y };
-      }, {passive:false});
-
-      wrap.addEventListener("pointermove", (e)=>{
-        if(!start) return;
-        e.preventDefault();
-
-        const pv = outfit.perView[person.idx];
-        const rel = getRel(e);
-
-        if(start.mode==="move"){
-          const dx = rel.x - start.cx;
-          const dy = rel.y - start.cy;
-          pv.x = clamp(start.pv.x + dx, 0, 1);
-          pv.y = clamp(start.pv.y + dy, 0, 1);
-        } else {
-          // resize from corner
-          let x = start.pv.x, y = start.pv.y, w = start.pv.w, h = start.pv.h;
-          const dx = rel.x - start.cx;
-          const dy = rel.y - start.cy;
-
-          if(start.mode==="tl"){
-            x = start.pv.x + dx;
-            y = start.pv.y + dy;
-            w = start.pv.w - dx;
-            h = start.pv.h - dy;
-          } else if(start.mode==="tr"){
-            y = start.pv.y + dy;
-            w = start.pv.w + dx;
-            h = start.pv.h - dy;
-          } else if(start.mode==="bl"){
-            x = start.pv.x + dx;
-            w = start.pv.w - dx;
-            h = start.pv.h + dy;
-          } else if(start.mode==="br"){
-            w = start.pv.w + dx;
-            h = start.pv.h + dy;
-          }
-          // min size
-          w = Math.max(0.08, w);
-          h = Math.max(0.08, h);
-          // clamp pos
-          x = clamp(x, 0, 1);
-          y = clamp(y, 0, 1);
-
-          pv.x = x; pv.y = y; pv.w = w; pv.h = h;
+/* =========================
+   DEMO LOAD / CLEAR
+========================= */
+$("#btnLoadDemo").addEventListener("click", async ()=>{
+  try{
+    const res = await fetch(CFG.demoWardrobeUrl, { cache:"no-store" });
+    const json = await res.json();
+    // merge only if items exist
+    if(json && Array.isArray(json.items)){
+      // keep existing, add only missing ids
+      const existingIds = new Set((state.wardrobe.items||[]).map(x=>x.id));
+      for(const it of json.items){
+        if(!existingIds.has(it.id)){
+          state.wardrobe.items.push({
+            id: it.id,
+            name: it.name || "Demo",
+            type: it.type || "TOP",
+            note: it.note || "",
+            createdAt: Date.now(),
+            views: { FRONT:null, RIGHT:null, BACK:null, LEFT:null }
+          });
         }
+      }
+      saveLS(KEYS.WARDROBE, state.wardrobe);
+      renderWardrobe();
+    }
+  }catch(e){
+    setStatus(false,"Demo non disponibile");
+    console.error(e);
+  }
+});
 
-        applyGarmentBox();
-      }, {passive:false});
+$("#btnClearWardrobe").addEventListener("click", ()=>{
+  state.wardrobe = { items: [] };
+  saveLS(KEYS.WARDROBE, state.wardrobe);
+  // also clear worn because would reference
+  state.worn = { items: [] };
+  saveLS(KEYS.WORN, state.worn);
+  state.selectedWornId = null;
+  renderWardrobe();
+  drawMain();
+});
 
-      window.addEventListener("pointerup", ()=>{
-        if(!start) return;
-        start = null;
-        saveStore(store);
-      });
-    })();
+/* =========================
+   ADD CLOTH MODAL + CROP EDITOR (PRO)
+========================= */
+const clothModalBack = $("#clothModalBack");
+const cropCanvas = $("#cropCanvas");
+const cropCtx = cropCanvas.getContext("2d");
+const cropPreview = $("#cropPreview");
+const prevCtx = cropPreview.getContext("2d");
 
-    function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function openModal(){
+  clothModalBack.style.display = "flex";
+  clothModalBack.setAttribute("aria-hidden","false");
+}
+function closeModal(){
+  clothModalBack.style.display = "none";
+  clothModalBack.setAttribute("aria-hidden","true");
+}
 
-    // Demo items (leggerissimi)
-    $("#btnLoadDemo").addEventListener("click", ()=>{
-      const demo = [
-        mkItem("T-shirt basic (demo)","top", null),
-        mkItem("Pantalone (demo)","bottom", null),
-        mkItem("Abito (demo)","dress", null)
-      ];
-      store.wardrobe = [...getWardrobe(), ...demo];
-      saveStore(store);
-      renderWardrobeFull();
-      renderWardrobeMini();
-      toast("Demo caricata. Ora aggiungi i tuoi capi reali in Admin.");
+$("#btnAddCloth").addEventListener("click", ()=> openClothModal(null));
+$("#clothModalClose").addEventListener("click", ()=> { closeModal(); });
+
+$("#btnChooseImage").addEventListener("click", ()=> $("#clothInput").click());
+$("#btnFit").addEventListener("click", ()=> cropFit());
+$("#btnNewCrop").addEventListener("click", ()=> newCropRect());
+$("#btnResetCrop").addEventListener("click", ()=> resetCropAll());
+$("#btnSaveCloth").addEventListener("click", ()=> saveClothFromModal());
+
+$("#cropZoom").addEventListener("input",(e)=>{
+  const v = Number(e.target.value);
+  state.crop.imgScale = v/100;
+  $("#cropZoomLbl").textContent = v+"%";
+  drawCrop();
+  drawPreview();
+});
+
+$("#btnSelectText").addEventListener("click", ()=>{
+  $("#clothName").focus();
+  $("#clothName").select();
+});
+$("#btnCopyText").addEventListener("click", async ()=>{
+  try{
+    await navigator.clipboard.writeText($("#clothName").value || "");
+    toastModal("Copiato ✅");
+  }catch(e){
+    toastModal("Copia non disponibile");
+  }
+});
+$("#btnPasteText").addEventListener("click", async ()=>{
+  try{
+    const t = await navigator.clipboard.readText();
+    if(t) $("#clothName").value = t.trim();
+    toastModal("Incollato ✅");
+  }catch(e){
+    toastModal("Incolla non disponibile");
+  }
+});
+
+$("#btnOCR").addEventListener("click", async ()=>{
+  await runOCRIntoName();
+});
+
+$("#clothInput").addEventListener("change", async (e)=>{
+  const f = e.target.files?.[0];
+  if(!f) return;
+  const src = await fileToDataURL(f);
+  await loadCropImage(src);
+});
+
+function toastModal(msg){
+  const box = $("#modalError");
+  box.style.display = "block";
+  box.style.borderColor = "rgba(54,211,153,.35)";
+  box.style.background = "rgba(54,211,153,.10)";
+  box.textContent = msg;
+  setTimeout(()=>{ box.style.display="none"; }, 1300);
+}
+function errorModal(msg){
+  const box = $("#modalError");
+  box.style.display = "block";
+  box.style.borderColor = "rgba(255,77,77,.35)";
+  box.style.background = "rgba(255,77,77,.10)";
+  box.textContent = msg;
+}
+
+async function openClothModal(itemId){
+  $("#modalError").style.display="none";
+  state.crop.editingItemId = itemId;
+
+  // defaults
+  state.crop.tempName = "";
+  state.crop.tempType = "TOP";
+  state.crop.tempView = "FRONT";
+  state.crop.tempNote = "";
+  $("#clothName").value = "";
+  $("#clothType").value = "TOP";
+  $("#clothView").value = "FRONT";
+  $("#clothNote").value = "";
+
+  // load item if editing
+  if(itemId){
+    const it = (state.wardrobe.items||[]).find(x=>x.id===itemId);
+    if(it){
+      $("#clothName").value = it.name || "";
+      $("#clothType").value = it.type || "TOP";
+      $("#clothNote").value = it.note || "";
+      // choose first existing view by default
+      const v = it.views || {};
+      const firstKey = ["FRONT","RIGHT","BACK","LEFT"].find(k=>v[k] && v[k].dataUrl) || "FRONT";
+      $("#clothView").value = firstKey;
+      // pre-load image in editor
+      const dataUrl = v[firstKey]?.dataUrl || null;
+      if(dataUrl){
+        await loadCropImage(dataUrl, true); // already cropped source
+      }else{
+        await loadCropImage(null);
+      }
+    }
+  }else{
+    await loadCropImage(null);
+  }
+
+  openModal();
+  drawCrop();
+  drawPreview();
+}
+
+async function loadCropImage(src, isAlreadyCropped=false){
+  state.crop.sourceSrc = src;
+  state.crop.sourceImg = null;
+
+  // setup canvases size
+  const host = $("#cropStageHost");
+  resizeCanvasToHost(cropCanvas, host);
+
+  const prevRect = cropPreview.getBoundingClientRect();
+  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  cropPreview.width = Math.floor(prevRect.width * dpr);
+  cropPreview.height = Math.floor(prevRect.width * dpr);
+  cropPreview.getContext("2d").setTransform(dpr,0,0,dpr,0,0);
+
+  if(!src){
+    state.crop.imgX = 0; state.crop.imgY = 0; state.crop.imgScale = 1;
+    state.crop.cropRect = { x: 60, y: 120, w: 240, h: 320 };
+    $("#cropZoom").value = 100;
+    $("#cropZoomLbl").textContent = "100%";
+    drawCrop();
+    drawPreview();
+    return;
+  }
+
+  const img = await imgFromSrc(src);
+  state.crop.sourceImg = img;
+
+  // center image
+  cropFit(isAlreadyCropped);
+  drawCrop();
+  drawPreview();
+}
+
+function cropFit(isAlreadyCropped=false){
+  const host = $("#cropStageHost");
+  const rect = host.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+
+  const img = state.crop.sourceImg;
+  if(!img){
+    return;
+  }
+
+  // we scale to contain in stage
+  const fit = fitContain(img.naturalWidth, img.naturalHeight, w, h);
+  state.crop.imgScale = fit.scale;
+  state.crop.imgX = fit.x;
+  state.crop.imgY = fit.y;
+
+  // crop rectangle: center, big, with safe margins
+  const margin = 26;
+  state.crop.cropRect = {
+    x: margin,
+    y: margin + 30,
+    w: Math.max(120, w - margin*2),
+    h: Math.max(180, h - margin*2 - 40)
+  };
+
+  $("#cropZoom").value = Math.round(state.crop.imgScale * 100);
+  $("#cropZoomLbl").textContent = Math.round(state.crop.imgScale * 100) + "%";
+}
+
+function newCropRect(){
+  const host = $("#cropStageHost");
+  const rect = host.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.height;
+  state.crop.cropRect = { x: w*0.15, y: h*0.18, w: w*0.70, h: h*0.70 };
+  drawCrop();
+  drawPreview();
+}
+
+function resetCropAll(){
+  state.crop.imgX = 0;
+  state.crop.imgY = 0;
+  state.crop.imgScale = 1;
+  $("#cropZoom").value = 100;
+  $("#cropZoomLbl").textContent = "100%";
+  newCropRect();
+}
+
+function drawCrop(){
+  const host = $("#cropStageHost");
+  const { w, h } = resizeCanvasToHost(cropCanvas, host);
+
+  cropCtx.clearRect(0,0,w,h);
+  cropCtx.fillStyle = "#05070b";
+  cropCtx.fillRect(0,0,w,h);
+
+  const img = state.crop.sourceImg;
+  if(img){
+    const s = state.crop.imgScale;
+    const dw = img.naturalWidth * s;
+    const dh = img.naturalHeight * s;
+    cropCtx.drawImage(img, state.crop.imgX, state.crop.imgY, dw, dh);
+  }else{
+    cropCtx.fillStyle = "rgba(255,255,255,.08)";
+    cropCtx.fillRect(20,20,w-40,h-40);
+    cropCtx.fillStyle = "rgba(255,255,255,.62)";
+    cropCtx.font = "800 15px system-ui";
+    cropCtx.fillText("Scegli un'immagine per iniziare", 40, 60);
+  }
+
+  // dim outside crop
+  const r = state.crop.cropRect;
+  cropCtx.save();
+  cropCtx.fillStyle = "rgba(0,0,0,.48)";
+  cropCtx.beginPath();
+  cropCtx.rect(0,0,w,h);
+  cropCtx.rect(r.x, r.y, r.w, r.h);
+  cropCtx.fill("evenodd");
+  cropCtx.restore();
+
+  // crop border
+  cropCtx.save();
+  cropCtx.strokeStyle = "rgba(45,212,191,.9)";
+  cropCtx.lineWidth = 2;
+  cropCtx.setLineDash([8,6]);
+  cropCtx.strokeRect(r.x, r.y, r.w, r.h);
+  cropCtx.setLineDash([]);
+  cropCtx.restore();
+
+  // handles (always visible)
+  const hs = 10;
+  const pts = [
+    [r.x, r.y],
+    [r.x + r.w, r.y],
+    [r.x, r.y + r.h],
+    [r.x + r.w, r.y + r.h]
+  ];
+  cropCtx.fillStyle = "rgba(45,212,191,.95)";
+  for(const [px,py] of pts){
+    cropCtx.beginPath();
+    cropCtx.arc(px,py,hs,0,Math.PI*2);
+    cropCtx.fill();
+  }
+}
+
+function drawPreview(){
+  const rect = cropPreview.getBoundingClientRect();
+  const w = rect.width;
+  const h = rect.width; // square preview
+  prevCtx.clearRect(0,0,w,h);
+  prevCtx.fillStyle = "rgba(0,0,0,.0)";
+  prevCtx.clearRect(0,0,w,h);
+
+  const img = state.crop.sourceImg;
+  if(!img) return;
+
+  // render crop to a temp canvas with transparency
+  const r = state.crop.cropRect;
+  const temp = document.createElement("canvas");
+  temp.width = Math.max(2, Math.floor(r.w));
+  temp.height = Math.max(2, Math.floor(r.h));
+  const tctx = temp.getContext("2d");
+
+  // draw the image relative to crop rect
+  const s = state.crop.imgScale;
+  const dw = img.naturalWidth * s;
+  const dh = img.naturalHeight * s;
+  tctx.clearRect(0,0,temp.width,temp.height);
+  tctx.drawImage(img, state.crop.imgX - r.x, state.crop.imgY - r.y, dw, dh);
+
+  // fit temp into preview
+  const fit = fitContain(temp.width, temp.height, w, h);
+  prevCtx.drawImage(temp, fit.x, fit.y, fit.w, fit.h);
+}
+
+// Crop interactions without setPointerCapture (fix Android InvalidStateError)
+const stageHost = $("#cropStageHost");
+
+stageHost.addEventListener("pointerdown", (e)=>{
+  e.preventDefault();
+  const p = getLocalPoint(stageHost, e.clientX, e.clientY);
+  const hit = hitTestCrop(p.x, p.y);
+  state.crop.dragMode = hit;
+  state.crop.pointer.active = true;
+  state.crop.pointer.startX = p.x;
+  state.crop.pointer.startY = p.y;
+  state.crop.pointer.lastX = p.x;
+  state.crop.pointer.lastY = p.y;
+});
+
+window.addEventListener("pointermove", (e)=>{
+  if(!state.crop.open && clothModalBack.style.display!=="flex") return;
+  if(!state.crop.pointer.active) return;
+  const p = getLocalPoint(stageHost, e.clientX, e.clientY);
+  const dx = p.x - state.crop.pointer.lastX;
+  const dy = p.y - state.crop.pointer.lastY;
+  state.crop.pointer.lastX = p.x;
+  state.crop.pointer.lastY = p.y;
+
+  applyCropDrag(dx, dy);
+  drawCrop();
+  drawPreview();
+}, { passive:false });
+
+window.addEventListener("pointerup", ()=>{
+  state.crop.pointer.active = false;
+  state.crop.dragMode = null;
+});
+
+function getLocalPoint(el, clientX, clientY){
+  const r = el.getBoundingClientRect();
+  return { x: clientX - r.left, y: clientY - r.top };
+}
+
+function hitTestCrop(x,y){
+  const r = state.crop.cropRect;
+  const hs = 18;
+  const corners = [
+    {k:"handle:tl", x:r.x, y:r.y},
+    {k:"handle:tr", x:r.x+r.w, y:r.y},
+    {k:"handle:bl", x:r.x, y:r.y+r.h},
+    {k:"handle:br", x:r.x+r.w, y:r.y+r.h}
+  ];
+  for(const c of corners){
+    if(Math.hypot(x-c.x, y-c.y) <= hs) return c.k;
+  }
+  // if inside crop rect => move crop rect
+  if(x>=r.x && x<=r.x+r.w && y>=r.y && y<=r.y+r.h) return "crop";
+  // else move image
+  return "img";
+}
+
+function applyCropDrag(dx,dy){
+  const host = $("#cropStageHost").getBoundingClientRect();
+  const w = host.width, h = host.height;
+  const r = state.crop.cropRect;
+
+  const mode = state.crop.dragMode;
+  const minSize = 80;
+
+  if(mode==="img"){
+    state.crop.imgX += dx;
+    state.crop.imgY += dy;
+    return;
+  }
+
+  if(mode==="crop"){
+    r.x += dx; r.y += dy;
+    // clamp
+    r.x = Math.max(8, Math.min(w - r.w - 8, r.x));
+    r.y = Math.max(8, Math.min(h - r.h - 8, r.y));
+    return;
+  }
+
+  if(mode?.startsWith("handle:")){
+    const type = mode.split(":")[1];
+    if(type==="tl"){
+      const nx = r.x + dx;
+      const ny = r.y + dy;
+      const nw = r.w + (r.x - nx);
+      const nh = r.h + (r.y - ny);
+      if(nw>=minSize){ r.x = nx; r.w = nw; }
+      if(nh>=minSize){ r.y = ny; r.h = nh; }
+    }
+    if(type==="tr"){
+      const ny = r.y + dy;
+      const nw = r.w + dx;
+      const nh = r.h + (r.y - ny);
+      if(nw>=minSize){ r.w = nw; }
+      if(nh>=minSize){ r.y = ny; r.h = nh; }
+    }
+    if(type==="bl"){
+      const nx = r.x + dx;
+      const nw = r.w + (r.x - nx);
+      const nh = r.h + dy;
+      if(nw>=minSize){ r.x = nx; r.w = nw; }
+      if(nh>=minSize){ r.h = nh; }
+    }
+    if(type==="br"){
+      const nw = r.w + dx;
+      const nh = r.h + dy;
+      if(nw>=minSize){ r.w = nw; }
+      if(nh>=minSize){ r.h = nh; }
+    }
+    // clamp inside stage
+    r.x = Math.max(8, Math.min(w - r.w - 8, r.x));
+    r.y = Math.max(8, Math.min(h - r.h - 8, r.y));
+    r.w = Math.max(minSize, Math.min(w - r.x - 8, r.w));
+    r.h = Math.max(minSize, Math.min(h - r.y - 8, r.h));
+  }
+}
+
+async function saveClothFromModal(){
+  $("#modalError").style.display="none";
+
+  const img = state.crop.sourceImg;
+  if(!img){
+    return errorModal("Prima seleziona un'immagine capo.");
+  }
+
+  const name = ($("#clothName").value || "").trim() || "Senza nome";
+  const type = $("#clothType").value;
+  const view = $("#clothView").value;
+  const note = ($("#clothNote").value || "").trim();
+
+  // Create cropped dataURL (PNG with transparency)
+  const r = state.crop.cropRect;
+  const out = document.createElement("canvas");
+  out.width = Math.max(2, Math.floor(r.w));
+  out.height = Math.max(2, Math.floor(r.h));
+  const octx = out.getContext("2d");
+
+  const s = state.crop.imgScale;
+  const dw = img.naturalWidth * s;
+  const dh = img.naturalHeight * s;
+
+  // draw only crop area
+  octx.clearRect(0,0,out.width,out.height);
+  octx.drawImage(img, state.crop.imgX - r.x, state.crop.imgY - r.y, dw, dh);
+
+  let dataUrl;
+  try{
+    dataUrl = out.toDataURL("image/png");
+  }catch(e){
+    return errorModal("Impossibile salvare immagine (blocco browser). Prova con un'immagine diversa.");
+  }
+
+  let itemId = state.crop.editingItemId;
+  let item = null;
+
+  if(itemId){
+    item = state.wardrobe.items.find(x=>x.id===itemId);
+  }
+
+  if(!item){
+    itemId = nowId("cloth");
+    item = {
+      id: itemId,
+      name,
+      type,
+      note,
+      createdAt: Date.now(),
+      views: { FRONT:null, RIGHT:null, BACK:null, LEFT:null }
+    };
+    state.wardrobe.items.push(item);
+  }else{
+    // update meta
+    item.name = name;
+    item.type = type;
+    item.note = note;
+  }
+
+  // store the view image
+  item.views[view] = {
+    dataUrl,
+    // default transform suggestion for that type/view
+    // (these are used when wearing)
+    hint: getDefaultHint(type, view)
+  };
+
+  saveLS(KEYS.WARDROBE, state.wardrobe);
+  renderWardrobe();
+  closeModal();
+  toast("Salvato nel guardaroba ✅");
+}
+
+/* =========================
+   OCR OPTIONAL (Tesseract.js lazy load)
+========================= */
+let _tesseractLoaded = false;
+async function loadTesseract(){
+  if(_tesseractLoaded) return true;
+  try{
+    // dynamic load script
+    await new Promise((resolve, reject)=>{
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    _tesseractLoaded = true;
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+async function runOCRIntoName(){
+  const img = state.crop.sourceImg;
+  if(!img) return errorModal("Carica prima un'immagine per OCR.");
+
+  const ok = await loadTesseract();
+  if(!ok || !window.Tesseract){
+    return errorModal("OCR non disponibile (connessione o blocco CDN).");
+  }
+
+  try{
+    toastModal("OCR in corso...");
+    // OCR on preview (faster): use cropped output
+    const r = state.crop.cropRect;
+    const tmp = document.createElement("canvas");
+    tmp.width = Math.max(2, Math.floor(r.w));
+    tmp.height = Math.max(2, Math.floor(r.h));
+    const tctx = tmp.getContext("2d");
+    const s = state.crop.imgScale;
+    const dw = img.naturalWidth * s;
+    const dh = img.naturalHeight * s;
+    tctx.drawImage(img, state.crop.imgX - r.x, state.crop.imgY - r.y, dw, dh);
+    const dataUrl = tmp.toDataURL("image/png");
+
+    const res = await window.Tesseract.recognize(dataUrl, "eng+ita", {
+      logger: m => {}
     });
 
-    $("#btnWipeWardrobe").addEventListener("click", ()=>{
-      if(!confirm("Sicuro? Cancella tutti i capi.")) return;
-      store.wardrobe = [];
-      saveStore(store);
-      renderWardrobeFull();
-      renderWardrobeMini();
-      toast("Guardaroba svuotato.");
-    });
+    const text = (res?.data?.text || "").replace(/\s+/g," ").trim();
+    if(text){
+      $("#clothName").value = text.slice(0, 80);
+      toastModal("OCR OK ✅");
+    }else{
+      errorModal("OCR: nessun testo trovato.");
+    }
+  }catch(e){
+    console.error(e);
+    errorModal("OCR fallito. Prova un ritaglio più stretto sul titolo.");
+  }
+}
 
-    $("#btnOpenMyWardrobe").addEventListener("click", ()=>{
-      // switch tab
-      $$(".tab").find(t=>t.dataset.tab==="guardaroba").click();
-    });
+/* =========================
+   DEFAULT HINTS (auto-fit)
+========================= */
+function getDefaultHint(type, view){
+  // x,y are in "normalized scene" (0..1) relative; later converted to pixels
+  const hint = {
+    TOP:   { nx:.28, ny:.18, ns:1.00 },
+    BOTTOM:{ nx:.30, ny:.52, ns:1.05 },
+    DRESS: { nx:.27, ny:.20, ns:1.10 },
+    SHOES: { nx:.33, ny:.78, ns:0.65 },
+    ACCESSORY:{ nx:.40, ny:.12, ns:0.55 }
+  };
+  // view small adjustment
+  const h = hint[type] || hint.TOP;
+  const adj = { FRONT:0, RIGHT:0.02, BACK:0, LEFT:0.02 }[view] || 0;
+  return { ...h, nx: h.nx + adj };
+}
 
-    // Export/Import
-    $("#btnExport").addEventListener("click", ()=>{
-      const blob = new Blob([JSON.stringify(store, null, 2)], {type:"application/json"});
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "sercuctech-tryme-backup.json";
-      a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
-      toast("Backup esportato.");
-    });
-    $("#btnImport").addEventListener("click", ()=> $("#importFile").click());
-    $("#importFile").addEventListener("change", async (e)=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      try{
-        const txt = await f.text();
-        const data = JSON.parse(txt);
-        if(!data || typeof data!=="object") throw new Error("bad");
-        store = data;
-        saveStore(store);
-        renderWardrobeMini();
-        toast("Import OK.");
-      }catch(err){
-        toast("Import fallito.", true);
-      }finally{ e.target.value=""; }
-    });
+/* =========================
+   WEAR ITEM (add to scene)
+========================= */
+async function wearItem(itemId){
+  const it = state.wardrobe.items.find(x=>x.id===itemId);
+  if(!it) return;
 
-    // Add item -> manda ad Admin (editor completo lì)
-    $("#btnAddItem").addEventListener("click", ()=>{
-      location.href = "./admin.html#addItem";
-    });
+  const view = getCurrentView();
+  const host = $("#mainCanvasHost");
+  const rect = host.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
 
-    function mkItem(name, group, image){
-      return {
-        id: "it_"+Math.random().toString(36).slice(2,10),
-        name, group,
-        image: image || "",
-        views: null,
-        createdAt: Date.now()
+  // Build worn record with per-view transforms
+  let worn = state.worn.items.find(x=>x.wardrobeId===itemId);
+  if(!worn){
+    worn = {
+      id: nowId("worn"),
+      wardrobeId: itemId,
+      name: it.name,
+      type: it.type,
+      views: {
+        FRONT: null, RIGHT: null, BACK: null, LEFT: null
+      }
+    };
+    state.worn.items.push(worn);
+  }
+
+  // attach all available views from wardrobe
+  for(const v of ["FRONT","RIGHT","BACK","LEFT"]){
+    const vv = it.views?.[v];
+    if(vv && vv.dataUrl){
+      // create default transform if missing
+      const hint = vv.hint || getDefaultHint(it.type, v);
+      worn.views[v] = worn.views[v] || {};
+      worn.views[v].dataUrl = vv.dataUrl;
+      worn.views[v].transform = worn.views[v].transform || {
+        x: w*hint.nx,
+        y: h*hint.ny,
+        s: hint.ns,
+        o: 1
       };
     }
+  }
 
-    async function fileToDataURL(file){
-      return new Promise((res, rej)=>{
-        const r = new FileReader();
-        r.onload = ()=>res(r.result);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
+  saveLS(KEYS.WORN, state.worn);
+  state.selectedWornId = worn.id;
+
+  // jump to studio
+  $$(".tab").forEach(x=>x.classList.remove("active"));
+  $$('.tab[data-tab="studio"]')[0].classList.add("active");
+  state.tab="studio";
+  $("#tab-studio").style.display = "";
+  $("#tab-wardrobe").style.display = "none";
+  $("#tab-guide").style.display = "none";
+
+  drawMain();
+}
+
+/* =========================
+   DELETE CLOTH
+========================= */
+function deleteCloth(itemId){
+  state.wardrobe.items = (state.wardrobe.items||[]).filter(x=>x.id!==itemId);
+  saveLS(KEYS.WARDROBE, state.wardrobe);
+
+  // also remove worn referencing it
+  state.worn.items = (state.worn.items||[]).filter(w=>w.wardrobeId!==itemId);
+  saveLS(KEYS.WORN, state.worn);
+  if(state.selectedWornId && !(state.worn.items||[]).some(w=>w.id===state.selectedWornId)){
+    state.selectedWornId = null;
+  }
+
+  renderWardrobe();
+  drawMain();
+}
+
+/* =========================
+   SCENE EDITOR (drag & handles) + selection
+========================= */
+function updateSelectionUI(){
+  const wi = (state.worn.items||[]).find(x=>x.id===state.selectedWornId);
+  $("#selItemName").textContent = wi ? wi.name : "—";
+  const view = getCurrentView();
+  const vData = wi?.views?.[view] || wi?.views?.FRONT || null;
+  if(!vData?.transform){
+    $("#selScale").value = 100;
+    $("#selScaleLbl").textContent = "100%";
+    $("#selOpacity").value = 100;
+    $("#selOpacityLbl").textContent = "100%";
+    return;
+  }
+  $("#selScale").value = Math.round((vData.transform.s || 1) * 100);
+  $("#selScaleLbl").textContent = Math.round((vData.transform.s || 1) * 100) + "%";
+  $("#selOpacity").value = Math.round((vData.transform.o ?? 1) * 100);
+  $("#selOpacityLbl").textContent = Math.round((vData.transform.o ?? 1) * 100) + "%";
+}
+
+$("#selScale").addEventListener("input",(e)=>{
+  const wi = (state.worn.items||[]).find(x=>x.id===state.selectedWornId);
+  if(!wi) return;
+  const view = getCurrentView();
+  const vData = wi.views?.[view] || wi.views?.FRONT;
+  if(!vData) return;
+  vData.transform = vData.transform || {x:100,y:100,s:1,o:1};
+  vData.transform.s = Number(e.target.value)/100;
+  $("#selScaleLbl").textContent = e.target.value + "%";
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+
+$("#selOpacity").addEventListener("input",(e)=>{
+  const wi = (state.worn.items||[]).find(x=>x.id===state.selectedWornId);
+  if(!wi) return;
+  const view = getCurrentView();
+  const vData = wi.views?.[view] || wi.views?.FRONT;
+  if(!vData) return;
+  vData.transform = vData.transform || {x:100,y:100,s:1,o:1};
+  vData.transform.o = Number(e.target.value)/100;
+  $("#selOpacityLbl").textContent = e.target.value + "%";
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+
+$("#btnBringFront").addEventListener("click", ()=>{
+  if(!state.selectedWornId) return;
+  const idx = state.worn.items.findIndex(x=>x.id===state.selectedWornId);
+  if(idx<0) return;
+  const it = state.worn.items.splice(idx,1)[0];
+  state.worn.items.push(it);
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+$("#btnSendBack").addEventListener("click", ()=>{
+  if(!state.selectedWornId) return;
+  const idx = state.worn.items.findIndex(x=>x.id===state.selectedWornId);
+  if(idx<0) return;
+  const it = state.worn.items.splice(idx,1)[0];
+  state.worn.items.unshift(it);
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+$("#btnDeleteSel").addEventListener("click", ()=>{
+  if(!state.selectedWornId) return;
+  state.worn.items = state.worn.items.filter(x=>x.id!==state.selectedWornId);
+  state.selectedWornId = null;
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+$("#btnResetSel").addEventListener("click", ()=>{
+  const wi = (state.worn.items||[]).find(x=>x.id===state.selectedWornId);
+  if(!wi) return;
+  const view = getCurrentView();
+  const vData = wi.views?.[view] || wi.views?.FRONT;
+  if(!vData) return;
+  const hint = getDefaultHint(wi.type, view);
+  const host = $("#mainCanvasHost").getBoundingClientRect();
+  vData.transform = { x: host.width*hint.nx, y: host.height*hint.ny, s: hint.ns, o: 1 };
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+$("#btnClearAllWorn").addEventListener("click", ()=>{
+  state.worn = { items: [] };
+  state.selectedWornId = null;
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+});
+
+/* Hit test on main canvas for selection + drag/resize */
+let sceneDrag = { active:false, mode:null, id:null, lastX:0, lastY:0 };
+
+$("#mainCanvasHost").addEventListener("pointerdown", async (e)=>{
+  const host = $("#mainCanvasHost");
+  const r = host.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+
+  if(state.maskEnabled){
+    // start masking
+    sceneDrag.active = true;
+    sceneDrag.mode = "mask";
+    sceneDrag.lastX = x; sceneDrag.lastY = y;
+    applyMaskStroke(x,y);
+    drawMain();
+    return;
+  }
+
+  const hit = await hitTestWorn(x,y);
+  if(hit){
+    state.selectedWornId = hit.id;
+    sceneDrag.active = true;
+    sceneDrag.mode = hit.mode;
+    sceneDrag.id = hit.id;
+    sceneDrag.lastX = x; sceneDrag.lastY = y;
+    drawMain();
+  }else{
+    state.selectedWornId = null;
+    drawMain();
+  }
+});
+
+window.addEventListener("pointermove", (e)=>{
+  if(!sceneDrag.active) return;
+  const host = $("#mainCanvasHost");
+  const r = host.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
+  const dx = x - sceneDrag.lastX;
+  const dy = y - sceneDrag.lastY;
+  sceneDrag.lastX = x; sceneDrag.lastY = y;
+
+  if(sceneDrag.mode==="mask"){
+    applyMaskStroke(x,y);
+    drawMain();
+    return;
+  }
+
+  const wi = state.worn.items.find(z=>z.id===sceneDrag.id);
+  if(!wi) return;
+  const view = getCurrentView();
+  const vData = wi.views?.[view] || wi.views?.FRONT;
+  if(!vData?.transform) return;
+
+  if(sceneDrag.mode==="move"){
+    vData.transform.x += dx;
+    vData.transform.y += dy;
+  }else if(sceneDrag.mode?.startsWith("handle:")){
+    // resize via corner handles: change scale based on dx/dy
+    const s = vData.transform.s || 1;
+    const delta = (dx + dy) * 0.002;
+    vData.transform.s = Math.max(0.2, Math.min(3, s + delta));
+  }
+
+  saveLS(KEYS.WORN, state.worn);
+  drawMain();
+}, { passive:false });
+
+window.addEventListener("pointerup", ()=>{
+  sceneDrag.active=false;
+  sceneDrag.mode=null;
+  sceneDrag.id=null;
+  if(state.maskEnabled){
+    saveMask();
+  }
+});
+
+async function hitTestWorn(x,y){
+  const view = getCurrentView();
+  const globalS = state.globalScale;
+  // from top to bottom (last is top)
+  const worn = (state.worn.items||[]).slice();
+  for(let i=worn.length-1; i>=0; i--){
+    const wi = worn[i];
+    const vData = wi.views?.[view] || wi.views?.FRONT;
+    if(!vData?.dataUrl || !vData?.transform) continue;
+
+    const img = await getClothImg(vData.dataUrl);
+    if(!img) continue;
+
+    const t = vData.transform;
+    const scale = t.s * globalS;
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    const left = t.x, top = t.y;
+
+    // handle detection
+    const hs = 18;
+    const corners = [
+      {k:"handle:tl", cx:left, cy:top},
+      {k:"handle:tr", cx:left+w, cy:top},
+      {k:"handle:bl", cx:left, cy:top+h},
+      {k:"handle:br", cx:left+w, cy:top+h}
+    ];
+    for(const c of corners){
+      if(Math.hypot(x-c.cx, y-c.cy) <= hs){
+        return { id: wi.id, mode: c.k };
+      }
     }
 
-    // init
-    renderWardrobeMini();
-    showPersonView(person.idx||0);
-    applyGarmentBox();
-    setStatus(true,"OK");
-  </script>
+    // inside rect => move
+    if(x>=left && x<=left+w && y>=top && y<=top+h){
+      return { id: wi.id, mode:"move" };
+    }
+  }
+  return null;
+}
+
+/* =========================
+   MASK TOOL (manual erase)
+========================= */
+$("#btnMask").addEventListener("click", ()=>{
+  state.maskEnabled = !state.maskEnabled;
+  toast(state.maskEnabled ? "Gomma ON (disegna sulla persona)" : "Gomma OFF");
+});
+
+function applyMaskStroke(x,y){
+  const host = $("#mainCanvasHost");
+  const rect = host.getBoundingClientRect();
+  const w = rect.width, h = rect.height;
+  ensureMaskSize(w,h);
+
+  // draw black stroke on mask canvas (used as destination-out)
+  maskCtx.save();
+  maskCtx.fillStyle = "rgba(0,0,0,1)";
+  maskCtx.beginPath();
+  maskCtx.arc(x,y, state.maskBrush, 0, Math.PI*2);
+  maskCtx.fill();
+  maskCtx.restore();
+}
+
+/* =========================
+   TOAST
+========================= */
+let toastTimer=null;
+function toast(msg){
+  setStatus(true,"OK");
+  let t = document.getElementById("toast");
+  if(!t){
+    t = document.createElement("div");
+    t.id="toast";
+    t.style.position="fixed";
+    t.style.left="50%";
+    t.style.bottom="16px";
+    t.style.transform="translateX(-50%)";
+    t.style.padding="10px 14px";
+    t.style.borderRadius="999px";
+    t.style.border="1px solid rgba(255,255,255,.14)";
+    t.style.background="rgba(0,0,0,.45)";
+    t.style.backdropFilter="blur(8px)";
+    t.style.color="rgba(255,255,255,.92)";
+    t.style.fontWeight="900";
+    t.style.zIndex="10000";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.display="block";
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>{ t.style.display="none"; }, 1500);
+}
+
+/* =========================
+   INIT
+========================= */
+function init(){
+  // service worker
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.register("./sw.js").catch(()=>{});
+  }
+  // initial renders
+  renderWardrobe();
+  drawMain();
+}
+init();
+</script>
 </body>
 </html>
