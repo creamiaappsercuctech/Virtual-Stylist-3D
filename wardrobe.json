@@ -1,3 +1,16 @@
 {
-  "items": []
+  "items": [
+    {
+      "id": "demo_top_1",
+      "name": "T-shirt basic (demo)",
+      "type": "TOP",
+      "views": {
+        "FRONT": "",
+        "RIGHT": "",
+        "BACK": "",
+        "LEFT": ""
+      },
+      "createdAt": 0
+    }
+  ]
 }
