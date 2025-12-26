@@ -1,12 +1,8 @@
+// SerCucTech Virtual Stylist 2D PRO - config
 window.APP_CONFIG = {
-  appName: "SerCucTech TryMe",
+  appName: "SerCucTech • Virtual Stylist 2D PRO",
+  version: "1.0.0",
   storagePrefix: "sercuctech_tryme_",
-
-  // === MODALITÀ ONLINE (consigliata) ===
-  // Se lasci vuoto -> va in localStorage (solo sul tuo device)
-  SUPABASE_URL: "",        // es: https://xxxx.supabase.co
-  SUPABASE_ANON_KEY: "",   // anon public key
-
-  // sicurezza base (UI)
-  requirePinOnVetrina: true
+  demoWardrobeUrl: "./wardrobe.json",
+  enableOCRByDefault: false, // puoi mettere true
 };
