@@ -1,16 +1,12 @@
-// config.js
-// Se vuoi Supabase dopo, inserisci qui.
-// Per ora funziona TUTTO anche senza Supabase (localStorage).
-
 window.APP_CONFIG = {
   appName: "SerCucTech TryMe",
-  version: "1.0.0",
+  storagePrefix: "sercuctech_tryme_",
 
-  // Supabase (opzionale)
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  // === MODALITÀ ONLINE (consigliata) ===
+  // Se lasci vuoto -> va in localStorage (solo sul tuo device)
+  SUPABASE_URL: "",        // es: https://xxxx.supabase.co
+  SUPABASE_ANON_KEY: "",   // anon public key
 
-  // Sicurezza PIN (solo deterrente client-side su GitHub Pages)
-  // Per sicurezza vera serve backend/auth.
-  pinPepper: "SerCucTech_TryMe_2025"
+  // sicurezza base (UI)
+  requirePinOnVetrina: true
 };
