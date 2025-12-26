@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SerCucTech TryMe • Admin</title>
+  <link rel="stylesheet" href="./assets/app.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="logo">SC</div>
+    <div>
+      <div class="title">SerCucTech TryMe • Admin</div>
+      <div class="sub">Crea persone (4 viste) • Carica capi • Assegna capi • Condividi vetrine</div>
+      <div class="pill" id="modePill">Modalità: —</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <button class="btn primary" id="btnReload">🔄 Ricarica dati</button>
+      <button class="btn" id="btnNewPerson">➕ Nuova persona</button>
+      <button class="btn" id="btnNewGarment">👗 Nuovo capo</button>
+    </div>
+    <div style="margin-top:10px;color:var(--muted);font-size:13px">
+      Se vuoi condivisione reale (clienti vedono i tuoi capi), inserisci SUPABASE_URL e SUPABASE_ANON_KEY in <b>config.js</b>.
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="title" style="font-size:16px">Persone</div>
+      <div id="peopleList" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <div class="title" style="font-size:16px">Capi</div>
+      <div id="garmentList" style="margin-top:10px"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="title" style="font-size:16px">Assegna capi a persona</div>
+    <div class="row" style="margin-top:10px">
+      <select id="selPerson"></select>
+      <button class="btn ok" id="btnSaveAssign">💾 Salva assegnazioni</button>
+    </div>
+    <div id="assignBox" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<script src="./config.js"></script>
+<script src="./assets/db.js"></script>
+<script>
+const $ = (q,el=document)=>el.querySelector(q);
+const nowId = (p)=> p+"_"+Math.random().toString(16).slice(2)+"_"+Date.now().toString(16);
+
+let DATA = { people:[], garments:[], assign:{} };
+
+function escapeHtml(s){ return String(s||"").replace(/[&<>"']/g,m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m])); }
+
+async function loadAll(){
+  DATA = await DB.dbGetAll();
+  $("#modePill").textContent = "Modalità: " + (DB.isOnlineMode() ? "ONLINE (Supabase)" : "LOCALE (solo questo device)");
+  renderPeople();
+  renderGarments();
+  renderAssign();
+}
+$("#btnReload").addEventListener("click", loadAll);
+
+function renderPeople(){
+  const box = $("#peopleList");
+  box.innerHTML = "";
+  if(!DATA.people.length){
+    box.innerHTML = `<div class="pill">Nessuna persona. Premi “Nuova persona”.</div>`;
+  } else {
+    for(const p of DATA.people){
+      const url = location.origin + location.pathname.replace(/admin\.html$/,"vetrina.html") + "?id=" + encodeURIComponent(p.id);
+      const div = document.createElement("div");
+      div.className="card";
+      div.style.marginTop="10px";
+      div.innerHTML = `
+        <b>${escapeHtml(p.name||"Senza nome")}</b>
+        <div class="sub">ID: ${p.id}</div>
+        <div class="row" style="margin-top:10px">
+          <button class="btn" data-act="editP" data-id="${p.id}">✏️ Modifica</button>
+          <button class="btn" data-act="copyLink" data-url="${url}">🔗 Copia link</button>
+        </div>
+        <div class="sub" style="margin-top:8px">Link vetrina: ${escapeHtml(url)}</div>
+      `;
+      box.appendChild(div);
+    }
+  }
+
+  // select list
+  const sel = $("#selPerson");
+  sel.innerHTML = DATA.people.map(p=>`<option value="${p.id}">${escapeHtml(p.name||p.id)}</option>`).join("") || `<option value="">—</option>`;
+
+  box.querySelectorAll("button[data-act]").forEach(b=>{
+    b.addEventListener("click", async ()=>{
+      const act=b.dataset.act;
+      if(act==="editP") editPerson(b.dataset.id);
+      if(act==="copyLink"){
+        try{ await navigator.clipboard.writeText(b.dataset.url); alert("Link copiato ✅"); }catch(e){ alert("Copia non disponibile"); }
+      }
+    });
+  });
+}
+
+function renderGarments(){
+  const box = $("#garmentList");
+  box.innerHTML = "";
+  if(!DATA.garments.length){
+    box.innerHTML = `<div class="pill">Nessun capo. Premi “Nuovo capo”.</div>`;
+    return;
+  }
+  for(const g of DATA.garments){
+    const div = document.createElement("div");
+    div.className="card";
+    div.style.marginTop="10px";
+    div.innerHTML = `
+      <b>${escapeHtml(g.name||"Senza nome")}</b>
+      <div class="sub">Tipo: ${escapeHtml(g.type||"")}</div>
+      <div class="sub">ID: ${g.id}</div>
+    `;
+    box.appendChild(div);
+  }
+}
+
+function renderAssign(){
+  const pid = $("#selPerson").value || (DATA.people[0]?.id || "");
+  if(!pid){ $("#assignBox").innerHTML = `<div class="pill">Crea una persona prima.</div>`; return; }
+
+  const assigned = new Set(DATA.assign[pid] || []);
+  const box = $("#assignBox");
+  box.innerHTML = "";
+
+  if(!DATA.garments.length){
+    box.innerHTML = `<div class="pill">Carica prima dei capi.</div>`;
+    return;
+  }
+
+  for(const g of DATA.garments){
+    const id = "chk_"+g.id;
+    const row = document.createElement("div");
+    row.className="row";
+    row.style.margin="8px 0";
+    row.innerHTML = `
+      <input type="checkbox" id="${id}" ${assigned.has(g.id) ? "checked" : ""} style="width:auto;transform:scale(1.2)">
+      <label for="${id}" style="margin:0;flex:1">${escapeHtml(g.name||g.id)} <span class="sub">(${escapeHtml(g.type||"")})</span></label>
+    `;
+    box.appendChild(row);
+  }
+}
+
+$("#selPerson").addEventListener("change", renderAssign);
+
+$("#btnSaveAssign").addEventListener("click", async ()=>{
+  const pid = $("#selPerson").value;
+  const ids = [];
+  $("#assignBox").querySelectorAll("input[type=checkbox]").forEach(ch=>{
+    if(ch.checked) ids.push(ch.id.replace("chk_",""));
+  });
+  await DB.dbAssign(pid, ids);
+  DATA.assign[pid]=ids;
+  alert("Assegnazioni salvate ✅");
+});
+
+/* ======= CREAZIONE / MODIFICA PERSONA (semplice ma solido) ======= */
+$("#btnNewPerson").addEventListener("click", async ()=>{
+  const name = prompt("Nome persona (es. Tania)")?.trim();
+  if(!name) return;
+  const pin = prompt("PIN per entrare nella vetrina (4-8 cifre)")?.trim();
+  if(!pin) return;
+
+  const person = {
+    id: nowId("p"),
+    name,
+    pinHash: await DB.sha256(pin),
+    views: { FRONT:null, RIGHT:null, BACK:null, LEFT:null },
+    createdAt: Date.now()
+  };
+
+  // carica 4 viste
+  for(const v of ["FRONT","RIGHT","BACK","LEFT"]){
+    const ok = confirm("Caricare foto vista: " + v + "? (OK = scegli file)");
+    if(!ok) continue;
+    const file = await pickImage();
+    if(file) person.views[v] = file;
+  }
+
+  await DB.dbSavePerson(person);
+  await loadAll();
+});
+
+async function editPerson(pid){
+  const p = DATA.people.find(x=>x.id===pid);
+  if(!p) return;
+  const newName = prompt("Modifica nome:", p.name||"")?.trim();
+  if(newName) p.name = newName;
+
+  if(confirm("Vuoi cambiare PIN?")){
+    const pin = prompt("Nuovo PIN")?.trim();
+    if(pin) p.pinHash = await DB.sha256(pin);
+  }
+
+  for(const v of ["FRONT","RIGHT","BACK","LEFT"]){
+    if(confirm("Aggiornare foto vista " + v + "?")){
+      const file = await pickImage();
+      if(file) p.views[v] = file;
+    }
+  }
+
+  await DB.dbSavePerson(p);
+  await loadAll();
+}
+
+/* ======= CREAZIONE CAPO (base). Il ritaglio PRO lo teniamo nella vetrina/editor 2D che hai già,
+   qui salviamo un capo con 1 vista FRONT per iniziare (poi espandi). ======= */
+$("#btnNewGarment").addEventListener("click", async ()=>{
+  const name = prompt("Nome capo (es. Gonna nera)")?.trim();
+  if(!name) return;
+  const type = prompt("Tipo: TOP / BOTTOM / DRESS / SHOES / ACCESSORY", "DRESS")?.trim().toUpperCase() || "TOP";
+  const img = await pickImage();
+  if(!img) return;
+
+  const g = {
+    id: nowId("g"),
+    name,
+    type,
+    views: { FRONT: img, RIGHT:null, BACK:null, LEFT:null },
+    createdAt: Date.now()
+  };
+
+  await DB.dbSaveGarment(g);
+  await loadAll();
+});
+
+/* ======= Helpers ======= */
+function pickImage(){
+  return new Promise((resolve)=>{
+    const inp = document.createElement("input");
+    inp.type="file";
+    inp.accept="image/*";
+    inp.onchange = async ()=>{
+      const f = inp.files?.[0];
+      if(!f) return resolve(null);
+      const dataUrl = await fileToDataURL(f);
+      resolve(dataUrl);
+    };
+    inp.click();
+  });
+}
+function fileToDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(fr.result);
+    fr.onerror = reject;
+    fr.readAsDataURL(file);
+  });
+}
+
+loadAll();
+</script>
+</body>
+</html>
