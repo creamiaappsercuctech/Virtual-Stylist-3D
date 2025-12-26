@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SerCucTech • Virtual Stylist 2D PRO (Upload + Crop + AutoFit)</title>
+  <title>SerCucTech • Virtual Stylist 2D PRO (Upload + Crop PRO)</title>
   <meta name="theme-color" content="#0b0b12" />
   <style>
     :root{
@@ -81,6 +81,7 @@
       background:rgba(255,110,110,.10);
       border-color:rgba(255,110,110,.25);
     }
+    .btn.small{ padding:8px 10px; border-radius:12px; font-size:12px; }
     label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
     select, input[type="range"], input[type="number"], input[type="text"]{
       width:100%; box-sizing:border-box;
@@ -141,6 +142,7 @@
       width:calc(100% - 20px); height:calc(100% - 20px);
       object-fit:contain; object-position:center;
       pointer-events:none; z-index:1;
+      background:rgba(0,0,0,0.00);
     }
 
     /* VEIL */
@@ -274,6 +276,7 @@
       overflow:hidden;
       position:relative;
       height:360px;
+      touch-action:none;
     }
     canvas{ display:block; width:100%; height:100%; }
     .modalFoot{
@@ -308,7 +311,7 @@
         <div class="brand">SC</div>
         <div>
           <div style="font-weight:900">SerCucTech • Virtual Stylist 2D PRO</div>
-          <div class="sub">Upload capi + ritaglio • Click capo → auto-fit subito • Tutto schermo</div>
+          <div class="sub">Upload capi + ritaglio regolabile • Auto-fit • Tutto schermo</div>
         </div>
       </div>
       <span class="pill">Stato: <b id="status">OK</b></span>
@@ -423,7 +426,7 @@
 
           <div style="height:12px"></div>
           <div class="mini">
-            Auto-Fit è una stima. Se vuoi precisione “vera” serve calibrazione + segmentazione (ML).
+            Persona “naturale”: la foto resta in <b>contain</b> (non schiacciata). Auto-fit regola solo i capi.
           </div>
         </div>
       </div>
@@ -434,7 +437,7 @@
   <!-- GUARDAROBA -->
   <section id="guardaroba" class="section">
     <div class="card">
-      <h2><span>Guardaroba</span><span class="sub">Upload + Crop • poi “Metti addosso”</span></h2>
+      <h2><span>Guardaroba</span><span class="sub">Upload + Crop PRO • poi “Metti addosso”</span></h2>
       <div class="body">
         <div class="wardbar">
           <button class="btn primary" id="btnAddGarment">➕ Aggiungi capo</button>
@@ -445,8 +448,7 @@
 
         <div style="height:8px"></div>
         <div class="mini">
-          Consiglio: usa immagini capo su sfondo semplice o PNG trasparente.
-          Puoi caricare solo FRONT, oppure 4 viste.
+          Crop PRO: puoi scegliere se spostare <b>ritaglio</b> o <b>immagine</b>, e cambiare la grandezza del ritaglio.
         </div>
 
         <div class="wardcats" id="catChips"></div>
@@ -461,10 +463,9 @@
       <h2><span>Guida</span><span class="sub">uso rapido</span></h2>
       <div class="body">
         <div class="mini">
-          1) Studio → carica persona (almeno FRONTE).<br/>
-          2) Guardaroba → “Aggiungi capo” → scegli tipo + nome → carica FRONT (poi DX/RETRO/SX se vuoi).<br/>
-          3) Nel crop: regola zoom e trascina per centrare, poi “Salva”.<br/>
-          4) Clic “Metti addosso” → torna in Studio già vestito.
+          1) Studio → carica persona (FRONTE).<br/>
+          2) Guardaroba → “Aggiungi capo” → crop PRO → salva.<br/>
+          3) “Metti addosso” → torna in Studio vestito.
         </div>
       </div>
     </div>
@@ -472,7 +473,6 @@
 
 </main>
 
-<!-- hidden inputs -->
 <input id="filePerson" type="file" accept="image/*" style="display:none" />
 <input id="fileGarment" type="file" accept="image/*" style="display:none" />
 
@@ -480,24 +480,36 @@
 <div class="modal" id="cropModal" aria-hidden="true">
   <div class="modalCard">
     <div class="modalHead">
-      <div style="font-weight:900">Ritaglio capo (prima di salvarlo)</div>
+      <div style="font-weight:900">Ritaglio capo (regolabile)</div>
       <button class="btn" id="btnCropClose">✖</button>
     </div>
     <div class="modalBody">
       <div class="cropWrap">
         <div>
-          <div class="sub">Trascina per spostare • Zoom per ingrandire</div>
+          <div class="sub" id="cropHint">Trascina per spostare ritaglio • Zoom per ingrandire</div>
           <div style="height:8px"></div>
           <div class="cropStage">
             <canvas id="cropCanvas"></canvas>
           </div>
-          <label>Zoom</label>
-          <input id="cropZoom" type="range" min="1" max="3" value="1.2" step="0.01" />
+
+          <label>Zoom immagine</label>
+          <input id="cropZoom" type="range" min="1" max="4" value="1.25" step="0.01" />
+
+          <label>Dimensione ritaglio</label>
+          <input id="cropSize" type="range" min="45" max="95" value="78" step="1" />
         </div>
+
         <div>
           <div class="sub">Dati capo</div>
+
           <label>Nome capo</label>
-          <input id="garName" type="text" placeholder="es. Camicia blu" />
+          <div class="row">
+            <input id="garName" type="text" placeholder="es. Vestito casual" style="flex:1" />
+            <button class="btn small" id="btnSelName">Seleziona</button>
+            <button class="btn small" id="btnCopyName">Copia</button>
+            <button class="btn small" id="btnPasteName">Incolla</button>
+          </div>
+
           <label>Tipo capo</label>
           <select id="garType">
             <option value="top">Camicia / Maglia (TOP)</option>
@@ -507,6 +519,7 @@
             <option value="dress">Abito intero (DRESS)</option>
             <option value="shoes">Scarpe (SHOES)</option>
           </select>
+
           <label>Vista che stai caricando</label>
           <select id="garView">
             <option value="front">FRONTE</option>
@@ -516,8 +529,14 @@
           </select>
 
           <div style="height:10px"></div>
+          <div class="row">
+            <button class="btn primary" id="btnCropMode">🧲 Modalità: SPOSTA RITAGLIO</button>
+            <button class="btn" id="btnCropCenter">🎯 Centra</button>
+          </div>
+
+          <div style="height:10px"></div>
           <div class="mini">
-            Se carichi solo FRONT, le altre viste useranno FRONT come fallback.
+            Suggerimento: se stai ritagliando da screenshot (tipo Zalando/Amazon), usa “Sposta ritaglio” e stringilo sul capo.
           </div>
         </div>
       </div>
@@ -561,37 +580,30 @@
   tabs.forEach(t => t.addEventListener("click", ()=> setTab(t.dataset.tab)));
   setTab(localStorage.getItem("vs2d_tab") || "studio");
 
-  // Storage
-  const KEY = "sercuctech_vs2d_upload_crop_v1";
+  const KEY = "sercuctech_vs2d_crop_pro_v2";
   const state = JSON.parse(localStorage.getItem(KEY) || "{}");
 
-  // person
   state.personViews ??= { front:"", right:"", back:"", left:"" };
-
-  // outfit + transforms
   const TYPES = ["top","jacket","bottom","skirt","dress","shoes"];
   const VIEWS = ["front","right","back","left"];
 
   state.outfit ??= {};
-  state.fit ??= {}; // per-type fit scale/offset
+  state.fit ??= {};
   TYPES.forEach(t=>{
     state.outfit[t] ??= { front:"", right:"", back:"", left:"" };
     VIEWS.forEach(v=> state.outfit[t][v] ??= "");
     state.fit[t] ??= { scale:1, yPct:0 };
   });
 
-  // replace
   state.replaceOn ??= false;
   state.replaceIntensity ??= 70;
   state.replaceBlur ??= 10;
   state.overlayOpacity ??= 85;
 
-  // scale/profile
   state.profile ??= "uomo";
   state.heightCm ??= 175;
   state.scale ??= 1.0;
 
-  // wardrobe
   state.wardrobe ??= [];
 
   function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
@@ -707,7 +719,7 @@
     return src || svgData(type.toUpperCase());
   }
 
-  // AUTO FIT
+  // Auto fit
   function computeScaleFromProfileHeight(){
     const prof = state.profile || "uomo";
     const h = Number(state.heightCm) || 175;
@@ -741,11 +753,6 @@
     const finalScale = baseScale * s;
     return { scale: finalScale, yPct };
   }
-  function applyAutoFitAll(){
-    TYPES.forEach(t => state.fit[t] = computeFit(t));
-    save();
-    applyFitToDOM();
-  }
   function applyFitToDOM(){
     const frame = stageFrame.getBoundingClientRect();
     const H = frame.height || 520;
@@ -756,11 +763,6 @@
       el.style.transform = `translateX(-50%) translateY(${yPx.toFixed(1)}px) scale(${fit.scale.toFixed(3)})`;
     });
   }
-
-  window.addEventListener("resize", ()=>{
-    layoutVeil();
-    applyFitToDOM();
-  });
 
   function setView(idx){
     curIdx = (idx + ORDER.length) % ORDER.length;
@@ -874,8 +876,9 @@
     state.scale = computeScaleFromProfileHeight();
     composite.style.transform = `scale(${state.scale})`;
     scaleLabel.textContent = state.scale.toFixed(2) + "×";
+    TYPES.forEach(t => state.fit[t] = computeFit(t));
     save();
-    applyAutoFitAll();
+    applyFitToDOM();
   }
   document.getElementById("btnApplyScale").addEventListener("click", applyAutoFit);
 
@@ -928,11 +931,10 @@
     });
   }
 
-  // Click capo = indossa
   function applyWardrobeItem(item){
     const type = item.type;
     state.outfit[type] = normalizeViews(item.views || {});
-    applyAutoFitAll();
+    TYPES.forEach(t => state.fit[t] = computeFit(t));
     save();
     setView(curIdx);
     setTab("studio");
@@ -1009,7 +1011,7 @@
     });
   }
 
-  // Demo wardrobe
+  // Demo
   function makeDemoItem(type, name){
     const views = {
       front: svgData(`${type.toUpperCase()} FRONT`),
@@ -1042,15 +1044,17 @@
     renderWardrobe();
   });
 
-  // ===== UPLOAD + CROP CAPO =====
+  // ===== Upload + Crop PRO (ritaglio regolabile) =====
   const btnAddGarment = document.getElementById("btnAddGarment");
   const fileGarment = document.getElementById("fileGarment");
 
-  // modal controls
   const cropModal = document.getElementById("cropModal");
   const cropCanvas = document.getElementById("cropCanvas");
   const cropZoom = document.getElementById("cropZoom");
+  const cropSize = document.getElementById("cropSize");
   const cropInfo = document.getElementById("cropInfo");
+  const cropHint = document.getElementById("cropHint");
+
   const garName = document.getElementById("garName");
   const garType = document.getElementById("garType");
   const garView = document.getElementById("garView");
@@ -1058,90 +1062,33 @@
   const btnCropClose = document.getElementById("btnCropClose");
   const btnCropAgain = document.getElementById("btnCropAgain");
   const btnCropSave = document.getElementById("btnCropSave");
+  const btnCropMode = document.getElementById("btnCropMode");
+  const btnCropCenter = document.getElementById("btnCropCenter");
+
+  const btnSelName = document.getElementById("btnSelName");
+  const btnCopyName = document.getElementById("btnCopyName");
+  const btnPasteName = document.getElementById("btnPasteName");
 
   let cropImg = new Image();
   let cropImgLoaded = false;
-  let cropState = { zoom:1.2, cx:0, cy:0, down:false, lastX:0, lastY:0 };
-  let pendingGarment = { id:null, name:"", type:"top", view:"front" };
 
-  function openCropModal(){
-    cropModal.classList.add("open");
-    cropModal.setAttribute("aria-hidden","false");
-    document.body.style.overflow="hidden";
-    resizeCropCanvas();
-    drawCrop();
-  }
-  function closeCropModal(){
-    cropModal.classList.remove("open");
-    cropModal.setAttribute("aria-hidden","true");
-    document.body.style.overflow="";
-  }
+  // mode: "crop" = sposta ritaglio, "image" = sposta immagine
+  let cropMode = "crop";
 
-  function resizeCropCanvas(){
-    const rect = cropCanvas.getBoundingClientRect();
-    // set internal resolution proportional (sharp)
-    const dpr = Math.min(2, window.devicePixelRatio||1);
-    cropCanvas.width = Math.max(300, Math.floor(rect.width * dpr));
-    cropCanvas.height = Math.max(300, Math.floor(rect.height * dpr));
-  }
+  // state image transform + crop rect
+  let cropState = {
+    zoom: 1.25,
+    imgDX: 0, imgDY: 0,        // spostamento immagine (solo se mode=image)
+    rectCX: 0, rectCY: 0,      // centro ritaglio (canvas coords)
+    rectSizePct: 78,           // % min(canvas)
+    down:false,
+    lastX:0,lastY:0,
+    grab:"none"                // "rect" o "img"
+  };
 
-  function drawCrop(){
-    const ctx = cropCanvas.getContext("2d");
-    const w = cropCanvas.width, h = cropCanvas.height;
-    ctx.clearRect(0,0,w,h);
+  let pendingGarment = { id:null };
 
-    // background
-    ctx.fillStyle = "rgba(255,255,255,0.02)";
-    ctx.fillRect(0,0,w,h);
-
-    if(!cropImgLoaded){
-      ctx.fillStyle="rgba(255,255,255,0.55)";
-      ctx.font = `${Math.floor(w/18)}px system-ui`;
-      ctx.textAlign="center";
-      ctx.fillText("Carica immagine…", w/2, h/2);
-      return;
-    }
-
-    const zoom = cropState.zoom;
-    const imgW = cropImg.naturalWidth;
-    const imgH = cropImg.naturalHeight;
-
-    // Fit image to canvas then zoom
-    const fit = Math.min(w / imgW, h / imgH) * zoom;
-    const drawW = imgW * fit;
-    const drawH = imgH * fit;
-
-    // center + offset
-    const x = (w - drawW)/2 + cropState.cx;
-    const y = (h - drawH)/2 + cropState.cy;
-
-    ctx.drawImage(cropImg, x, y, drawW, drawH);
-
-    // Crop guide (central rounded rectangle)
-    const pad = Math.min(w,h) * 0.12;
-    const cw = w - pad*2;
-    const ch = h - pad*2;
-
-    ctx.save();
-    // darken outside
-    ctx.fillStyle = "rgba(0,0,0,0.40)";
-    ctx.beginPath();
-    ctx.rect(0,0,w,h);
-    ctx.roundRect(pad, pad, cw, ch, 18);
-    ctx.fill("evenodd");
-
-    // border
-    ctx.strokeStyle = "rgba(255,213,106,0.75)";
-    ctx.lineWidth = Math.max(2, Math.floor(w/250));
-    ctx.beginPath();
-    ctx.roundRect(pad, pad, cw, ch, 18);
-    ctx.stroke();
-    ctx.restore();
-
-    cropInfo.textContent = `Zoom ${zoom.toFixed(2)} • Tipo ${garType.value.toUpperCase()} • Vista ${garView.value.toUpperCase()}`;
-  }
-
-  // roundRect polyfill for older
+  // roundRect polyfill
   if(!CanvasRenderingContext2D.prototype.roundRect){
     CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r){
       const rr = Math.min(r, w/2, h/2);
@@ -1156,6 +1103,109 @@
     }
   }
 
+  function openCropModal(){
+    cropModal.classList.add("open");
+    cropModal.setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+    resizeCropCanvas();
+    centerCropAll();      // ✅ centra tutto
+    drawCrop();
+  }
+  function closeCropModal(){
+    cropModal.classList.remove("open");
+    cropModal.setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+
+  function resizeCropCanvas(){
+    const rect = cropCanvas.getBoundingClientRect();
+    const dpr = Math.min(2, window.devicePixelRatio||1);
+    cropCanvas.width = Math.max(320, Math.floor(rect.width * dpr));
+    cropCanvas.height = Math.max(320, Math.floor(rect.height * dpr));
+  }
+
+  function getCropRect(){
+    const w = cropCanvas.width, h = cropCanvas.height;
+    const size = Math.min(w,h) * (cropState.rectSizePct/100);
+    const cx = cropState.rectCX || (w/2);
+    const cy = cropState.rectCY || (h/2);
+    const x = cx - size/2;
+    const y = cy - size/2;
+    return { x, y, w:size, h:size, cx, cy, size };
+  }
+
+  function centerCropAll(){
+    const w = cropCanvas.width, h = cropCanvas.height;
+    cropState.imgDX = 0;
+    cropState.imgDY = 0;
+    cropState.rectCX = w/2;
+    cropState.rectCY = h/2;
+  }
+
+  function drawCrop(){
+    const ctx = cropCanvas.getContext("2d");
+    const W = cropCanvas.width, H = cropCanvas.height;
+    ctx.clearRect(0,0,W,H);
+
+    ctx.fillStyle = "rgba(255,255,255,0.02)";
+    ctx.fillRect(0,0,W,H);
+
+    if(!cropImgLoaded){
+      ctx.fillStyle="rgba(255,255,255,0.55)";
+      ctx.font = `${Math.floor(W/18)}px system-ui`;
+      ctx.textAlign="center";
+      ctx.fillText("Carica immagine…", W/2, H/2);
+      return;
+    }
+
+    const zoom = cropState.zoom;
+    const imgW = cropImg.naturalWidth;
+    const imgH = cropImg.naturalHeight;
+
+    // fit base
+    const base = Math.min(W / imgW, H / imgH);
+    const fit = base * zoom;
+
+    const drawW = imgW * fit;
+    const drawH = imgH * fit;
+
+    // center + drag
+    const x = (W - drawW)/2 + cropState.imgDX;
+    const y = (H - drawH)/2 + cropState.imgDY;
+
+    ctx.drawImage(cropImg, x, y, drawW, drawH);
+
+    const r = getCropRect();
+
+    // darken outside
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.beginPath();
+    ctx.rect(0,0,W,H);
+    ctx.roundRect(r.x, r.y, r.w, r.h, 18);
+    ctx.fill("evenodd");
+
+    // border
+    ctx.strokeStyle = "rgba(255,213,106,0.85)";
+    ctx.lineWidth = Math.max(2, Math.floor(W/260));
+    ctx.beginPath();
+    ctx.roundRect(r.x, r.y, r.w, r.h, 18);
+    ctx.stroke();
+
+    // center cross
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(r.cx-18, r.cy); ctx.lineTo(r.cx+18, r.cy);
+    ctx.moveTo(r.cx, r.cy-18); ctx.lineTo(r.cx, r.cy+18);
+    ctx.stroke();
+
+    ctx.restore();
+
+    cropInfo.textContent =
+      `Modalità: ${cropMode==="crop" ? "SPOSTA RITAGLIO" : "SPOSTA IMMAGINE"} • Zoom ${zoom.toFixed(2)} • Ritaglio ${cropState.rectSizePct}%`;
+  }
+
   function pickGarment(){
     fileGarment.value="";
     fileGarment.click();
@@ -1163,13 +1213,20 @@
 
   btnAddGarment.addEventListener("click", ()=>{
     clearErr();
-    // default values
     garName.value = "";
     garType.value = "top";
     garView.value = "front";
-    cropZoom.value = "1.2";
-    cropState = { zoom:1.2, cx:0, cy:0, down:false, lastX:0, lastY:0 };
-    pendingGarment = { id:uid(), name:"", type:"top", view:"front" };
+    cropZoom.value = "1.25";
+    cropSize.value = "78";
+    cropMode = "crop";
+    cropHint.textContent = "Trascina per spostare ritaglio • Zoom per ingrandire";
+    btnCropMode.textContent = "🧲 Modalità: SPOSTA RITAGLIO";
+    cropState = {
+      zoom: 1.25, imgDX:0, imgDY:0,
+      rectCX:0, rectCY:0, rectSizePct:78,
+      down:false,lastX:0,lastY:0,grab:"none"
+    };
+    pendingGarment = { id: uid() };
     pickGarment();
   });
 
@@ -1178,14 +1235,12 @@
       clearErr();
       const f = fileGarment.files && fileGarment.files[0];
       if(!f) return;
-
       const dataUrl = await fileToDataURL(f);
       cropImgLoaded = false;
       cropImg = new Image();
       cropImg.onload = ()=>{
         cropImgLoaded = true;
         openCropModal();
-        drawCrop();
       };
       cropImg.onerror = ()=> showErr("Immagine capo non valida.");
       cropImg.src = dataUrl;
@@ -1196,45 +1251,96 @@
     cropState.zoom = Number(cropZoom.value);
     drawCrop();
   });
-
-  window.addEventListener("resize", ()=>{
-    if(cropModal.classList.contains("open")){
-      resizeCropCanvas();
-      drawCrop();
-    }
+  cropSize.addEventListener("input", ()=>{
+    cropState.rectSizePct = Number(cropSize.value);
+    drawCrop();
   });
 
-  // drag on crop canvas
+  btnCropMode.addEventListener("click", ()=>{
+    cropMode = (cropMode==="crop") ? "image" : "crop";
+    btnCropMode.textContent = cropMode==="crop" ? "🧲 Modalità: SPOSTA RITAGLIO" : "🧲 Modalità: SPOSTA IMMAGINE";
+    cropHint.textContent = cropMode==="crop"
+      ? "Trascina per spostare ritaglio • Zoom per ingrandire"
+      : "Trascina per spostare immagine • Zoom per ingrandire";
+    drawCrop();
+  });
+
+  btnCropCenter.addEventListener("click", ()=>{
+    centerCropAll();
+    drawCrop();
+  });
+
+  // Drag: se tocchi dentro il ritaglio -> sposta ritaglio, altrimenti sposta immagine (se mode=image)
+  function pointInRect(px, py, r){
+    return px>=r.x && px<=r.x+r.w && py>=r.y && py<=r.y+r.h;
+  }
+
   cropCanvas.addEventListener("pointerdown", (e)=>{
     cropState.down = true;
     cropState.lastX = e.clientX;
     cropState.lastY = e.clientY;
     cropCanvas.setPointerCapture(e.pointerId);
+
+    const rect = cropCanvas.getBoundingClientRect();
+    const dpr = cropCanvas.width / rect.width;
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top) * dpr;
+    const r = getCropRect();
+
+    if(pointInRect(px,py,r)){
+      cropState.grab = "rect";
+    } else {
+      cropState.grab = "img";
+    }
   });
-  cropCanvas.addEventListener("pointerup", ()=>{ cropState.down = false; });
+
+  cropCanvas.addEventListener("pointerup", ()=>{
+    cropState.down = false;
+    cropState.grab = "none";
+  });
+
   cropCanvas.addEventListener("pointermove", (e)=>{
     if(!cropState.down) return;
-    const dx = e.clientX - cropState.lastX;
-    const dy = e.clientY - cropState.lastY;
+
+    const rect = cropCanvas.getBoundingClientRect();
+    const dpr = cropCanvas.width / rect.width;
+
+    const dx = (e.clientX - cropState.lastX) * dpr;
+    const dy = (e.clientY - cropState.lastY) * dpr;
+
     cropState.lastX = e.clientX;
     cropState.lastY = e.clientY;
 
-    // scale movement by DPR ratio
-    const rect = cropCanvas.getBoundingClientRect();
-    const dpr = cropCanvas.width / rect.width;
-    cropState.cx += dx * dpr;
-    cropState.cy += dy * dpr;
+    if(cropState.grab==="rect" || cropMode==="crop"){
+      cropState.rectCX = (cropState.rectCX || cropCanvas.width/2) + dx;
+      cropState.rectCY = (cropState.rectCY || cropCanvas.height/2) + dy;
+    } else {
+      cropState.imgDX += dx;
+      cropState.imgDY += dy;
+    }
     drawCrop();
   });
 
   btnCropClose.addEventListener("click", ()=> closeCropModal());
-  cropModal.addEventListener("click", (e)=>{
-    if(e.target === cropModal) closeCropModal();
-  });
+  cropModal.addEventListener("click", (e)=>{ if(e.target === cropModal) closeCropModal(); });
+  btnCropAgain.addEventListener("click", ()=>{ clearErr(); pickGarment(); });
 
-  btnCropAgain.addEventListener("click", ()=>{
-    clearErr();
-    pickGarment();
+  // Seleziona / Copia / Incolla
+  btnSelName.addEventListener("click", ()=>{
+    garName.focus();
+    garName.select();
+  });
+  btnCopyName.addEventListener("click", async ()=>{
+    try{
+      garName.focus(); garName.select();
+      await navigator.clipboard.writeText(garName.value || "");
+    }catch{}
+  });
+  btnPasteName.addEventListener("click", async ()=>{
+    try{
+      const t = await navigator.clipboard.readText();
+      if(typeof t === "string") garName.value = t;
+    }catch{}
   });
 
   btnCropSave.addEventListener("click", ()=>{
@@ -1248,41 +1354,38 @@
 
       // export crop area to PNG
       const out = document.createElement("canvas");
-      const outSize = 1024; // good quality
+      const outSize = 1024;
       out.width = outSize;
       out.height = outSize;
-      const ctx = out.getContext("2d");
+      const octx = out.getContext("2d");
 
-      // compute current draw transform (same as drawCrop)
-      const w = cropCanvas.width, h = cropCanvas.height;
+      const W = cropCanvas.width, H = cropCanvas.height;
       const zoom = cropState.zoom;
       const imgW = cropImg.naturalWidth, imgH = cropImg.naturalHeight;
-      const fit = Math.min(w / imgW, h / imgH) * zoom;
+      const base = Math.min(W / imgW, H / imgH);
+      const fit = base * zoom;
+
       const drawW = imgW * fit;
       const drawH = imgH * fit;
-      const x = (w - drawW)/2 + cropState.cx;
-      const y = (h - drawH)/2 + cropState.cy;
+      const x = (W - drawW)/2 + cropState.imgDX;
+      const y = (H - drawH)/2 + cropState.imgDY;
 
-      // crop guide rect
-      const pad = Math.min(w,h) * 0.12;
-      const cx = pad, cy = pad, cw = w - pad*2, ch = h - pad*2;
-
-      // Map crop rect area from cropCanvas to source image via current transform.
-      // We'll render by drawing the cropCanvas visible image into output by reverse mapping.
-      // Approach: draw whole image into an intermediate at same transform, then sample.
+      // render to tmp
       const tmp = document.createElement("canvas");
-      tmp.width = w; tmp.height = h;
+      tmp.width = W; tmp.height = H;
       const tctx = tmp.getContext("2d");
-      tctx.clearRect(0,0,w,h);
+      tctx.clearRect(0,0,W,H);
       tctx.drawImage(cropImg, x, y, drawW, drawH);
 
-      // draw crop area into output, scaled to 1024
-      ctx.clearRect(0,0,outSize,outSize);
-      ctx.drawImage(tmp, cx, cy, cw, ch, 0, 0, outSize, outSize);
+      // crop rect
+      const r = getCropRect();
+
+      octx.clearRect(0,0,outSize,outSize);
+      octx.drawImage(tmp, r.x, r.y, r.w, r.h, 0, 0, outSize, outSize);
 
       const png = out.toDataURL("image/png", 0.92);
 
-      // upsert item in wardrobe by id
+      // upsert wardrobe
       let item = state.wardrobe.find(i => i.id === pendingGarment.id);
       if(!item){
         item = { id: pendingGarment.id, name, type, category: categoryFromType(type), views: { front:"", right:"", back:"", left:"" } };
@@ -1293,10 +1396,8 @@
         item.category = categoryFromType(type);
         item.views ??= { front:"", right:"", back:"", left:"" };
       }
-
       item.views[view] = png;
 
-      // if only front exists, keep others fallback later (normalizeViews handles it)
       save();
       closeCropModal();
       renderChips();
@@ -1306,48 +1407,21 @@
   });
 
   // Init studio
-  function refreshReplaceUI(){
-    btnReplaceToggle.textContent = state.replaceOn ? "👕 Sostituzione: ON" : "👕 Sostituzione: OFF";
-    slReplace.value = String(state.replaceIntensity ?? 70);
-    slBlur.value = String(state.replaceBlur ?? 10);
-    slOverlay.value = String(state.overlayOpacity ?? 85);
-    applyVeilStyles();
-    applyOverlayOpacity();
-  }
-
-  function applyAutoFit(){
-    clearErr();
-    state.profile = profile.value;
-    state.heightCm = Number(heightCm.value) || 175;
-    state.scale = computeScaleFromProfileHeight();
-    composite.style.transform = `scale(${state.scale})`;
-    scaleLabel.textContent = state.scale.toFixed(2) + "×";
-    save();
-    applyAutoFitAll();
-  }
-
-  function applyAutoFitAll(){
-    TYPES.forEach(t => state.fit[t] = computeFit(t));
-    save();
-    applyFitToDOM();
-  }
-
-  // Apply ward item
-  function applyWardrobeItem(item){
-    const type = item.type;
-    state.outfit[type] = normalizeViews(item.views || {});
-    applyAutoFitAll();
-    save();
-    setView(curIdx);
-    setTab("studio");
-  }
-
-  // Bind replace listeners after functions exist
   refreshReplaceUI();
   applyAutoFit();
   renderChips();
   renderWardrobe();
   setView(0);
+
+  window.addEventListener("resize", ()=>{
+    layoutVeil();
+    applyFitToDOM();
+    if(cropModal.classList.contains("open")){
+      resizeCropCanvas();
+      centerCropAll();
+      drawCrop();
+    }
+  });
 </script>
 </body>
 </html>
