@@ -1,21 +1,3 @@
-[
-  { "title":"Camicia Uomo", "type":"camicia", "thumb":"https://i.imgur.com/qZ7Y4bE.png", "full":"https://i.imgur.com/qZ7Y4bE.png" },
-  { "title":"Giacca Uomo", "type":"giacca", "thumb":"https://i.imgur.com/8QxM8ZQ.png", "full":"https://i.imgur.com/8QxM8ZQ.png" },
-  { "title":"Pantalone Uomo", "type":"pantalone", "thumb":"https://i.imgur.com/NzV5qPv.png", "full":"https://i.imgur.com/NzV5qPv.png" },
-  { "title":"Scarpe Uomo", "type":"scarpe", "thumb":"https://i.imgur.com/JxFjJH2.png", "full":"https://i.imgur.com/JxFjJH2.png" },
-
-  { "title":"Maglia Donna", "type":"camicia", "thumb":"https://i.imgur.com/QsJtU4F.png", "full":"https://i.imgur.com/QsJtU4F.png" },
-  { "title":"Giacca Donna", "type":"giacca", "thumb":"https://i.imgur.com/dGfRj7c.png", "full":"https://i.imgur.com/dGfRj7c.png" },
-  { "title":"Gonna Donna", "type":"gonna", "thumb":"https://i.imgur.com/Wr7rCFL.png", "full":"https://i.imgur.com/Wr7rCFL.png" },
-  { "title":"Vestito Donna", "type":"vestito", "thumb":"https://i.imgur.com/9eq2Ck6.png", "full":"https://i.imgur.com/9eq2Ck6.png" },
-
-  { "title":"Maglia Bambino", "type":"camicia", "thumb":"https://i.imgur.com/V6lY3kM.png", "full":"https://i.imgur.com/V6lY3kM.png" },
-  { "title":"Felpa Bambino", "type":"giacca", "thumb":"https://i.imgur.com/9qE6p3u.png", "full":"https://i.imgur.com/9qE6p3u.png" },
-  { "title":"Pantalone Bambino", "type":"pantalone", "thumb":"https://i.imgur.com/Lk0YYPv.png", "full":"https://i.imgur.com/Lk0YYPv.png" },
-  { "title":"Scarpe Bambino", "type":"scarpe", "thumb":"https://i.imgur.com/jJ6k9nA.png", "full":"https://i.imgur.com/jJ6k9nA.png" },
-
-  { "title":"Maglia Bambina", "type":"camicia", "thumb":"https://i.imgur.com/Y1P8C4X.png", "full":"https://i.imgur.com/Y1P8C4X.png" },
-  { "title":"Gonna Bambina", "type":"gonna", "thumb":"https://i.imgur.com/J5iK4Nc.png", "full":"https://i.imgur.com/J5iK4Nc.png" },
-  { "title":"Vestito Bambina", "type":"vestito", "thumb":"https://i.imgur.com/p8yPSGb.png", "full":"https://i.imgur.com/p8yPSGb.png" },
-  { "title":"Scarpe Bambina", "type":"scarpe", "thumb":"https://i.imgur.com/9Kj8uE3.png", "full":"https://i.imgur.com/9Kj8uE3.png" }
-]
+{
+  "items": []
+}
