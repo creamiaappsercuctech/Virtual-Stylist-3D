@@ -1,0 +1,7 @@
+// config.js
+window.APP_CONFIG = {
+  SUPABASE_URL: "INCOLLA_LA_TUA_SUPABASE_URL",
+  SUPABASE_ANON_KEY: "INCOLLA_LA_TUA_ANON_KEY",
+  BRAND: "SerCucTech TRYME",
+  WHATSAPP_LINK: "https://wa.me/39INSERISCINUMERO?text=Ciao%20SerCucTech%20TRYME%2C%20voglio%20la%20mia%20vetrina."
+};
